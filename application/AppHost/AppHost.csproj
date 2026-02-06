@@ -14,6 +14,8 @@
         <ProjectReference Include="..\AppGateway\AppGateway.csproj"/>
         <ProjectReference Include="..\back-office\Api\BackOffice.Api.csproj"/>
         <ProjectReference Include="..\back-office\Workers\BackOffice.Workers.csproj"/>
+        <ProjectReference Include="..\fundraiser\Api\Fundraiser.Api.csproj"/>
+        <ProjectReference Include="..\fundraiser\Workers\Fundraiser.Workers.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

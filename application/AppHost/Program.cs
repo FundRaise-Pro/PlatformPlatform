@@ -83,11 +83,28 @@ var backOfficeApi = builder
     .WithReference(azureStorage)
     .WaitFor(backOfficeWorkers);
 
+var fundraiserDatabase = sqlServer
+    .AddDatabase("fundraiser-database", "fundraiser");
+
+var fundraiserWorkers = builder
+    .AddProject<Fundraiser_Workers>("fundraiser-workers")
+    .WithReference(fundraiserDatabase)
+    .WithReference(azureStorage)
+    .WaitFor(fundraiserDatabase);
+
+var fundraiserApi = builder
+    .AddProject<Fundraiser_Api>("fundraiser-api")
+    .WithUrlConfiguration("/fundraiser")
+    .WithReference(fundraiserDatabase)
+    .WithReference(azureStorage)
+    .WaitFor(fundraiserWorkers);
+
 var appGateway = builder
     .AddProject<AppGateway>("app-gateway")
     .WithReference(frontendBuild)
     .WithReference(accountManagementApi)
     .WithReference(backOfficeApi)
+    .WithReference(fundraiserApi)
     .WaitFor(accountManagementApi)
     .WaitFor(frontendBuild)
     .WithUrlForEndpoint("https", url => url.DisplayText = "Web App");
