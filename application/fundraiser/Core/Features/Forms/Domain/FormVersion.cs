@@ -4,7 +4,7 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.Forms.Domain;
 
 [IdPrefix("fv")]
-public sealed record FormVersionId(string Value) : StronglyTypedUlid<FormVersionId>;
+public sealed record FormVersionId(string Value) : StronglyTypedUlid<FormVersionId>(Value);
 
 /// <summary>
 ///     A FormVersion defines a versioned dynamic form template that tenants use to collect application data.

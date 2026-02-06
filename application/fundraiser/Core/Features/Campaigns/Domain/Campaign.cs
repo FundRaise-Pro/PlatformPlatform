@@ -4,7 +4,7 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 
 [IdPrefix("cmp")]
-public sealed record CampaignId(string Value) : StronglyTypedUlid<CampaignId>;
+public sealed record CampaignId(string Value) : StronglyTypedUlid<CampaignId>(Value);
 
 /// <summary>
 ///     A Campaign represents a fundraising story / beneficiary case that donors can contribute to.

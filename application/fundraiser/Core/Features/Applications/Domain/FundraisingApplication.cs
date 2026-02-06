@@ -6,7 +6,7 @@ using PlatformPlatform.Fundraiser.Features.Forms.Domain;
 namespace PlatformPlatform.Fundraiser.Features.Applications.Domain;
 
 [IdPrefix("app")]
-public sealed record FundraisingApplicationId(string Value) : StronglyTypedUlid<FundraisingApplicationId>;
+public sealed record FundraisingApplicationId(string Value) : StronglyTypedUlid<FundraisingApplicationId>(Value);
 
 /// <summary>
 ///     A FundraisingApplication represents a funding/assistance request submitted by a beneficiary.

@@ -4,7 +4,7 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.Events.Domain;
 
 [IdPrefix("evt")]
-public sealed record FundraisingEventId(string Value) : StronglyTypedUlid<FundraisingEventId>;
+public sealed record FundraisingEventId(string Value) : StronglyTypedUlid<FundraisingEventId>(Value);
 
 /// <summary>
 ///     A FundraisingEvent represents a planned fundraising activity by the tenant organization,

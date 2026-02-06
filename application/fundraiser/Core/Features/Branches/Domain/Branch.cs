@@ -4,7 +4,7 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.Branches.Domain;
 
 [IdPrefix("brn")]
-public sealed record BranchId(string Value) : StronglyTypedUlid<BranchId>;
+public sealed record BranchId(string Value) : StronglyTypedUlid<BranchId>(Value);
 
 /// <summary>
 ///     A Branch represents a physical office or service location for the tenant organization.

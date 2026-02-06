@@ -4,7 +4,7 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.QRCodes.Domain;
 
 [IdPrefix("qr")]
-public sealed record QRCodeId(string Value) : StronglyTypedUlid<QRCodeId>;
+public sealed record QRCodeId(string Value) : StronglyTypedUlid<QRCodeId>(Value);
 
 /// <summary>
 ///     A QRCode allows tenants to create trackable QR codes linking to campaigns, events, or donation pages.

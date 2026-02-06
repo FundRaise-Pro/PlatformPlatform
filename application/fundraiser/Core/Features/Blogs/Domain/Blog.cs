@@ -4,10 +4,10 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.Blogs.Domain;
 
 [IdPrefix("blg")]
-public sealed record BlogPostId(string Value) : StronglyTypedUlid<BlogPostId>;
+public sealed record BlogPostId(string Value) : StronglyTypedUlid<BlogPostId>(Value);
 
 [IdPrefix("bct")]
-public sealed record BlogCategoryId(string Value) : StronglyTypedUlid<BlogCategoryId>;
+public sealed record BlogCategoryId(string Value) : StronglyTypedUlid<BlogCategoryId>(Value);
 
 /// <summary>
 ///     A BlogCategory groups blog posts into navigable sections with SEO metadata.

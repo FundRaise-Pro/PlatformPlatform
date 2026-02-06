@@ -1,3 +1,6 @@
+using PlatformPlatform.Fundraiser.Features.Blogs.Commands;
+using PlatformPlatform.Fundraiser.Features.Blogs.Domain;
+using PlatformPlatform.Fundraiser.Features.Blogs.Queries;
 using PlatformPlatform.SharedKernel.ApiResults;
 using PlatformPlatform.SharedKernel.Endpoints;
 
@@ -11,13 +14,32 @@ public sealed class BlogEndpoints : IEndpoints
     {
         var group = routes.MapGroup(RoutesPrefix).WithTags("Blogs").RequireAuthorization().ProducesValidationProblem();
 
-        // TODO: Phase 1 — Implement blog CRUD
-        // group.MapGet("/categories", ...) — List blog categories
-        // group.MapPost("/categories", ...) — Create category
-        // group.MapGet("/", ...) — List blog posts (with filtering)
-        // group.MapGet("/{id}", ...) — Get blog post by ID
-        // group.MapPost("/", ...) — Create blog post
-        // group.MapPut("/{id}", ...) — Update blog post
-        // group.MapPost("/{id}/publish", ...) — Publish blog post
+        group.MapGet("/categories", async Task<ApiResult<BlogCategoryResponse[]>> (IMediator mediator)
+            => await mediator.Send(new GetBlogCategoriesQuery())
+        ).Produces<BlogCategoryResponse[]>();
+
+        group.MapPost("/categories", async Task<ApiResult<BlogCategoryId>> (CreateBlogCategoryCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).Produces<BlogCategoryId>();
+
+        group.MapGet("/", async Task<ApiResult<BlogPostSummaryResponse[]>> (IMediator mediator)
+            => await mediator.Send(new GetBlogPostsQuery())
+        ).Produces<BlogPostSummaryResponse[]>();
+
+        group.MapGet("/{id}", async Task<ApiResult<BlogPostResponse>> (BlogPostId id, IMediator mediator)
+            => await mediator.Send(new GetBlogPostQuery(id))
+        ).Produces<BlogPostResponse>();
+
+        group.MapPost("/", async Task<ApiResult<BlogPostId>> (CreateBlogPostCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).Produces<BlogPostId>();
+
+        group.MapPut("/{id}", async Task<ApiResult> (BlogPostId id, UpdateBlogPostCommand command, IMediator mediator)
+            => await mediator.Send(command with { Id = id })
+        );
+
+        group.MapPost("/{id}/publish", async Task<ApiResult> (BlogPostId id, IMediator mediator)
+            => await mediator.Send(new PublishBlogPostCommand(id))
+        );
     }
 }

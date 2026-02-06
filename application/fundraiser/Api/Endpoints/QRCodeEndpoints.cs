@@ -1,3 +1,6 @@
+using PlatformPlatform.Fundraiser.Features.QRCodes.Commands;
+using PlatformPlatform.Fundraiser.Features.QRCodes.Domain;
+using PlatformPlatform.Fundraiser.Features.QRCodes.Queries;
 using PlatformPlatform.SharedKernel.ApiResults;
 using PlatformPlatform.SharedKernel.Endpoints;
 
@@ -11,12 +14,24 @@ public sealed class QRCodeEndpoints : IEndpoints
     {
         var group = routes.MapGroup(RoutesPrefix).WithTags("QR Codes").RequireAuthorization().ProducesValidationProblem();
 
-        // TODO: Phase 1 — Implement QR code management
-        // group.MapGet("/", ...) — List QR codes
-        // group.MapGet("/{id}", ...) — Get QR code by ID
-        // group.MapPost("/", ...) — Create QR code
-        // group.MapPost("/{id}/hit", ...) — Record QR code hit (public, no auth)
-        // group.MapPut("/{id}/deactivate", ...) — Deactivate QR code
-        // group.MapGet("/{id}/analytics", ...) — Get QR code analytics
+        group.MapGet("/", async Task<ApiResult<QRCodeSummaryResponse[]>> (IMediator mediator)
+            => await mediator.Send(new GetQRCodesQuery())
+        ).Produces<QRCodeSummaryResponse[]>();
+
+        group.MapGet("/{id}", async Task<ApiResult<QRCodeResponse>> (QRCodeId id, IMediator mediator)
+            => await mediator.Send(new GetQRCodeQuery(id))
+        ).Produces<QRCodeResponse>();
+
+        group.MapPost("/", async Task<ApiResult<QRCodeId>> (CreateQRCodeCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).Produces<QRCodeId>();
+
+        group.MapPost("/{id}/hit", async Task<ApiResult> (QRCodeId id, RecordQRCodeHitCommand command, IMediator mediator)
+            => await mediator.Send(command with { Id = id })
+        ).AllowAnonymous();
+
+        group.MapPost("/{id}/deactivate", async Task<ApiResult> (QRCodeId id, IMediator mediator)
+            => await mediator.Send(new DeactivateQRCodeCommand(id))
+        );
     }
 }

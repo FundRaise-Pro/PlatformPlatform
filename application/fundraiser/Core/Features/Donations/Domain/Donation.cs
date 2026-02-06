@@ -4,16 +4,16 @@ using PlatformPlatform.SharedKernel.StronglyTypedIds;
 namespace PlatformPlatform.Fundraiser.Features.Donations.Domain;
 
 [IdPrefix("txn")]
-public sealed record TransactionId(string Value) : StronglyTypedUlid<TransactionId>;
+public sealed record TransactionId(string Value) : StronglyTypedUlid<TransactionId>(Value);
 
 [IdPrefix("don")]
-public sealed record DonationId(string Value) : StronglyTypedUlid<DonationId>;
+public sealed record DonationId(string Value) : StronglyTypedUlid<DonationId>(Value);
 
 [IdPrefix("sub")]
-public sealed record SubscriptionId(string Value) : StronglyTypedUlid<SubscriptionId>;
+public sealed record SubscriptionId(string Value) : StronglyTypedUlid<SubscriptionId>(Value);
 
 [IdPrefix("dnr")]
-public sealed record DonorProfileId(string Value) : StronglyTypedUlid<DonorProfileId>;
+public sealed record DonorProfileId(string Value) : StronglyTypedUlid<DonorProfileId>(Value);
 
 /// <summary>
 ///     A Transaction records a payment interaction with the payment gateway.
