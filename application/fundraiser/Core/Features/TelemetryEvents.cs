@@ -52,6 +52,15 @@ public sealed class FundraisingEventUpdated(FundraisingEventId eventId)
     : TelemetryEvent(("event_id", eventId));
 
 // --- Forms ---
+public sealed class FormTemplateCloned(FormTemplateId templateId, FormVersionId formVersionId)
+    : TelemetryEvent(("template_id", templateId), ("form_version_id", formVersionId));
+
+public sealed class FormTemplateCreated(FormTemplateId templateId, string category)
+    : TelemetryEvent(("template_id", templateId), ("category", category));
+
+public sealed class FormTemplatePublished(FormTemplateId templateId)
+    : TelemetryEvent(("template_id", templateId));
+
 public sealed class FormVersionCreated(FormVersionId formVersionId)
     : TelemetryEvent(("form_version_id", formVersionId));
 
@@ -147,6 +156,9 @@ public sealed class DomainConfigUpdated(TenantSettingsId tenantSettingsId, strin
 
 public sealed class FeatureFlagsUpdated(TenantSettingsId tenantSettingsId, int flagCount)
     : TelemetryEvent(("tenant_settings_id", tenantSettingsId), ("flag_count", flagCount));
+
+public sealed class PaymentConfigUpdated(TenantSettingsId tenantSettingsId, PaymentProvider provider)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId), ("provider", provider));
 
 public sealed class TenantSettingsInitialized(TenantSettingsId tenantSettingsId)
     : TelemetryEvent(("tenant_settings_id", tenantSettingsId));

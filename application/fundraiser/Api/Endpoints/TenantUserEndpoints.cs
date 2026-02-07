@@ -1,6 +1,7 @@
 using PlatformPlatform.Fundraiser.Features.Users.Commands;
 using PlatformPlatform.Fundraiser.Features.Users.Domain;
 using PlatformPlatform.Fundraiser.Features.Users.Queries;
+using Microsoft.AspNetCore.Mvc;
 using PlatformPlatform.SharedKernel.ApiResults;
 using PlatformPlatform.SharedKernel.Endpoints;
 
@@ -30,7 +31,7 @@ public sealed class TenantUserEndpoints : IEndpoints
             => await mediator.Send(command with { TenantUserId = id })
         );
 
-        group.MapDelete("/{id}/roles", async Task<ApiResult> (TenantUserId id, RevokeFundraiserRoleCommand command, IMediator mediator)
+        group.MapDelete("/{id}/roles", async Task<ApiResult> (TenantUserId id, [FromBody] RevokeFundraiserRoleCommand command, IMediator mediator)
             => await mediator.Send(command with { TenantUserId = id })
         );
 

@@ -27,7 +27,7 @@ public sealed class FormVersionConfiguration : IEntityTypeConfiguration<FormVers
 
             sb.OwnsMany(s => s.Fields, fb =>
             {
-                fb.WithOwner().HasForeignKey("FormSectionId");
+                fb.WithOwner().HasForeignKey("FormVersionId", "FormSectionId");
                 fb.Property(f => f.Name).HasMaxLength(100).IsRequired();
                 fb.Property(f => f.Label).HasMaxLength(200).IsRequired();
                 fb.Property(f => f.DefaultValue).HasMaxLength(2000);
@@ -38,7 +38,7 @@ public sealed class FormVersionConfiguration : IEntityTypeConfiguration<FormVers
 
             sb.OwnsMany(s => s.Flags, fb =>
             {
-                fb.WithOwner().HasForeignKey("FormSectionId");
+                fb.WithOwner().HasForeignKey("FormVersionId", "FormSectionId");
                 fb.Property(f => f.Name).HasMaxLength(100).IsRequired();
                 fb.Property(f => f.Question).HasMaxLength(500).IsRequired();
                 fb.Property(f => f.HelpText).HasMaxLength(500);
@@ -46,7 +46,7 @@ public sealed class FormVersionConfiguration : IEntityTypeConfiguration<FormVers
 
             sb.OwnsMany(s => s.Selects, sb2 =>
             {
-                sb2.WithOwner().HasForeignKey("FormSectionId");
+                sb2.WithOwner().HasForeignKey("FormVersionId", "FormSectionId");
                 sb2.Property(s => s.Name).HasMaxLength(100).IsRequired();
                 sb2.Property(s => s.Label).HasMaxLength(200).IsRequired();
                 sb2.Property(s => s.Placeholder).HasMaxLength(200);

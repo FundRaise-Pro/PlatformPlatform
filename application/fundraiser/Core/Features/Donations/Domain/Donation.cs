@@ -63,12 +63,14 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
     public IReadOnlyCollection<PaymentProcessingLog> ProcessingLogs => _processingLogs.AsReadOnly();
 
     public static Transaction Create(TenantId tenantId, string name, string description,
-        TransactionType type, decimal amount, string? payeeName = null, string? payeeEmail = null)
+        TransactionType type, decimal amount, string? payeeName = null, string? payeeEmail = null,
+        PaymentProvider provider = PaymentProvider.PayFast)
     {
         return new Transaction(TransactionId.NewId(), tenantId, name, description, type, amount)
         {
             PayeeName = payeeName,
-            PayeeEmail = payeeEmail
+            PayeeEmail = payeeEmail,
+            PaymentProvider = provider
         };
     }
 
@@ -280,11 +282,11 @@ public enum PaymentMethod
     Zapper, MoreTyme, StoreCard, Mukuru, ApplePay, SamsungPay, CapitecPay, GooglePay
 }
 
-public enum PaymentProvider { PayFast }
+public enum PaymentProvider { PayFast, Stripe, PayPal }
 
 public enum SubscriptionStatus { Pending, Active, Cancelled, Completed, Failed, Suspended }
 
-public enum CancellationSource { User, PayFast, Admin }
+public enum CancellationSource { User, PayFast, Stripe, PayPal, Admin }
 
 // Value objects / child entities
 public sealed class PaymentProcessingLog

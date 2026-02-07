@@ -45,5 +45,9 @@ public sealed class TenantSettingsEndpoints : IEndpoints
         group.MapPut("/feature-flags", async Task<ApiResult> (UpdateFeatureFlagsCommand command, IMediator mediator)
             => await mediator.Send(command)
         );
+
+        group.MapPut("/payment", async Task<ApiResult> (UpdatePaymentConfigCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        );
     }
 }

@@ -255,6 +255,43 @@
         }
       }
     },
+    "/api/account-management/subscriptions/webhook": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "PostApiAccountManagementSubscriptionsWebhook",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/internal-api/account-management/subscriptions/by-tenant/{tenantId}": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "GetInternalApiAccountManagementSubscriptionsByTenant",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TenantId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/internal-api/account-management/tenants/{id}": {
       "delete": {
         "operationId": "DeleteInternalApiAccountManagementTenants",
@@ -533,6 +570,160 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ResendEmailConfirmationCodeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/subscriptions/current": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "GetApiAccountManagementSubscriptionsCurrent",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/subscriptions/plans": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "GetApiAccountManagementSubscriptionsPlans",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/subscriptions/checkout-session": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "PostApiAccountManagementSubscriptionsCheckoutSession",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutSessionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/subscriptions/change-plan": {
+      "put": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "PutApiAccountManagementSubscriptionsChangePlan",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/subscriptions/cancel": {
+      "delete": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "operationId": "DeleteApiAccountManagementSubscriptionsCancel",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1808,6 +1999,207 @@
           },
           "preferredLocale": {
             "type": "string"
+          }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SubscriptionId"
+          },
+          "tenantId": {
+            "$ref": "#/components/schemas/TenantId"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/SubscriptionPlan"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubscriptionStatus"
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "trialEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "hasStripeSubscription": {
+            "type": "boolean"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/PlanFeatureLimits"
+          }
+        }
+      },
+      "SubscriptionId": {
+        "type": "string",
+        "format": "sub_{string}"
+      },
+      "StronglyTypedUlidOfSubscriptionId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndSubscriptionId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndSubscriptionId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SubscriptionPlan": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Free",
+          "Starter",
+          "Pro",
+          "Enterprise"
+        ],
+        "enum": [
+          "Free",
+          "Starter",
+          "Pro",
+          "Enterprise"
+        ]
+      },
+      "SubscriptionStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Active",
+          "PastDue",
+          "Cancelled",
+          "Suspended",
+          "Trialing"
+        ],
+        "enum": [
+          "Active",
+          "PastDue",
+          "Cancelled",
+          "Suspended",
+          "Trialing"
+        ]
+      },
+      "PlanFeatureLimits": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "donationPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "forms": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "blogPosts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "branches": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customDomain": {
+            "type": "boolean"
+          },
+          "customCss": {
+            "type": "boolean"
+          },
+          "storageMb": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "apiCallsPerMonth": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PlanLimitsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currentPlan": {
+            "$ref": "#/components/schemas/SubscriptionPlan"
+          },
+          "currentLimits": {
+            "$ref": "#/components/schemas/PlanFeatureLimits"
+          },
+          "freeLimits": {
+            "$ref": "#/components/schemas/PlanFeatureLimits"
+          },
+          "starterLimits": {
+            "$ref": "#/components/schemas/PlanFeatureLimits"
+          },
+          "proLimits": {
+            "$ref": "#/components/schemas/PlanFeatureLimits"
+          },
+          "enterpriseLimits": {
+            "$ref": "#/components/schemas/PlanFeatureLimits"
+          }
+        }
+      },
+      "CheckoutSessionResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateCheckoutSessionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/SubscriptionPlan"
+          },
+          "successUrl": {
+            "type": "string"
+          },
+          "cancelUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePlanCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "newPlan": {
+            "$ref": "#/components/schemas/SubscriptionPlan"
           }
         }
       },

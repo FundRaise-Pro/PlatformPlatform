@@ -97,6 +97,7 @@ var fundraiserApi = builder
     .WithUrlConfiguration("/fundraiser")
     .WithReference(fundraiserDatabase)
     .WithReference(azureStorage)
+    .WithReference(accountManagementApi)
     .WaitFor(fundraiserWorkers);
 
 var appGateway = builder

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Mapster;
+using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.TenantSettings.Domain;
 using PlatformPlatform.SharedKernel.Cqrs;
 using PlatformPlatform.SharedKernel.Domain;
@@ -19,7 +20,18 @@ public sealed record TenantSettingsResponse(
     BrandConfigResponse Brand,
     DomainConfigResponse Domain,
     ContentConfigResponse Content,
+    PaymentConfigResponse Payment,
     Dictionary<string, bool> FeatureFlags
+);
+
+[PublicAPI]
+public sealed record PaymentConfigResponse(
+    PaymentProvider Provider,
+    bool HasApiKey,
+    bool HasApiSecret,
+    string? MerchantId,
+    bool IsTestMode,
+    string Currency
 );
 
 [PublicAPI]
@@ -82,6 +94,14 @@ public sealed class GetTenantSettingsHandler(ITenantSettingsRepository tenantSet
             ),
             new DomainConfigResponse(settings.Domain.Subdomain, settings.Domain.CustomDomains?.ToArray()),
             settings.Content.Adapt<ContentConfigResponse>(),
+            new PaymentConfigResponse(
+                settings.Payment.Provider,
+                !string.IsNullOrEmpty(settings.Payment.ApiKey),
+                !string.IsNullOrEmpty(settings.Payment.ApiSecret),
+                settings.Payment.MerchantId,
+                settings.Payment.IsTestMode,
+                settings.Payment.Currency
+            ),
             settings.FeatureFlags.ToDictionary()
         );
 

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using FluentValidation;
 using PlatformPlatform.Fundraiser.Features.TenantSettings.Domain;
 using PlatformPlatform.SharedKernel.Cqrs;

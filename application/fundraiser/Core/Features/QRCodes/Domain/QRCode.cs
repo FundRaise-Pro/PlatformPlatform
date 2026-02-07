@@ -12,12 +12,12 @@ public sealed record QRCodeId(string Value) : StronglyTypedUlid<QRCodeId>(Value)
 /// </summary>
 public sealed class QRCode : AggregateRoot<QRCodeId>, ITenantScopedEntity
 {
-    private QRCode(QRCodeId id, TenantId tenantId, string name, string redirectUrl, QRCodeType qrCodeType) : base(id)
+    private QRCode(QRCodeId id, TenantId tenantId, string name, string redirectUrl, QRCodeType qRCodeType) : base(id)
     {
         TenantId = tenantId;
         Name = name;
         RedirectUrl = redirectUrl;
-        QRCodeType = qrCodeType;
+        QRCodeType = qRCodeType;
     }
 
     public TenantId TenantId { get; private init; }

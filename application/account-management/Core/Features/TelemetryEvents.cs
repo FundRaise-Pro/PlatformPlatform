@@ -1,5 +1,6 @@
 using PlatformPlatform.AccountManagement.Features.Authentication.Domain;
 using PlatformPlatform.AccountManagement.Features.EmailConfirmations.Domain;
+using PlatformPlatform.AccountManagement.Features.Subscriptions.Domain;
 using PlatformPlatform.AccountManagement.Features.Tenants.Domain;
 using PlatformPlatform.AccountManagement.Features.Users.Domain;
 using PlatformPlatform.SharedKernel.Authentication.TokenGeneration;
@@ -111,6 +112,25 @@ public sealed class UserRoleChanged(UserId userId, UserRole fromRole, UserRole t
 
 public sealed class UserUpdated
     : TelemetryEvent;
+
+// --- Subscriptions ---
+public sealed class CheckoutSessionCreated(TenantId tenantId, SubscriptionPlan plan)
+    : TelemetryEvent(("tenant_id", tenantId), ("plan", plan));
+
+public sealed class StripeWebhookProcessed(string eventType, TenantId tenantId)
+    : TelemetryEvent(("event_type", eventType), ("tenant_id", tenantId));
+
+public sealed class SubscriptionCancelled(TenantId tenantId, SubscriptionPlan plan)
+    : TelemetryEvent(("tenant_id", tenantId), ("plan", plan));
+
+public sealed class SubscriptionCreated(TenantId tenantId, SubscriptionPlan plan)
+    : TelemetryEvent(("tenant_id", tenantId), ("plan", plan));
+
+public sealed class SubscriptionPaymentFailed(TenantId tenantId, SubscriptionPlan plan)
+    : TelemetryEvent(("tenant_id", tenantId), ("plan", plan));
+
+public sealed class SubscriptionPlanChanged(TenantId tenantId, SubscriptionPlan fromPlan, SubscriptionPlan toPlan)
+    : TelemetryEvent(("tenant_id", tenantId), ("from_plan", fromPlan), ("to_plan", toPlan));
 
 // --- WebAuthn ---
 public sealed class WebAuthnCredentialRegistered(WebAuthnCredentialId credentialId, UserId userId)

@@ -29,5 +29,27 @@ public sealed class FormEndpoints : IEndpoints
         group.MapPost("/versions/{id}/activate", async Task<ApiResult> (FormVersionId id, IMediator mediator)
             => await mediator.Send(new ActivateFormVersionCommand(id))
         );
+
+        // --- Form Templates (marketplace) ---
+
+        group.MapGet("/templates", async Task<ApiResult<FormTemplateSummaryResponse[]>> (string? category, IMediator mediator)
+            => await mediator.Send(new GetFormTemplatesQuery(category))
+        ).Produces<FormTemplateSummaryResponse[]>();
+
+        group.MapGet("/templates/{id}", async Task<ApiResult<FormTemplateDetailResponse>> (FormTemplateId id, IMediator mediator)
+            => await mediator.Send(new GetFormTemplateQuery(id))
+        ).Produces<FormTemplateDetailResponse>();
+
+        group.MapPost("/templates", async Task<ApiResult<FormTemplateId>> (CreateFormTemplateCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).Produces<FormTemplateId>();
+
+        group.MapPost("/templates/{id}/publish", async Task<ApiResult> (FormTemplateId id, IMediator mediator)
+            => await mediator.Send(new PublishFormTemplateCommand(id))
+        );
+
+        group.MapPost("/templates/{id}/clone", async Task<ApiResult<FormVersionId>> (FormTemplateId id, IMediator mediator)
+            => await mediator.Send(new CloneFormTemplateCommand(id))
+        ).Produces<FormVersionId>();
     }
 }

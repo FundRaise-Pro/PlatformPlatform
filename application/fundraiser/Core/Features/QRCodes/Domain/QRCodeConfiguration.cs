@@ -14,7 +14,7 @@ public sealed class QRCodeConfiguration : IEntityTypeConfiguration<QRCode>
 
         builder.Property(q => q.Name).HasMaxLength(200).IsRequired();
         builder.Property(q => q.RedirectUrl).HasMaxLength(1000).IsRequired();
-        builder.Property(q => q.QRCodeType).HasMaxLength(50);
+        builder.Property(q => q.QRCodeType).HasConversion<string>().HasMaxLength(50);
         builder.Property(q => q.QRCodeImageUrl).HasMaxLength(1000);
 
         builder.OwnsMany(q => q.Hits, hb =>
