@@ -7,6 +7,7 @@ using PlatformPlatform.Fundraiser.Features.EndUsers.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.Fundraiser.Features.Forms.Domain;
 using PlatformPlatform.Fundraiser.Features.QRCodes.Domain;
+using PlatformPlatform.Fundraiser.Features.TenantSettings.Domain;
 using PlatformPlatform.Fundraiser.Features.Users.Domain;
 using PlatformPlatform.SharedKernel.Telemetry;
 
@@ -133,3 +134,22 @@ public sealed class EndUserVerificationStarted(EndUserId endUserId)
 
 public sealed class EndUserVerified(EndUserId endUserId, EndUserType type)
     : TelemetryEvent(("end_user_id", endUserId), ("type", type));
+
+// --- Tenant Settings ---
+public sealed class BrandConfigUpdated(TenantSettingsId tenantSettingsId)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
+
+public sealed class ContentConfigUpdated(TenantSettingsId tenantSettingsId)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
+
+public sealed class DomainConfigUpdated(TenantSettingsId tenantSettingsId, string? subdomain)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId), ("subdomain", subdomain ?? string.Empty));
+
+public sealed class FeatureFlagsUpdated(TenantSettingsId tenantSettingsId, int flagCount)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId), ("flag_count", flagCount));
+
+public sealed class TenantSettingsInitialized(TenantSettingsId tenantSettingsId)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
+
+public sealed class ThemeConfigUpdated(TenantSettingsId tenantSettingsId)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
