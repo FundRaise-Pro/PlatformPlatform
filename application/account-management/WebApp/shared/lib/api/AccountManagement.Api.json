@@ -276,6 +276,144 @@
         }
       }
     },
+    "/api/account-management/authentication/webauthn/credentials": {
+      "get": {
+        "tags": [
+          "WebAuthn"
+        ],
+        "operationId": "GetApiAccountManagementAuthenticationWebauthnCredentials",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebAuthnCredentialResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/authentication/webauthn/register": {
+      "post": {
+        "tags": [
+          "WebAuthn"
+        ],
+        "operationId": "PostApiAccountManagementAuthenticationWebauthnRegister",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterWebAuthnCredentialCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnCredentialId"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/authentication/webauthn/authenticate": {
+      "post": {
+        "tags": [
+          "WebAuthn"
+        ],
+        "operationId": "PostApiAccountManagementAuthenticationWebauthnAuthenticate",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticateWebAuthnCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-management/authentication/webauthn/credentials/{id}": {
+      "delete": {
+        "tags": [
+          "WebAuthn"
+        ],
+        "operationId": "DeleteApiAccountManagementAuthenticationWebauthnCredentials",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/WebAuthnCredentialId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/account-management/signups/start": {
       "post": {
         "tags": [
@@ -1516,6 +1654,128 @@
           "Mobile",
           "Tablet"
         ]
+      },
+      "WebAuthnCredentialResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/WebAuthnCredentialId"
+          },
+          "friendlyName": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "aaGuid": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "transports": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "WebAuthnCredentialId": {
+        "type": "string",
+        "format": "wac_{string}"
+      },
+      "StronglyTypedUlidOfWebAuthnCredentialId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndWebAuthnCredentialId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndWebAuthnCredentialId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RegisterWebAuthnCredentialCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "credentialId": {
+            "type": "string",
+            "format": "byte"
+          },
+          "publicKey": {
+            "type": "string",
+            "format": "byte"
+          },
+          "userHandle": {
+            "type": "string",
+            "format": "byte"
+          },
+          "signCount": {
+            "type": "integer"
+          },
+          "friendlyName": {
+            "type": "string"
+          },
+          "aaGuid": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "attestationType": {
+            "type": "string",
+            "nullable": true
+          },
+          "transports": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AuthenticateWebAuthnCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "credentialId": {
+            "type": "string",
+            "format": "byte"
+          },
+          "authenticatorData": {
+            "type": "string",
+            "format": "byte"
+          },
+          "signature": {
+            "type": "string",
+            "format": "byte"
+          },
+          "clientDataJson": {
+            "type": "string",
+            "format": "byte"
+          },
+          "signCount": {
+            "type": "integer"
+          }
+        }
       },
       "StartSignupResponse": {
         "type": "object",

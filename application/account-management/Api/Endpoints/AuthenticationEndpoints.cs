@@ -49,5 +49,24 @@ public sealed class AuthenticationEndpoints : IEndpoints
         routes.MapPost("/internal-api/account-management/authentication/refresh-authentication-tokens", async Task<ApiResult> (IMediator mediator)
             => await mediator.Send(new RefreshAuthenticationTokensCommand())
         ).DisableAntiforgery();
+
+        // --- WebAuthn / FIDO2 endpoints ---
+        var webAuthnGroup = routes.MapGroup(RoutesPrefix + "/webauthn").WithTags("WebAuthn").RequireAuthorization().ProducesValidationProblem();
+
+        webAuthnGroup.MapGet("/credentials", async Task<ApiResult<WebAuthnCredentialResponse[]>> (IMediator mediator)
+            => await mediator.Send(new GetWebAuthnCredentialsQuery())
+        ).Produces<WebAuthnCredentialResponse[]>();
+
+        webAuthnGroup.MapPost("/register", async Task<ApiResult<WebAuthnCredentialId>> (RegisterWebAuthnCredentialCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).Produces<WebAuthnCredentialId>();
+
+        webAuthnGroup.MapPost("/authenticate", async Task<ApiResult> (AuthenticateWebAuthnCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).AllowAnonymous();
+
+        webAuthnGroup.MapDelete("/credentials/{id}", async Task<ApiResult> (WebAuthnCredentialId id, IMediator mediator)
+            => await mediator.Send(new RemoveWebAuthnCredentialCommand(id))
+        );
     }
 }

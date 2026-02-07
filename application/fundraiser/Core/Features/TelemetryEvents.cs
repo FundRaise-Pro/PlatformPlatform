@@ -3,9 +3,11 @@ using PlatformPlatform.Fundraiser.Features.Blogs.Domain;
 using PlatformPlatform.Fundraiser.Features.Branches.Domain;
 using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.Fundraiser.Features.Donations.Domain;
+using PlatformPlatform.Fundraiser.Features.EndUsers.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.Fundraiser.Features.Forms.Domain;
 using PlatformPlatform.Fundraiser.Features.QRCodes.Domain;
+using PlatformPlatform.Fundraiser.Features.Users.Domain;
 using PlatformPlatform.SharedKernel.Telemetry;
 
 namespace PlatformPlatform.Fundraiser.Features;
@@ -105,3 +107,29 @@ public sealed class QRCodeHitRecorded(QRCodeId qrCodeId, int hitCount)
 
 public sealed class QRCodeDeactivated(QRCodeId qrCodeId)
     : TelemetryEvent(("qr_code_id", qrCodeId));
+
+// --- Tenant Users (Role System) ---
+public sealed class TenantUserCreated(TenantUserId tenantUserId)
+    : TelemetryEvent(("tenant_user_id", tenantUserId));
+
+public sealed class FundraiserRoleAssigned(TenantUserId tenantUserId, FundraiserRole role)
+    : TelemetryEvent(("tenant_user_id", tenantUserId), ("role", role));
+
+public sealed class FundraiserRoleRevoked(TenantUserId tenantUserId, FundraiserRole role)
+    : TelemetryEvent(("tenant_user_id", tenantUserId), ("role", role));
+
+public sealed class TenantUserBranchAssigned(TenantUserId tenantUserId)
+    : TelemetryEvent(("tenant_user_id", tenantUserId));
+
+// --- End Users ---
+public sealed class EndUserRegistered(EndUserId endUserId, EndUserType type)
+    : TelemetryEvent(("end_user_id", endUserId), ("type", type));
+
+public sealed class EndUserUpdated(EndUserId endUserId)
+    : TelemetryEvent(("end_user_id", endUserId));
+
+public sealed class EndUserVerificationStarted(EndUserId endUserId)
+    : TelemetryEvent(("end_user_id", endUserId));
+
+public sealed class EndUserVerified(EndUserId endUserId, EndUserType type)
+    : TelemetryEvent(("end_user_id", endUserId), ("type", type));

@@ -7,7 +7,6 @@ using PlatformPlatform.SharedKernel.Domain;
 using PlatformPlatform.SharedKernel.Telemetry;
 
 namespace PlatformPlatform.AccountManagement.Features;
-
 /// This file contains all the telemetry events that are collected by the application. Telemetry events are important
 /// to understand how the application is being used and collect valuable information for the business. Quality is
 /// important, and keeping all the telemetry events in one place makes it easier to maintain high quality.
@@ -112,3 +111,13 @@ public sealed class UserRoleChanged(UserId userId, UserRole fromRole, UserRole t
 
 public sealed class UserUpdated
     : TelemetryEvent;
+
+// --- WebAuthn ---
+public sealed class WebAuthnCredentialRegistered(WebAuthnCredentialId credentialId, UserId userId)
+    : TelemetryEvent(("credential_id", credentialId), ("user_id", userId));
+
+public sealed class WebAuthnAuthenticationCompleted(WebAuthnCredentialId credentialId, UserId userId)
+    : TelemetryEvent(("credential_id", credentialId), ("user_id", userId));
+
+public sealed class WebAuthnCredentialRemoved(WebAuthnCredentialId credentialId, UserId userId)
+    : TelemetryEvent(("credential_id", credentialId), ("user_id", userId));
