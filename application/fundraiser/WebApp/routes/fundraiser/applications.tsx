@@ -35,7 +35,7 @@ export default function ApplicationsPage() {
               <thead className="border-border border-b bg-muted/50">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Applicant</Trans>
+                    <Trans>Campaign</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
                     <Trans>Status</Trans>
@@ -46,10 +46,10 @@ export default function ApplicationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {applications.map((application: Record<string, unknown>) => (
+                {applications.map((application) => (
                   <tr key={String(application.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
                     <td className="px-4 py-3 font-medium">
-                      {String(application.applicantName ?? application.id ?? "")}
+                      {application.campaignId}
                     </td>
                     <td className="px-4 py-3">
                       <Badge>{String(application.status ?? t`Pending`)}</Badge>

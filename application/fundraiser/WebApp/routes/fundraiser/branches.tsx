@@ -42,15 +42,15 @@ export default function BranchesPage() {
           </div>
         ) : branches && branches.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {branches.map((branch: Record<string, unknown>) => (
+            {branches.map((branch) => (
               <div key={String(branch.id)} className="rounded-lg border border-border p-4">
-                <Text className="font-medium">{String(branch.name ?? "")}</Text>
-                {branch.address && (
-                  <Text className="mt-1 text-muted-foreground text-sm">{String(branch.address)}</Text>
-                )}
-                {branch.contactEmail && (
-                  <Text className="mt-1 text-muted-foreground text-sm">{String(branch.contactEmail)}</Text>
-                )}
+                <Text className="font-medium">{branch.name}</Text>
+                <Text className="mt-1 text-muted-foreground text-sm">
+                  {[branch.city, branch.state, branch.postalCode].filter(Boolean).join(", ")}
+                </Text>
+                <Text className="mt-1 text-muted-foreground text-sm">
+                  {t`${String(branch.serviceCount)} services`}
+                </Text>
               </div>
             ))}
           </div>

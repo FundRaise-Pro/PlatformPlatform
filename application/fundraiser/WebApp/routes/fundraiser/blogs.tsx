@@ -43,18 +43,18 @@ export default function BlogsPage() {
           </div>
         ) : blogPosts && blogPosts.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {blogPosts.map((post: Record<string, unknown>) => (
+            {blogPosts.map((post) => (
               <div key={String(post.id)} className="overflow-hidden rounded-lg border border-border">
                 <div className="p-4">
                   <div className="mb-2 flex items-center justify-between">
-                    <Badge variant={post.isPublished ? "success" : "default"}>
-                      {post.isPublished ? t`Published` : t`Draft`}
+                    <Badge variant={post.status === "Published" ? "success" : "neutral"}>
+                      {post.status}
                     </Badge>
                   </div>
-                  <Text className="font-medium">{String(post.title ?? "")}</Text>
-                  {post.excerpt && (
+                  <Text className="font-medium">{post.title}</Text>
+                  {post.summary && (
                     <Text className="mt-1 line-clamp-2 text-muted-foreground text-sm">
-                      {String(post.excerpt)}
+                      {post.summary}
                     </Text>
                   )}
                 </div>

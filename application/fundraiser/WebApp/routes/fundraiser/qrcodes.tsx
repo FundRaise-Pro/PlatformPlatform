@@ -42,11 +42,11 @@ export default function QRCodesPage() {
           </div>
         ) : qrCodes && qrCodes.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {qrCodes.map((qrCode: Record<string, unknown>) => (
+            {qrCodes.map((qrCode) => (
               <div key={String(qrCode.id)} className="rounded-lg border border-border p-4">
-                <Text className="font-medium">{String(qrCode.label ?? qrCode.targetUrl ?? "")}</Text>
+                <Text className="font-medium">{qrCode.name}</Text>
                 <Text className="mt-1 text-muted-foreground text-sm">
-                  {qrCode.hitCount !== undefined ? t`${qrCode.hitCount} scans` : t`No scans yet`}
+                  {qrCode.hitCount !== undefined ? t`${String(qrCode.hitCount)} scans` : t`No scans yet`}
                 </Text>
               </div>
             ))}

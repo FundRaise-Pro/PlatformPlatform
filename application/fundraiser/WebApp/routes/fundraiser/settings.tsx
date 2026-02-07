@@ -41,10 +41,10 @@ export default function SettingsPage() {
               description={t`Customize your organization's name, tagline, and contact information.`}
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <SettingsField label={t`Organization name`} value={settings?.organizationName} />
-                <SettingsField label={t`Tagline`} value={settings?.tagline} />
-                <SettingsField label={t`Support email`} value={settings?.supportEmail} />
-                <SettingsField label={t`Phone number`} value={settings?.phoneNumber} />
+                <SettingsField label={t`Organization name`} value={settings?.brand?.organizationName} />
+                <SettingsField label={t`Tagline`} value={settings?.brand?.tagline} />
+                <SettingsField label={t`Support email`} value={settings?.brand?.supportEmail} />
+                <SettingsField label={t`Phone number`} value={settings?.brand?.phoneNumber} />
               </div>
               <div className="mt-4">
                 <Button variant="secondary" onPress={() => {}}>
@@ -60,9 +60,9 @@ export default function SettingsPage() {
               description={t`Customize colors, fonts, and visual appearance.`}
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <ColorPreview label={t`Primary`} color={settings?.primaryColor ?? "#10b981"} />
-                <ColorPreview label={t`Secondary`} color={settings?.secondaryColor ?? "#6366f1"} />
-                <ColorPreview label={t`Accent`} color={settings?.accentColor ?? "#f59e0b"} />
+                <ColorPreview label={t`Primary`} color={settings?.theme?.primaryColor ?? "#10b981"} />
+                <ColorPreview label={t`Secondary`} color={settings?.theme?.secondaryColor ?? "#6366f1"} />
+                <ColorPreview label={t`Accent`} color={settings?.theme?.accentColor ?? "#f59e0b"} />
               </div>
               <div className="mt-4">
                 <Button variant="secondary" onPress={() => {}}>
@@ -77,7 +77,7 @@ export default function SettingsPage() {
               title={t`Domain`}
               description={t`Configure your subdomain and custom domains.`}
             >
-              <SettingsField label={t`Subdomain`} value={settings?.subdomain ? `${settings.subdomain}.fundraiseos.com` : undefined} />
+              <SettingsField label={t`Subdomain`} value={settings?.domain?.subdomain ? `${settings.domain.subdomain}.fundraiseos.com` : undefined} />
               <div className="mt-4">
                 <Button variant="secondary" onPress={() => {}}>
                   <Trans>Edit domain</Trans>
@@ -91,7 +91,7 @@ export default function SettingsPage() {
               title={t`Payment configuration`}
               description={t`Configure payment gateway for receiving donations.`}
             >
-              <SettingsField label={t`Payment gateway`} value={settings?.paymentGateway ?? t`Not configured`} />
+              <SettingsField label={t`Payment provider`} value={settings?.payment?.provider ?? t`Not configured`} />
               <div className="mt-4">
                 <Button variant="secondary" onPress={() => {}}>
                   <Trans>Configure payments</Trans>

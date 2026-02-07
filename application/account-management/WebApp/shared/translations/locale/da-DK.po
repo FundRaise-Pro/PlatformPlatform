@@ -382,6 +382,9 @@ msgstr "Fuld adgang inklusive brugerroller og kontoindstillinger"
 msgid "Fully managed infrastructure"
 msgstr "Fuldt administreret infrastruktur"
 
+msgid "Fundraiser"
+msgstr ""
+
 msgid "GDPR Article 28 compliant agreement for processing data on your behalf."
 msgstr "GDPR Artikel 28-kompatibel aftale for behandling af data på dine vegne."
 

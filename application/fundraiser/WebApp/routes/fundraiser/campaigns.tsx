@@ -54,25 +54,25 @@ export default function CampaignsPage() {
                     <Trans>Status</Trans>
                   </th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground text-sm">
-                    <Trans>Goal</Trans>
+                    <Trans>Published</Trans>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {campaigns.map((campaign: Record<string, unknown>) => (
+                {campaigns.map((campaign) => (
                   <tr key={String(campaign.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
                     <td className="px-4 py-3">
                       <a href={`/fundraiser/campaigns/${campaign.id}`} className="font-medium text-foreground hover:underline">
-                        {String(campaign.title ?? campaign.name ?? "")}
+                        {campaign.title}
                       </a>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={campaign.isPublished ? "success" : "default"}>
-                        {campaign.isPublished ? t`Published` : t`Draft`}
+                      <Badge variant={campaign.status === "Published" ? "success" : "neutral"}>
+                        {campaign.status}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-muted-foreground">
-                      {campaign.goalAmount ? `$${Number(campaign.goalAmount).toLocaleString()}` : "-"}
+                      {campaign.publishedAt ? new Date(campaign.publishedAt).toLocaleDateString() : "-"}
                     </td>
                   </tr>
                 ))}

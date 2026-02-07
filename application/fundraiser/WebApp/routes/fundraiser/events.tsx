@@ -42,16 +42,14 @@ export default function EventsPage() {
           </div>
         ) : events && events.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((event: Record<string, unknown>) => (
+            {events.map((event) => (
               <div key={String(event.id)} className="overflow-hidden rounded-lg border border-border p-4">
-                <Text className="font-medium">{String(event.title ?? event.name ?? "")}</Text>
-                {event.startDate && (
-                  <Text className="mt-1 text-muted-foreground text-sm">
-                    {new Date(String(event.startDate)).toLocaleDateString()}
-                  </Text>
-                )}
+                <Text className="font-medium">{event.name}</Text>
+                <Text className="mt-1 text-muted-foreground text-sm">
+                  {new Date(event.eventDate).toLocaleDateString()}
+                </Text>
                 {event.location && (
-                  <Text className="mt-1 text-muted-foreground text-sm">{String(event.location)}</Text>
+                  <Text className="mt-1 text-muted-foreground text-sm">{event.location}</Text>
                 )}
               </div>
             ))}

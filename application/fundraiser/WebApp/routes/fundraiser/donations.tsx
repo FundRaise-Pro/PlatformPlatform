@@ -38,31 +38,31 @@ export default function DonationsPage() {
                     <Trans>Donor</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Campaign</Trans>
+                    <Trans>Date</Trans>
                   </th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground text-sm">
-                    <Trans>Amount</Trans>
+                    <Trans>Transaction</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Status</Trans>
+                    <Trans>Type</Trans>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {donations.map((donation: Record<string, unknown>) => (
+                {donations.map((donation) => (
                   <tr key={String(donation.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
                     <td className="px-4 py-3 font-medium">
-                      {String(donation.donorName ?? donation.donorEmail ?? t`Anonymous`)}
+                      {donation.isAnonymous ? t`Anonymous` : donation.transactionId}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {String(donation.campaignTitle ?? "-")}
+                      {donation.donatedAt ? new Date(donation.donatedAt).toLocaleDateString() : "-"}
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
-                      {donation.amount ? `$${Number(donation.amount).toLocaleString()}` : "-"}
+                      {donation.transactionId}
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant="success">
-                        {String(donation.status ?? t`Completed`)}
+                      <Badge variant={donation.isRecurring ? "info" : "success"}>
+                        {donation.isRecurring ? t`Recurring` : t`One-time`}
                       </Badge>
                     </td>
                   </tr>

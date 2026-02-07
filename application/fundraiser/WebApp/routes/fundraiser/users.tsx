@@ -52,16 +52,16 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user: Record<string, unknown>) => (
+                {users.map((user) => (
                   <tr key={String(user.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
                     <td className="px-4 py-3 font-medium">
-                      {String(user.displayName ?? user.name ?? "")}
+                      {user.displayName}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {String(user.email ?? "")}
+                      {user.userId}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {Array.isArray(user.roles) ? user.roles.join(", ") : String(user.role ?? "-")}
+                      {user.roles.map((r) => r.role).join(", ")}
                     </td>
                   </tr>
                 ))}

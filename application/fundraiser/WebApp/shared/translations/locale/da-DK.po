@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: da-DK\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #. placeholder {0}: branches.length
 msgid "{0} branches"
@@ -31,8 +37,12 @@ msgstr ""
 msgid "{0} QR codes"
 msgstr ""
 
-#. placeholder {0}: qrCode.hitCount
+#. placeholder {0}: String(qrCode.hitCount)
 msgid "{0} scans"
+msgstr ""
+
+#. placeholder {0}: String(branch.serviceCount)
+msgid "{0} services"
 msgstr ""
 
 msgid "Accent"
@@ -50,13 +60,7 @@ msgstr ""
 msgid "Add your first branch or location."
 msgstr ""
 
-msgid "Amount"
-msgstr ""
-
 msgid "Anonymous"
-msgstr ""
-
-msgid "Applicant"
 msgstr ""
 
 msgid "Applications"
@@ -87,9 +91,6 @@ msgid "Campaigns"
 msgstr ""
 
 msgid "Coming soon"
-msgstr ""
-
-msgid "Completed"
 msgstr ""
 
 msgid "Configure payment gateway for receiving donations."
@@ -140,6 +141,9 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
+msgid "Date"
+msgstr ""
+
 msgid "Design and manage application forms."
 msgstr ""
 
@@ -156,9 +160,6 @@ msgid "Donations will appear here once campaigns start receiving contributions."
 msgstr ""
 
 msgid "Donor"
-msgstr ""
-
-msgid "Draft"
 msgstr ""
 
 msgid "Edit branding"
@@ -198,9 +199,6 @@ msgid "Generate QR code"
 msgstr ""
 
 msgid "Generate QR codes to track campaign engagement."
-msgstr ""
-
-msgid "Goal"
 msgstr ""
 
 msgid "Inactive"
@@ -299,6 +297,9 @@ msgstr ""
 msgid "Not configured"
 msgstr ""
 
+msgid "One-time"
+msgstr ""
+
 msgid "Open menu"
 msgstr ""
 
@@ -314,7 +315,7 @@ msgstr ""
 msgid "Payment configuration"
 msgstr ""
 
-msgid "Payment gateway"
+msgid "Payment provider"
 msgstr ""
 
 msgid "Pending"
@@ -339,6 +340,9 @@ msgid "QR codes"
 msgstr ""
 
 msgid "Quick actions"
+msgstr ""
+
+msgid "Recurring"
 msgstr ""
 
 msgid "Review and manage beneficiary applications."
@@ -381,6 +385,12 @@ msgid "Theme"
 msgstr ""
 
 msgid "Toggle sidebar"
+msgstr ""
+
+msgid "Transaction"
+msgstr ""
+
+msgid "Type"
 msgstr ""
 
 msgid "Upgrade"

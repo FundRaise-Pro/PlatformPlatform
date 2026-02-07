@@ -58,12 +58,12 @@ export default function FormsPage() {
                 </tr>
               </thead>
               <tbody>
-                {formVersions.map((form: Record<string, unknown>) => (
+                {formVersions.map((form) => (
                   <tr key={String(form.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
-                    <td className="px-4 py-3 font-medium">{String(form.name ?? form.title ?? "")}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{String(form.version ?? "1")}</td>
+                    <td className="px-4 py-3 font-medium">{form.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{form.versionNumber}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={form.isActive ? "success" : "default"}>
+                      <Badge variant={form.isActive ? "success" : "neutral"}>
                         {form.isActive ? t`Active` : t`Inactive`}
                       </Badge>
                     </td>

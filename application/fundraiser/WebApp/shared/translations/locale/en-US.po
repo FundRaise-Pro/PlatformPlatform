@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en-US\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #. placeholder {0}: branches.length
 msgid "{0} branches"
@@ -31,9 +37,13 @@ msgstr "{0} posts"
 msgid "{0} QR codes"
 msgstr "{0} QR codes"
 
-#. placeholder {0}: qrCode.hitCount
+#. placeholder {0}: String(qrCode.hitCount)
 msgid "{0} scans"
 msgstr "{0} scans"
+
+#. placeholder {0}: String(branch.serviceCount)
+msgid "{0} services"
+msgstr "{0} services"
 
 msgid "Accent"
 msgstr "Accent"
@@ -50,14 +60,8 @@ msgstr "Add branch"
 msgid "Add your first branch or location."
 msgstr "Add your first branch or location."
 
-msgid "Amount"
-msgstr "Amount"
-
 msgid "Anonymous"
 msgstr "Anonymous"
-
-msgid "Applicant"
-msgstr "Applicant"
 
 msgid "Applications"
 msgstr "Applications"
@@ -88,9 +92,6 @@ msgstr "Campaigns"
 
 msgid "Coming soon"
 msgstr "Coming soon"
-
-msgid "Completed"
-msgstr "Completed"
 
 msgid "Configure payment gateway for receiving donations."
 msgstr "Configure payment gateway for receiving donations."
@@ -140,6 +141,9 @@ msgstr "Customize your organization's name, tagline, and contact information."
 msgid "Dashboard"
 msgstr "Dashboard"
 
+msgid "Date"
+msgstr "Date"
+
 msgid "Design and manage application forms."
 msgstr "Design and manage application forms."
 
@@ -157,9 +161,6 @@ msgstr "Donations will appear here once campaigns start receiving contributions.
 
 msgid "Donor"
 msgstr "Donor"
-
-msgid "Draft"
-msgstr "Draft"
 
 msgid "Edit branding"
 msgstr "Edit branding"
@@ -199,9 +200,6 @@ msgstr "Generate QR code"
 
 msgid "Generate QR codes to track campaign engagement."
 msgstr "Generate QR codes to track campaign engagement."
-
-msgid "Goal"
-msgstr "Goal"
 
 msgid "Inactive"
 msgstr "Inactive"
@@ -299,6 +297,9 @@ msgstr "No team members yet"
 msgid "Not configured"
 msgstr "Not configured"
 
+msgid "One-time"
+msgstr "One-time"
+
 msgid "Open menu"
 msgstr "Open menu"
 
@@ -314,8 +315,8 @@ msgstr "Overview of your fundraising platform."
 msgid "Payment configuration"
 msgstr "Payment configuration"
 
-msgid "Payment gateway"
-msgstr "Payment gateway"
+msgid "Payment provider"
+msgstr "Payment provider"
 
 msgid "Pending"
 msgstr "Pending"
@@ -340,6 +341,9 @@ msgstr "QR codes"
 
 msgid "Quick actions"
 msgstr "Quick actions"
+
+msgid "Recurring"
+msgstr "Recurring"
 
 msgid "Review and manage beneficiary applications."
 msgstr "Review and manage beneficiary applications."
@@ -382,6 +386,12 @@ msgstr "Theme"
 
 msgid "Toggle sidebar"
 msgstr "Toggle sidebar"
+
+msgid "Transaction"
+msgstr "Transaction"
+
+msgid "Type"
+msgstr "Type"
 
 msgid "Upgrade"
 msgstr "Upgrade"
