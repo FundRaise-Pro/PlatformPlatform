@@ -17,6 +17,7 @@
         <Project Path="fundraiser\Api\Fundraiser.Api.csproj"/>
         <Project Path="fundraiser\Core\Fundraiser.csproj"/>
         <Project Path="fundraiser\Tests\Fundraiser.Tests.csproj"/>
+        <Project Path="fundraiser\WebApp\Fundraiser.WebApp.esproj"/>
         <Project Path="fundraiser\Workers\Fundraiser.Workers.csproj"/>
     </Folder>
     <Folder Name="/shared-kernel/">

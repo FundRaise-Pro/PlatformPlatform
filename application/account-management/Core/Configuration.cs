@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using PlatformPlatform.AccountManagement.Database;
 using PlatformPlatform.AccountManagement.Features.Users.Shared;
 using PlatformPlatform.AccountManagement.Integrations.Gravatar;
+using PlatformPlatform.AccountManagement.Integrations.Fundraiser;
 using PlatformPlatform.AccountManagement.Integrations.Stripe;
 using PlatformPlatform.SharedKernel.Configuration;
 
@@ -31,6 +32,14 @@ public static class Configuration
                 {
                     client.BaseAddress = new Uri("https://gravatar.com/");
                     client.Timeout = TimeSpan.FromSeconds(5);
+                }
+            );
+
+            // Fundraiser provisioning client for cross-SCS tenant setup
+            services.AddHttpClient<FundraiserProvisioningClient>(client =>
+                {
+                    client.BaseAddress = new Uri("http://fundraiser-api");
+                    client.Timeout = TimeSpan.FromSeconds(10);
                 }
             );
 

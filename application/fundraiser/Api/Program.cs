@@ -1,5 +1,6 @@
 using PlatformPlatform.Fundraiser;
 using PlatformPlatform.SharedKernel.Configuration;
+using PlatformPlatform.SharedKernel.SinglePageApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,11 +13,13 @@ builder
 // Configure dependency injection services like Repositories, MediatR, Pipelines, FluentValidation validators, etc.
 builder.Services
     .AddApiServices([Assembly.GetExecutingAssembly(), Configuration.Assembly])
+    .AddSinglePageAppFallback()
     .AddFundraiserServices();
 
 var app = builder.Build();
 
 app
-    .UseApiServices(); // Add common configuration for all APIs like Swagger, HSTS, and DeveloperExceptionPage.
+    .UseApiServices() // Add common configuration for all APIs like Swagger, HSTS, and DeveloperExceptionPage.
+    .UseSinglePageAppFallback(); // Serve the SPA and static files if no other endpoints are found.
 
 await app.RunAsync();

@@ -100,6 +100,9 @@ var fundraiserApi = builder
     .WithReference(accountManagementApi)
     .WaitFor(fundraiserWorkers);
 
+// Cross-SCS: account-management needs to call fundraiser for tenant provisioning
+accountManagementApi.WithReference(fundraiserApi);
+
 var appGateway = builder
     .AddProject<AppGateway>("app-gateway")
     .WithReference(frontendBuild)
@@ -111,6 +114,7 @@ var appGateway = builder
     .WithUrlForEndpoint("https", url => url.DisplayText = "Web App");
 
 appGateway.WithUrl($"{appGateway.GetEndpoint("https")}/back-office", "Back Office");
+appGateway.WithUrl($"{appGateway.GetEndpoint("https")}/fundraiser", "Fundraiser");
 appGateway.WithUrl($"{appGateway.GetEndpoint("https")}/openapi", "Open API");
 
 await builder.Build().RunAsync();

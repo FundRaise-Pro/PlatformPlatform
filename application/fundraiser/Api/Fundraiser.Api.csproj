@@ -6,6 +6,9 @@
         <RootNamespace>PlatformPlatform.Fundraiser.Api</RootNamespace>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)\..\WebApp\shared\lib\api\</OpenApiDocumentsDirectory>
+        <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
         <DefaultItemExcludes>$(DefaultItemExcludes);publish\**;Dockerfile</DefaultItemExcludes>
     </PropertyGroup>
 
@@ -21,6 +24,10 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+            <IncludeAssets>runtime; build; native; contentFiles; analyzers; buildTransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
         </PackageReference>
     </ItemGroup>
 

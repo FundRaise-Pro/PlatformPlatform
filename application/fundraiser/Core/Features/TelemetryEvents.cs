@@ -144,6 +144,10 @@ public sealed class EndUserVerificationStarted(EndUserId endUserId)
 public sealed class EndUserVerified(EndUserId endUserId, EndUserType type)
     : TelemetryEvent(("end_user_id", endUserId), ("type", type));
 
+// --- Provisioning ---
+public sealed class TenantProvisioned(TenantSettingsId tenantSettingsId)
+    : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
+
 // --- Tenant Settings ---
 public sealed class BrandConfigUpdated(TenantSettingsId tenantSettingsId)
     : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
