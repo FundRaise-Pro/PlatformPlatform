@@ -8,6 +8,7 @@ public interface IFundraisingEventRepository : ICrudRepository<FundraisingEvent,
 {
     Task<FundraisingEvent[]> GetAllAsync(CancellationToken cancellationToken);
     Task<FundraisingEvent[]> GetUpcomingAsync(CancellationToken cancellationToken);
+    Task<FundraisingEvent?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
 }
 
 internal sealed class FundraisingEventRepository(FundraiserDbContext dbContext)
@@ -24,5 +25,10 @@ internal sealed class FundraisingEventRepository(FundraiserDbContext dbContext)
             .Where(e => e.EventDate > DateTime.UtcNow && e.Status != EventStatus.Cancelled)
             .OrderBy(e => e.EventDate)
             .ToArrayAsync(cancellationToken);
+    }
+
+    public async Task<FundraisingEvent?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    {
+        return await DbSet.FirstOrDefaultAsync(e => e.Slug == slug, cancellationToken);
     }
 }

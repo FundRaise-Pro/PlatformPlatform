@@ -8,6 +8,7 @@
     "account-management/WebApp",
     "back-office/WebApp",
     "fundraiser/WebApp",
+    "public-site/WebApp",
     "shared-webapp/*"
   ],
   "scripts": {

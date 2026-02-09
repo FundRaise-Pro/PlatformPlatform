@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using PlatformPlatform.SharedKernel.Domain;
 using PlatformPlatform.SharedKernel.StronglyTypedIds;
 
@@ -25,6 +26,8 @@ public sealed class Campaign : AggregateRoot<CampaignId>, ITenantScopedEntity
 
     public string Content { get; private set; } = string.Empty;
 
+    public string Slug { get; private set; } = string.Empty;
+
     public string? Summary { get; private set; }
 
     public string? FeaturedImageUrl { get; private set; }
@@ -47,7 +50,10 @@ public sealed class Campaign : AggregateRoot<CampaignId>, ITenantScopedEntity
 
     public static Campaign Create(TenantId tenantId, string title, string content)
     {
-        var campaign = new Campaign(CampaignId.NewId(), tenantId, title, content);
+        var campaign = new Campaign(CampaignId.NewId(), tenantId, title, content)
+        {
+            Slug = GenerateSlug(title)
+        };
         return campaign;
     }
 
@@ -56,6 +62,7 @@ public sealed class Campaign : AggregateRoot<CampaignId>, ITenantScopedEntity
         Title = title;
         Content = content;
         Summary = summary;
+        Slug = GenerateSlug(title);
     }
 
     public void SetFeaturedImage(string imageUrl)
@@ -80,6 +87,15 @@ public sealed class Campaign : AggregateRoot<CampaignId>, ITenantScopedEntity
         {
             _tags.Add(new CampaignTag(tag));
         }
+    }
+
+    private static string GenerateSlug(string title)
+    {
+        var slug = title.ToLowerInvariant();
+        slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+        slug = Regex.Replace(slug, @"\s+", "-");
+        slug = Regex.Replace(slug, @"-+", "-");
+        return slug.Trim('-');
     }
 }
 
