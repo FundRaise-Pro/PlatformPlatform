@@ -195,8 +195,16 @@ public static class ApiDependencyConfiguration
                 {
                     // Enable support for proxy headers such as X-Forwarded-For and X-Forwarded-Proto
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    
+                    // SECURITY: Trust boundary configuration
+                    // Clearing known proxies means we trust ALL proxies in development
+                    // In production, configure specific trusted proxy IP addresses/networks
+                    // to prevent header spoofing attacks
                     options.KnownIPNetworks.Clear();
                     options.KnownProxies.Clear();
+                    
+                    // Limit the number of proxy hops to prevent header injection attacks
+                    options.ForwardLimit = 2;
                 }
             );
         }
