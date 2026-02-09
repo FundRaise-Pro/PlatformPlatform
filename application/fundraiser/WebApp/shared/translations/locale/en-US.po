@@ -1,0 +1,409 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-02-07 15:36+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en-US\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: branches.length
+msgid "{0} branches"
+msgstr "{0} branches"
+
+#. placeholder {0}: campaigns.length
+msgid "{0} campaigns"
+msgstr "{0} campaigns"
+
+#. placeholder {0}: events.length
+msgid "{0} events"
+msgstr "{0} events"
+
+#. placeholder {0}: formVersions.length
+msgid "{0} form versions"
+msgstr "{0} form versions"
+
+#. placeholder {0}: blogPosts.length
+msgid "{0} posts"
+msgstr "{0} posts"
+
+#. placeholder {0}: qrCodes.length
+msgid "{0} QR codes"
+msgstr "{0} QR codes"
+
+#. placeholder {0}: String(qrCode.hitCount)
+msgid "{0} scans"
+msgstr "{0} scans"
+
+#. placeholder {0}: String(branch.serviceCount)
+msgid "{0} services"
+msgstr "{0} services"
+
+msgid "Accent"
+msgstr "Accent"
+
+msgid "Account"
+msgstr "Account"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Add branch"
+msgstr "Add branch"
+
+msgid "Add your first branch or location."
+msgstr "Add your first branch or location."
+
+msgid "Anonymous"
+msgstr "Anonymous"
+
+msgid "Applications"
+msgstr "Applications"
+
+msgid "Applications will appear here once beneficiaries submit forms."
+msgstr "Applications will appear here once beneficiaries submit forms."
+
+msgid "Available plans"
+msgstr "Available plans"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Blog posts"
+msgstr "Blog posts"
+
+msgid "Branches"
+msgstr "Branches"
+
+msgid "Branding"
+msgstr "Branding"
+
+msgid "Campaign"
+msgstr "Campaign"
+
+msgid "Campaigns"
+msgstr "Campaigns"
+
+msgid "Coming soon"
+msgstr "Coming soon"
+
+msgid "Configure payment gateway for receiving donations."
+msgstr "Configure payment gateway for receiving donations."
+
+msgid "Configure payments"
+msgstr "Configure payments"
+
+msgid "Configure your organization's branding, theme, and integrations."
+msgstr "Configure your organization's branding, theme, and integrations."
+
+msgid "Configure your subdomain and custom domains."
+msgstr "Configure your subdomain and custom domains."
+
+msgid "Contact us"
+msgstr "Contact us"
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Create and manage blog content for your organization."
+msgstr "Create and manage blog content for your organization."
+
+msgid "Create application forms for beneficiaries to fill out."
+msgstr "Create application forms for beneficiaries to fill out."
+
+msgid "Create campaign"
+msgstr "Create campaign"
+
+msgid "Create event"
+msgstr "Create event"
+
+msgid "Create fundraising events to engage your community."
+msgstr "Create fundraising events to engage your community."
+
+msgid "Create your first fundraising campaign to get started."
+msgstr "Create your first fundraising campaign to get started."
+
+msgid "Current plan"
+msgstr "Current plan"
+
+msgid "Customize colors, fonts, and visual appearance."
+msgstr "Customize colors, fonts, and visual appearance."
+
+msgid "Customize your organization's name, tagline, and contact information."
+msgstr "Customize your organization's name, tagline, and contact information."
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Design and manage application forms."
+msgstr "Design and manage application forms."
+
+msgid "Design form"
+msgstr "Design form"
+
+msgid "Domain"
+msgstr "Domain"
+
+msgid "Donations"
+msgstr "Donations"
+
+msgid "Donations will appear here once campaigns start receiving contributions."
+msgstr "Donations will appear here once campaigns start receiving contributions."
+
+msgid "Donor"
+msgstr "Donor"
+
+msgid "Edit branding"
+msgstr "Edit branding"
+
+msgid "Edit domain"
+msgstr "Edit domain"
+
+msgid "Edit theme"
+msgstr "Edit theme"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Events"
+msgstr "Events"
+
+msgid "Form name"
+msgstr "Form name"
+
+msgid "Forms"
+msgstr "Forms"
+
+msgid "Free"
+msgstr "Free"
+
+msgid "FundRaise OS"
+msgstr "FundRaise OS"
+
+msgid "Fundraising"
+msgstr "Fundraising"
+
+msgid "Generate and track QR codes for campaigns and events."
+msgstr "Generate and track QR codes for campaigns and events."
+
+msgid "Generate QR code"
+msgstr "Generate QR code"
+
+msgid "Generate QR codes to track campaign engagement."
+msgstr "Generate QR codes to track campaign engagement."
+
+msgid "Inactive"
+msgstr "Inactive"
+
+msgid "Invite team members to help manage your organization."
+msgstr "Invite team members to help manage your organization."
+
+msgid "Invite user"
+msgstr "Invite user"
+
+msgid "Loading applications..."
+msgstr "Loading applications..."
+
+msgid "Loading blog posts..."
+msgstr "Loading blog posts..."
+
+msgid "Loading branches..."
+msgstr "Loading branches..."
+
+msgid "Loading campaigns..."
+msgstr "Loading campaigns..."
+
+msgid "Loading donations..."
+msgstr "Loading donations..."
+
+msgid "Loading events..."
+msgstr "Loading events..."
+
+msgid "Loading forms..."
+msgstr "Loading forms..."
+
+msgid "Loading QR codes..."
+msgstr "Loading QR codes..."
+
+msgid "Loading settings..."
+msgstr "Loading settings..."
+
+msgid "Loading users..."
+msgstr "Loading users..."
+
+msgid "Loading..."
+msgstr "Loading..."
+
+msgid "Manage users and their roles within your organization."
+msgstr "Manage users and their roles within your organization."
+
+msgid "Manage your fundraising campaigns."
+msgstr "Manage your fundraising campaigns."
+
+msgid "Manage your organization's locations and branches."
+msgstr "Manage your organization's locations and branches."
+
+msgid "Manage your plan and billing."
+msgstr "Manage your plan and billing."
+
+msgid "Name"
+msgstr "Name"
+
+msgid "New form"
+msgstr "New form"
+
+msgid "New post"
+msgstr "New post"
+
+msgid "No applications yet"
+msgstr "No applications yet"
+
+msgid "No blog posts yet"
+msgstr "No blog posts yet"
+
+msgid "No branches yet"
+msgstr "No branches yet"
+
+msgid "No campaigns yet"
+msgstr "No campaigns yet"
+
+msgid "No donations yet"
+msgstr "No donations yet"
+
+msgid "No events yet"
+msgstr "No events yet"
+
+msgid "No forms yet"
+msgstr "No forms yet"
+
+msgid "No QR codes yet"
+msgstr "No QR codes yet"
+
+msgid "No scans yet"
+msgstr "No scans yet"
+
+msgid "No team members yet"
+msgstr "No team members yet"
+
+msgid "Not configured"
+msgstr "Not configured"
+
+msgid "One-time"
+msgstr "One-time"
+
+msgid "Open menu"
+msgstr "Open menu"
+
+msgid "Organization"
+msgstr "Organization"
+
+msgid "Organization name"
+msgstr "Organization name"
+
+msgid "Overview of your fundraising platform."
+msgstr "Overview of your fundraising platform."
+
+msgid "Payment configuration"
+msgstr "Payment configuration"
+
+msgid "Payment provider"
+msgstr "Payment provider"
+
+msgid "Pending"
+msgstr "Pending"
+
+msgid "Phone number"
+msgstr "Phone number"
+
+msgid "Plan and manage fundraising events."
+msgstr "Plan and manage fundraising events."
+
+msgid "Plan event"
+msgstr "Plan event"
+
+msgid "Primary"
+msgstr "Primary"
+
+msgid "Published"
+msgstr "Published"
+
+msgid "QR codes"
+msgstr "QR codes"
+
+msgid "Quick actions"
+msgstr "Quick actions"
+
+msgid "Recurring"
+msgstr "Recurring"
+
+msgid "Review and manage beneficiary applications."
+msgstr "Review and manage beneficiary applications."
+
+msgid "Roles"
+msgstr "Roles"
+
+msgid "Secondary"
+msgstr "Secondary"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Start writing blog posts to engage your audience."
+msgstr "Start writing blog posts to engage your audience."
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Subdomain"
+msgstr "Subdomain"
+
+msgid "Submitted"
+msgstr "Submitted"
+
+msgid "Subscription"
+msgstr "Subscription"
+
+msgid "Support email"
+msgstr "Support email"
+
+msgid "Tagline"
+msgstr "Tagline"
+
+msgid "Team members"
+msgstr "Team members"
+
+msgid "Theme"
+msgstr "Theme"
+
+msgid "Toggle sidebar"
+msgstr "Toggle sidebar"
+
+msgid "Transaction"
+msgstr "Transaction"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Upgrade"
+msgstr "Upgrade"
+
+msgid "Users"
+msgstr "Users"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "View and manage donations and transactions."
+msgstr "View and manage donations and transactions."
+
+msgid "Write blog post"
+msgstr "Write blog post"

@@ -17,7 +17,7 @@ import "@repo/ui/tailwind.css";
 type TenantInfo = components["schemas"]["TenantInfo"];
 
 export type FederatedSideMenuProps = {
-  currentSystem: "account-management" | "back-office"; // Add your self-contained system here
+  currentSystem: "account-management" | "back-office" | "fundraiser"; // Add your self-contained system here
 };
 
 export default function FederatedSideMenu({ currentSystem }: Readonly<FederatedSideMenuProps>) {
