@@ -177,7 +177,10 @@ public class AuthenticationCookieMiddleware(
         // having to first serve the SPA. This is only secure if iFrames are not allowed to host the site.
         var refreshTokenCookieOptions = new CookieOptions
         {
-            HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Expires = refreshTokenExpires
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = refreshTokenExpires
         };
         context.Response.Cookies.Append(AuthenticationTokenHttpKeys.RefreshTokenCookieName, refreshToken, refreshTokenCookieOptions);
 
