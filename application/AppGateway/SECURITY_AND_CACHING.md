@@ -59,7 +59,7 @@ Strict CSP directives to prevent XSS and code injection:
 - Prevents unauthorized access to sensitive APIs
 
 #### HTTP Strict Transport Security (HSTS)
-- `max-age=2592000` (30 days)
+- `max-age=31536000` (1 year - industry best practice)
 - Forces HTTPS connections
 - Applied by `HttpStrictTransportSecurityTransform` in Azure
 

@@ -24,9 +24,11 @@ public class SecurityHeadersMiddleware : IMiddleware
             }
 
             // Enable XSS protection in older browsers (modern browsers use CSP instead)
+            // Note: This header is deprecated but included for defense-in-depth with legacy browsers
+            // Modern browsers rely on Content-Security-Policy for XSS protection
             if (!headers.ContainsKey("X-XSS-Protection"))
             {
-                headers["X-XSS-Protection"] = "1; mode=block";
+                headers["X-XSS-Protection"] = "0"; // Set to 0 to avoid introducing vulnerabilities in old browsers
             }
 
             // Control what information the browser includes in the Referer header
