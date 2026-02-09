@@ -48,12 +48,18 @@ builder.Services.AddHttpClient(
 builder.Services
     .AddHttpClient()
     .AddHttpForwardHeaders() // Ensure the correct client IP addresses are set for downstream requests
-    .AddOutputCache();
+    .AddOutputCache(options =>
+    {
+        // Configure tenant-aware caching to prevent cross-tenant cache leakage
+        options.AddBasePolicy(TenantAwareCachingPolicy.Instance);
+    });
 
 builder.Services
     .AddSingleton(SharedDependencyConfiguration.GetTokenSigningService())
     .AddSingleton<BlockInternalApiTransform>()
     .AddSingleton<AuthenticationCookieMiddleware>()
+    .AddSingleton<SecurityHeadersMiddleware>()
+    .AddSingleton<RequestValidationMiddleware>()
     .AddScoped<ApiAggregationService>();
 
 var app = builder.Build();
@@ -61,6 +67,8 @@ var app = builder.Build();
 app.ApiAggregationEndpoints();
 
 app.UseForwardedHeaders() // Enable support for proxy headers such as X-Forwarded-For and X-Forwarded-Proto. Should run before other middleware.
+    .UseMiddleware<RequestValidationMiddleware>() // Validate request size and headers early
+    .UseMiddleware<SecurityHeadersMiddleware>() // Add security headers to all responses
     .UseOutputCache()
     .UseMiddleware<AuthenticationCookieMiddleware>();
 
