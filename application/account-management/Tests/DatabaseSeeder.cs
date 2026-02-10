@@ -16,7 +16,7 @@ public sealed class DatabaseSeeder
 
     public DatabaseSeeder(AccountManagementDbContext accountManagementDbContext)
     {
-        Tenant1 = Tenant.Create("owner@tenant-1.com");
+        Tenant1 = Tenant.Create("owner@tenant-1.com", "Test Tenant One", "test-tenant-one", NpoType.Other, "ZAF");
         accountManagementDbContext.Set<Tenant>().AddRange(Tenant1);
 
         Tenant1Owner = User.Create(Tenant1.Id, "owner@tenant-1.com", UserRole.Owner, true, null);

@@ -12,15 +12,45 @@ public sealed class Tenant : AggregateRoot<TenantId>
 
     public string Name { get; private set; } = string.Empty;
 
+    public string Slug { get; private set; } = string.Empty;
+
+    public NpoType OrgType { get; private set; }
+
+    public string? RegistrationNumber { get; private set; }
+
+    public string? Description { get; private set; }
+
+    public string? Country { get; private set; }
+
     public TenantState State { get; private set; }
 
     public Logo Logo { get; private set; }
 
-    public static Tenant Create(string email)
+    public static Tenant Create(string email, string name, string slug, NpoType orgType, string country, string? registrationNumber = null, string? description = null)
     {
-        var tenant = new Tenant();
+        var (isValid, reason) = TenantSlugValidator.Validate(slug);
+        if (!isValid) throw new ArgumentException(reason, nameof(slug));
+
+        var tenant = new Tenant
+        {
+            Name = name,
+            Slug = slug,
+            OrgType = orgType,
+            Country = country,
+            RegistrationNumber = registrationNumber,
+            Description = description
+        };
         tenant.AddDomainEvent(new TenantCreatedEvent(tenant.Id, email));
         return tenant;
+    }
+
+    public void UpdateProfile(string name, NpoType orgType, string? country, string? registrationNumber, string? description)
+    {
+        Name = name;
+        OrgType = orgType;
+        Country = country;
+        RegistrationNumber = registrationNumber;
+        Description = description;
     }
 
     public void Update(string tenantName)

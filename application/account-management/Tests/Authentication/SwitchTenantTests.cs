@@ -28,6 +28,7 @@ public sealed class SwitchTenantTests : EndpointBaseTest<AccountManagementDbCont
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", tenant2Name),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -105,6 +106,7 @@ public sealed class SwitchTenantTests : EndpointBaseTest<AccountManagementDbCont
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -164,6 +166,7 @@ public sealed class SwitchTenantTests : EndpointBaseTest<AccountManagementDbCont
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", tenant2Name),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -231,6 +234,7 @@ public sealed class SwitchTenantTests : EndpointBaseTest<AccountManagementDbCont
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", tenant2Name),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -306,6 +310,7 @@ public sealed class SwitchTenantTests : EndpointBaseTest<AccountManagementDbCont
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]

@@ -13,6 +13,10 @@ public interface ITenantRepository : ICrudRepository<Tenant, TenantId>
     Task<bool> ExistsAsync(TenantId id, CancellationToken cancellationToken);
 
     Task<Tenant[]> GetByIdsAsync(TenantId[] ids, CancellationToken cancellationToken);
+
+    Task<Tenant?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+
+    Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken);
 }
 
 internal sealed class TenantRepository(AccountManagementDbContext accountManagementDbContext, IExecutionContext executionContext)
@@ -28,5 +32,15 @@ internal sealed class TenantRepository(AccountManagementDbContext accountManagem
     public async Task<Tenant[]> GetByIdsAsync(TenantId[] ids, CancellationToken cancellationToken)
     {
         return await DbSet.Where(t => ids.AsEnumerable().Contains(t.Id)).ToArrayAsync(cancellationToken);
+    }
+
+    public async Task<Tenant?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    {
+        return await DbSet.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.Slug == slug, cancellationToken);
+    }
+
+    public async Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken)
+    {
+        return await DbSet.IgnoreQueryFilters().AnyAsync(t => t.Slug == slug, cancellationToken);
     }
 }

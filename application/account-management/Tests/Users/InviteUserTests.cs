@@ -20,6 +20,7 @@ public sealed class InviteUserTests : EndpointBaseTest<AccountManagementDbContex
     public async Task InviteUser_WhenTenantNameNotSet_ShouldReturnBadRequest()
     {
         // Arrange
+        Connection.Update("Tenants", "Id", DatabaseSeeder.Tenant1.Id.ToString(), [("Name", "")]);
         var email = Faker.Internet.UniqueEmail();
         var command = new InviteUserCommand(email);
 

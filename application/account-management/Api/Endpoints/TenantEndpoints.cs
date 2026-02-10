@@ -37,5 +37,17 @@ public sealed class TenantEndpoints : IEndpoints
         routes.MapDelete("/internal-api/account-management/tenants/{id}", async Task<ApiResult> (TenantId id, IMediator mediator)
             => await mediator.Send(new DeleteTenantCommand(id))
         );
+
+        routes.MapGet("/api/account-management/tenants/slug-available", async Task<ApiResult<SlugAvailabilityResponse>> (string slug, IMediator mediator)
+            => await mediator.Send(new CheckSlugAvailabilityQuery(slug))
+        ).Produces<SlugAvailabilityResponse>().AllowAnonymous();
+
+        routes.MapGet("/internal-api/account-management/tenants/resolve", async Task<ApiResult<ResolvedTenantResponse>> (string? slug, string? host, IMediator mediator)
+            => await mediator.Send(new ResolveTenantQuery(slug, host))
+        ).Produces<ResolvedTenantResponse>().AllowAnonymous();
+
+        routes.MapGet("/internal-api/account-management/tenants/{id}/slug", async Task<ApiResult<TenantSlugResponse>> (TenantId id, IMediator mediator)
+            => await mediator.Send(new GetTenantSlugQuery(id))
+        ).Produces<TenantSlugResponse>().AllowAnonymous();
     }
 }

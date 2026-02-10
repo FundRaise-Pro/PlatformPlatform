@@ -12,13 +12,25 @@ namespace PlatformPlatform.AccountManagement.Features.Tenants.Commands;
 public sealed record UpdateCurrentTenantCommand : ICommand, IRequest<Result>
 {
     public required string Name { get; init; }
+
+    public required NpoType OrgType { get; init; }
+
+    public string? Country { get; init; }
+
+    public string? RegistrationNumber { get; init; }
+
+    public string? Description { get; init; }
 }
 
 public sealed class UpdateCurrentTenantValidator : AbstractValidator<UpdateCurrentTenantCommand>
 {
     public UpdateCurrentTenantValidator()
     {
-        RuleFor(x => x.Name).Length(1, 30).WithMessage("Name must be between 1 and 30 characters.");
+        RuleFor(x => x.Name).Length(1, 200).WithMessage("Name must be between 1 and 200 characters.");
+        RuleFor(x => x.OrgType).IsInEnum();
+        RuleFor(x => x.Country).MaximumLength(3).When(x => x.Country is not null);
+        RuleFor(x => x.RegistrationNumber).MaximumLength(50).When(x => x.RegistrationNumber is not null);
+        RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
     }
 }
 
@@ -37,7 +49,7 @@ public sealed class UpdateTenantHandler(
 
         var tenant = await tenantRepository.GetCurrentTenantAsync(cancellationToken);
 
-        tenant.Update(command.Name);
+        tenant.UpdateProfile(command.Name, command.OrgType, command.Country, command.RegistrationNumber, command.Description);
         tenantRepository.Update(tenant);
 
         events.CollectEvent(new TenantUpdated());

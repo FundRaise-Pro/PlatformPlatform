@@ -28,6 +28,7 @@ public sealed class GetTenantsForUserTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", tenant2Name),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -101,6 +102,7 @@ public sealed class GetTenantsForUserTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", "Other Tenant"),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -145,6 +147,7 @@ public sealed class GetTenantsForUserTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", "Other User Tenant"),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -190,6 +193,7 @@ public sealed class GetTenantsForUserTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", tenant2Name),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]

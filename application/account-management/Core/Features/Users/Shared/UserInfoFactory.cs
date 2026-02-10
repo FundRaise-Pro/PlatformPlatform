@@ -35,6 +35,7 @@ public sealed class UserInfoFactory(ITenantRepository tenantRepository)
             Title = user.Title,
             AvatarUrl = user.Avatar.Url,
             TenantName = tenant?.Name,
+            TenantSlug = tenant?.Slug,
             TenantLogoUrl = tenant?.Logo.Url,
             Locale = user.Locale,
             IsInternalUser = user.IsInternalUser

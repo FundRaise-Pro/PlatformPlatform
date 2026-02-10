@@ -7,6 +7,7 @@ using NSubstitute;
 using PlatformPlatform.AccountManagement.Database;
 using PlatformPlatform.AccountManagement.Features.EmailConfirmations.Domain;
 using PlatformPlatform.AccountManagement.Features.Signups.Commands;
+using PlatformPlatform.AccountManagement.Features.Tenants.Domain;
 using PlatformPlatform.AccountManagement.Features.Tenants.EventHandlers;
 using PlatformPlatform.SharedKernel.Tests;
 using PlatformPlatform.SharedKernel.Tests.Persistence;
@@ -32,7 +33,7 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
         var email = Faker.Internet.UniqueEmail();
         var emailConfirmationId = await StartSignup(email);
 
-        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US");
+        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US", "Test Organization", $"test-org-{Guid.NewGuid():N}"[..20], NpoType.Other, "ZAF");
 
         // Act
         var response = await AnonymousHttpClient
@@ -42,12 +43,13 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
         await response.ShouldBeSuccessfulPostRequest(hasLocation: false);
         Connection.ExecuteScalar<long>("SELECT COUNT(*) FROM Users WHERE Email = @email", [new { email = email.ToLower() }]).Should().Be(1);
 
-        TelemetryEventsCollectorSpy.CollectedEvents.Count.Should().Be(5);
+        TelemetryEventsCollectorSpy.CollectedEvents.Count.Should().Be(6);
         TelemetryEventsCollectorSpy.CollectedEvents[0].GetType().Name.Should().Be("SignupStarted");
         TelemetryEventsCollectorSpy.CollectedEvents[1].GetType().Name.Should().Be("TenantCreated");
         TelemetryEventsCollectorSpy.CollectedEvents[2].GetType().Name.Should().Be("UserCreated");
-        TelemetryEventsCollectorSpy.CollectedEvents[3].GetType().Name.Should().Be("SessionCreated");
-        TelemetryEventsCollectorSpy.CollectedEvents[4].GetType().Name.Should().Be("SignupCompleted");
+        TelemetryEventsCollectorSpy.CollectedEvents[3].GetType().Name.Should().Be("SubscriptionCreated");
+        TelemetryEventsCollectorSpy.CollectedEvents[4].GetType().Name.Should().Be("SessionCreated");
+        TelemetryEventsCollectorSpy.CollectedEvents[5].GetType().Name.Should().Be("SignupCompleted");
         TelemetryEventsCollectorSpy.AreAllEventsDispatched.Should().BeTrue();
 
         _tenantCreatedEventHandlerLogger.Received().LogInformation("Raise event to send Welcome mail to tenant");
@@ -58,7 +60,7 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
     {
         // Arrange
         var invalidEmailConfirmationId = EmailConfirmationId.NewId();
-        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US");
+        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US", "Test Organization", $"test-org-{Guid.NewGuid():N}"[..20], NpoType.Other, "ZAF");
 
         // Act
         var response = await AnonymousHttpClient
@@ -75,7 +77,7 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
         // Arrange
         var emailConfirmationId = await StartSignup(Faker.Internet.UniqueEmail());
 
-        var command = new CompleteSignupCommand(WrongOneTimePassword, "en-US");
+        var command = new CompleteSignupCommand(WrongOneTimePassword, "en-US", "Test Organization", $"test-org-{Guid.NewGuid():N}"[..20], NpoType.Other, "ZAF");
 
         // Act
         var response = await AnonymousHttpClient
@@ -96,7 +98,7 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
         // Arrange
         var emailConfirmationId = await StartSignup(Faker.Internet.UniqueEmail());
 
-        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US") { EmailConfirmationId = emailConfirmationId };
+        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US", "Test Organization", $"test-org-{Guid.NewGuid():N}"[..20], NpoType.Other, "ZAF") { EmailConfirmationId = emailConfirmationId };
         await AnonymousHttpClient.PostAsJsonAsync($"/api/account-management/signups/{emailConfirmationId}/complete", command);
 
         // Act
@@ -113,7 +115,7 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
         // Arrange
         var emailConfirmationId = await StartSignup(Faker.Internet.UniqueEmail());
 
-        var command = new CompleteSignupCommand(WrongOneTimePassword, "en-US");
+        var command = new CompleteSignupCommand(WrongOneTimePassword, "en-US", "Test Organization", $"test-org-{Guid.NewGuid():N}"[..20], NpoType.Other, "ZAF");
         await AnonymousHttpClient.PostAsJsonAsync($"/api/account-management/signups/{emailConfirmationId}/complete", command);
         await AnonymousHttpClient.PostAsJsonAsync($"/api/account-management/signups/{emailConfirmationId}/complete", command);
         await AnonymousHttpClient.PostAsJsonAsync($"/api/account-management/signups/{emailConfirmationId}/complete", command);
@@ -155,7 +157,7 @@ public sealed class CompleteSignupTests : EndpointBaseTest<AccountManagementDbCo
             ]
         );
 
-        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US") { EmailConfirmationId = emailConfirmationId };
+        var command = new CompleteSignupCommand(CorrectOneTimePassword, "en-US", "Test Organization", $"test-org-{Guid.NewGuid():N}"[..20], NpoType.Other, "ZAF") { EmailConfirmationId = emailConfirmationId };
 
         // Act
         var response = await AnonymousHttpClient

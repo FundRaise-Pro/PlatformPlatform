@@ -25,11 +25,16 @@ public sealed class GetCurrentTenantTests : EndpointBaseTest<AccountManagementDb
                     'id': {'type': 'string', 'pattern': '^[A-Z0-9]{19}$'},
                     'createdAt': {'type': 'string', 'format': 'date-time'},
                     'modifiedAt': {'type': ['null', 'string'], 'format': 'date-time'},
-                    'name': {'type': 'string', 'minLength': 0, 'maxLength': 30},
+                    'name': {'type': 'string', 'minLength': 0, 'maxLength': 200},
+                    'slug': {'type': 'string'},
+                    'orgType': {'type': 'string'},
+                    'registrationNumber': {'type': ['null', 'string']},
+                    'description': {'type': ['null', 'string']},
+                    'country': {'type': ['null', 'string']},
                     'state': {'type': 'string', 'minLength': 1, 'maxLength':20},
                     'logoUrl': {'type': ['null', 'string']}
                 },
-                'required': ['id', 'createdAt', 'modifiedAt', 'name', 'state', 'logoUrl'],
+                'required': ['id', 'createdAt', 'modifiedAt', 'name', 'slug', 'orgType', 'registrationNumber', 'description', 'country', 'state', 'logoUrl'],
                 'additionalProperties': false
             }
             """

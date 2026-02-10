@@ -10,7 +10,7 @@ public sealed record GetTenantsForUserQuery : IRequest<Result<GetTenantsForUserR
 
 public sealed record GetTenantsForUserResponse(TenantInfo[] Tenants);
 
-public sealed record TenantInfo(TenantId TenantId, string? TenantName, UserId UserId, string? LogoUrl, bool IsNew);
+public sealed record TenantInfo(TenantId TenantId, string? TenantName, string? TenantSlug, UserId UserId, string? LogoUrl, bool IsNew);
 
 internal sealed class GetTenantsForUserQueryHandler(
     IUserRepository userRepository,
@@ -33,7 +33,7 @@ internal sealed class GetTenantsForUserQueryHandler(
         var tenantInfoList = tenants.Select(t =>
             {
                 var user = users.Single(u => u.TenantId == t.Id);
-                return new TenantInfo(t.Id, t.Name, user.Id, t.Logo.Url, !user.EmailConfirmed);
+                return new TenantInfo(t.Id, t.Name, t.Slug, user.Id, t.Logo.Url, !user.EmailConfirmed);
             }
         ).ToArray();
 

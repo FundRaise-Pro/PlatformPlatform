@@ -1,9 +1,11 @@
 using JetBrains.Annotations;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using PlatformPlatform.AccountManagement.Features.Authentication.Domain;
 using PlatformPlatform.AccountManagement.Features.EmailConfirmations.Commands;
 using PlatformPlatform.AccountManagement.Features.EmailConfirmations.Domain;
 using PlatformPlatform.AccountManagement.Features.Tenants.Commands;
+using PlatformPlatform.AccountManagement.Features.Tenants.Domain;
 using PlatformPlatform.AccountManagement.Features.Users.Domain;
 using PlatformPlatform.AccountManagement.Features.Users.Shared;
 using PlatformPlatform.SharedKernel.Authentication.TokenGeneration;
@@ -14,10 +16,34 @@ using PlatformPlatform.SharedKernel.Telemetry;
 namespace PlatformPlatform.AccountManagement.Features.Signups.Commands;
 
 [PublicAPI]
-public sealed record CompleteSignupCommand(string OneTimePassword, string PreferredLocale) : ICommand, IRequest<Result>
+public sealed record CompleteSignupCommand(
+    string OneTimePassword,
+    string PreferredLocale,
+    string OrganizationName,
+    string Slug,
+    NpoType OrgType,
+    string Country,
+    string? RegistrationNumber = null,
+    string? Description = null
+) : ICommand, IRequest<Result>
 {
-    [JsonIgnore] // Removes this property from the API contract
+    [JsonIgnore]
     public EmailConfirmationId EmailConfirmationId { get; init; } = null!;
+}
+
+public sealed class CompleteSignupValidator : AbstractValidator<CompleteSignupCommand>
+{
+    public CompleteSignupValidator()
+    {
+        RuleFor(x => x.OrganizationName).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Slug).NotEmpty().MaximumLength(63)
+            .Must(slug => TenantSlugValidator.Validate(slug).IsValid)
+            .WithMessage("Invalid slug format.");
+        RuleFor(x => x.OrgType).IsInEnum();
+        RuleFor(x => x.Country).NotEmpty().MaximumLength(3);
+        RuleFor(x => x.RegistrationNumber).MaximumLength(50).When(x => x.RegistrationNumber is not null);
+        RuleFor(x => x.Description).MaximumLength(500).When(x => x.Description is not null);
+    }
 }
 
 public sealed class CompleteSignupHandler(
@@ -42,7 +68,17 @@ public sealed class CompleteSignupHandler(
         if (!completeEmailConfirmationResult.IsSuccess) return Result.From(completeEmailConfirmationResult);
 
         var createTenantResult = await mediator.Send(
-            new CreateTenantCommand(completeEmailConfirmationResult.Value!.Email, true, command.PreferredLocale),
+            new CreateTenantCommand(
+                completeEmailConfirmationResult.Value!.Email,
+                true,
+                command.PreferredLocale,
+                command.OrganizationName,
+                command.Slug,
+                command.OrgType,
+                command.Country,
+                command.RegistrationNumber,
+                command.Description
+            ),
             cancellationToken
         );
 

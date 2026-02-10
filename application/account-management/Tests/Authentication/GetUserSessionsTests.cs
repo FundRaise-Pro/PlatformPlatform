@@ -133,6 +133,7 @@ public sealed class GetUserSessionsTests : EndpointBaseTest<AccountManagementDbC
                 ("CreatedAt", now),
                 ("ModifiedAt", null),
                 ("Name", name),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", "Active"),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
