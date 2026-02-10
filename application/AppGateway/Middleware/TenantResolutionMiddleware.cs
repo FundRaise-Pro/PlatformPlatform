@@ -25,7 +25,7 @@ public class TenantResolutionMiddleware(
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        var host = context.Request.Host.Value;
+        var host = context.Request.Host.Value ?? string.Empty;
         var subdomain = ExtractSubdomain(host);
 
         if (subdomain is null)

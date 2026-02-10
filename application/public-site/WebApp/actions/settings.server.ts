@@ -21,7 +21,7 @@ export async function getTenantSettings(): Promise<TenantSettings> {
       headers: { "Content-Type": "application/json" },
       next: { revalidate: 60 },
     });
-    return handleResponse<TenantSettings>(response);
+    return await handleResponse<TenantSettings>(response);
   } catch (error) {
     console.error("Failed to fetch tenant settings, using defaults:", error);
     return DEFAULT_TENANT_SETTINGS;

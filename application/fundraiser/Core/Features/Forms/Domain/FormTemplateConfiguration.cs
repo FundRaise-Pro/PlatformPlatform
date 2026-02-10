@@ -14,11 +14,28 @@ public sealed class FormTemplateConfiguration : IEntityTypeConfiguration<FormTem
     {
         builder.MapStronglyTypedUuid<FormTemplate, FormTemplateId>(t => t.Id);
 
+        builder.Property(t => t.Name)
+            .HasMaxLength(200)
+            .IsRequired();
+
+        builder.Property(t => t.Description)
+            .HasMaxLength(1000);
+
+        builder.Property(t => t.Category)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(t => t.PreviewImageUrl)
+            .HasMaxLength(500);
+
         builder.Property(t => t.Sections)
             .HasColumnName("Sections")
             .HasConversion(
                 v => JsonSerializer.Serialize(v.ToArray(), JsonSerializerOptions),
                 v => JsonSerializer.Deserialize<ImmutableArray<FormTemplateSection>>(v, JsonSerializerOptions)
             );
+
+        builder.HasIndex(t => t.Category);
+        builder.HasIndex(t => t.IsPublished);
     }
 }

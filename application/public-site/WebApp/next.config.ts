@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
@@ -24,6 +25,10 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   generateEtags: true,
   poweredByHeader: false,
+  turbopack: {
+    // Monorepo workspace root where hoisted dependencies (including `next`) live.
+    root: path.resolve(__dirname, "../.."),
+  },
 
   // Security headers
   async headers() {

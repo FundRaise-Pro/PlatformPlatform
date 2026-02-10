@@ -104,7 +104,8 @@ var fundraiserApi = builder
 accountManagementApi.WithReference(fundraiserApi);
 
 var publicSite = builder
-    .AddNpmApp("public-site", "../public-site/WebApp", "dev")
+    .AddJavaScriptApp("public-site", "../public-site/WebApp", "dev")
+    .WithNpm(install: false)
     .WithHttpEndpoint(9400, env: "PORT")
     .WithEnvironment("PUBLIC_API_BASE_URL", "https://localhost:9000")
     .WaitFor(fundraiserApi);
