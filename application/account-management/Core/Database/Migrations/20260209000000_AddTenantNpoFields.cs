@@ -1,4 +1,4 @@
-1using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PlatformPlatform.AccountManagement.Database.Migrations;
