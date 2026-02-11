@@ -55,9 +55,10 @@ test.describe("@smoke", () => {
     const context = createTestContext(page);
     const owner = testUser();
     const sessionsDialog = page.getByRole("dialog", { name: "Sessions" });
+    let slug = "";
 
     await step("Complete owner signup & verify welcome page")(async () => {
-      const { slug } = await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -178,9 +179,10 @@ test.describe("@comprehensive", () => {
     const context = createTestContext(page);
     const owner = testUser();
     const browser = page.context().browser() as Browser;
+    let slug = "";
 
     await step("Sign up user in primary browser & verify dashboard")(async () => {
-      const { slug } = await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -272,9 +274,10 @@ test.describe("@comprehensive", () => {
     const context = createTestContext(page);
     const owner = testUser();
     const browser = page.context().browser() as Browser;
+    let slug = "";
 
     await step("Sign up user & verify dashboard")(async () => {
-      const { slug } = await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 

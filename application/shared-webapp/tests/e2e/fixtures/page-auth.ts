@@ -250,6 +250,7 @@ export const test = base.extend<PageAuthFixtures>({
     await context.close();
   },
 
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixture requires destructuring pattern even with no deps
   testSlug: async ({}, use, testInfo) => {
     const workerIndex = testInfo.parallelIndex;
     const systemPrefix = getSelfContainedSystemPrefix();

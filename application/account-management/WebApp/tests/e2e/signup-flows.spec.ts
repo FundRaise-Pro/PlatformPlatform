@@ -7,7 +7,7 @@ import {
   expectValidationError,
   typeOneTimeCode
 } from "@shared/e2e/utils/test-assertions";
-import { adminUrl, getVerificationCode, testUser, uniqueEmail } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser, uniqueEmail } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@smoke", () => {
@@ -220,6 +220,23 @@ test.describe("@smoke", () => {
 
 test.describe("@comprehensive", () => {
   // Rate limiting for verification attempts is comprehensively tested in login-flows.spec.ts
+
+  test("should redirect legacy /admin paths to slug-based URLs preserving query and hash", async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const user = testUser();
+    const testContext = createTestContext(page);
+
+    const { slug } = await completeSignupFlow(page, expect, user, testContext, true);
+
+    await step("Navigate to legacy /admin/users with query and hash & verify slug-based redirect")(async () => {
+      await page.goto("/admin/users?sort=created#x");
+
+      await expect(page).toHaveURL(`${adminUrl(slug, "/users", { sort: "created" })}#x`);
+    })();
+
+    await context.close();
+  });
 
   test("should show detailed error message when too many signup attempts are made", async ({ page }) => {
     const context = createTestContext(page);

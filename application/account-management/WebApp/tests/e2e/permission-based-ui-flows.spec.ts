@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import { test } from "@shared/e2e/fixtures/page-auth";
 import { createTestContext, expectToastMessage, typeOneTimeCode } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@smoke", () => {
@@ -27,15 +27,16 @@ test.describe("@smoke", () => {
     const context = createTestContext(page);
     const owner = testUser();
     const member = testUser();
+    let slug = "";
 
     // Create owner and member users
     await step("Create owner account with signup flow & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
     await step("Set account name & verify save confirmation")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
       await page.getByRole("textbox", { name: "Account name" }).fill("Test Organization");
       await page.getByRole("button", { name: "Save changes" }).click();
@@ -43,14 +44,14 @@ test.describe("@smoke", () => {
     })();
 
     await step("Navigate to users page as Owner & verify invite button is visible")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Invite user" })).toBeVisible();
     })();
 
     await step("Navigate to account settings as Owner & verify tenant name field is editable")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
 
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
       await expect(page.getByRole("textbox", { name: "Account name" })).toBeEnabled();
@@ -68,7 +69,7 @@ test.describe("@smoke", () => {
     })();
 
     await step("Open owner's actions menu & verify self-action restrictions")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       // Wait for page to load
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
@@ -123,14 +124,14 @@ test.describe("@smoke", () => {
       context.monitoring.expectedStatusCodes.push(401);
 
       // Navigate away from users page first to prevent background requests
-      await page.goto("/admin");
+      await page.goto(adminUrl(slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       await page.getByRole("button", { name: "User profile menu" }).click();
       await page.getByRole("menuitem", { name: "Log out" }).click();
 
       // Wait for logout to complete and page to navigate
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
 
       // Accept whatever return path we get
       await expect(page.getByRole("heading", { name: "Hi! Welcome back" })).toBeVisible();
@@ -141,7 +142,7 @@ test.describe("@smoke", () => {
       await expect(page.getByRole("heading", { name: "Enter your verification code" })).toBeVisible();
       await typeOneTimeCode(page, getVerificationCode());
 
-      await page.waitForURL("/admin");
+      await page.waitForURL(adminUrl(slug));
     })();
 
     await step("Complete member profile setup & verify profile saved")(async () => {
@@ -156,14 +157,14 @@ test.describe("@smoke", () => {
     })();
 
     await step("Navigate to users page as Member & verify invite button is hidden")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Invite user" })).not.toBeVisible();
     })();
 
     await step("Navigate to account settings as Member & verify tenant name field is readonly")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
 
       // Members should see readonly account name field
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
@@ -182,7 +183,7 @@ test.describe("@smoke", () => {
     })();
 
     await step("Open member's actions menu & verify self-action restrictions")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       // Wait for page to load
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
@@ -205,7 +206,7 @@ test.describe("@smoke", () => {
 
     // === ACCESS DENIED PAGE TESTS ===
     await step("Navigate to recycle-bin as Member & verify access denied page displays")(async () => {
-      await page.goto("/admin/users/recycle-bin");
+      await page.goto(adminUrl(slug, "/users/recycle-bin"));
 
       await expect(page.getByRole("heading", { name: "Access denied" })).toBeVisible();
       await expect(page.getByText("You do not have permission to access this page.")).toBeVisible();
@@ -235,17 +236,18 @@ test.describe("@smoke", () => {
     const context = createTestContext(page);
     const owner = testUser();
     const member = testUser();
+    let slug = "";
 
     const user1 = testUser();
     const user2 = testUser();
 
     await step("Create owner account with signup flow & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
     await step("Set account name & verify save confirmation")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
       await page.getByRole("textbox", { name: "Account name" }).fill("Test Organization");
       await page.getByRole("button", { name: "Save changes" }).click();
@@ -253,7 +255,7 @@ test.describe("@smoke", () => {
     })();
 
     await step("Navigate to users page & verify owner is listed")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
     })();
 
@@ -330,14 +332,14 @@ test.describe("@smoke", () => {
       context.monitoring.expectedStatusCodes.push(401);
 
       // Navigate away from users page first to prevent background requests
-      await page.goto("/admin");
+      await page.goto(adminUrl(slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       await page.getByRole("button", { name: "User profile menu" }).click();
       await page.getByRole("menuitem", { name: "Log out" }).click();
 
       // Wait for logout to complete and page to navigate
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
 
       // Accept whatever return path we get
       await expect(page.getByRole("heading", { name: "Hi! Welcome back" })).toBeVisible();
@@ -348,7 +350,7 @@ test.describe("@smoke", () => {
       await expect(page.getByRole("heading", { name: "Enter your verification code" })).toBeVisible();
       await typeOneTimeCode(page, getVerificationCode());
 
-      await page.waitForURL("/admin");
+      await page.waitForURL(adminUrl(slug));
     })();
 
     await step("Complete member profile setup & verify profile saved")(async () => {
@@ -363,7 +365,7 @@ test.describe("@smoke", () => {
     })();
 
     await step("Navigate to users page as Member & verify no bulk operations available")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       // Ensure we can see the users that were created
       // Use first tbody due to mobile rendering creating duplicate tables

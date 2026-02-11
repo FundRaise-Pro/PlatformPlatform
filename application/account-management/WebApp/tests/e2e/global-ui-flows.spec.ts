@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import { test } from "@shared/e2e/fixtures/page-auth";
 import { createTestContext, typeOneTimeCode } from "@shared/e2e/utils/test-assertions";
-import { getVerificationCode } from "@shared/e2e/utils/test-data";
+import { adminUrl, getVerificationCode } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@comprehensive", () => {
@@ -14,11 +14,11 @@ test.describe("@comprehensive", () => {
    * - Theme behavior at different viewport sizes (mobile, tablet, desktop, 4K)
    * - Sidebar collapse/expand states with theme changes
    */
-  test("should handle theme switching with persistence across viewport sizes", async ({ ownerPage }) => {
+  test("should handle theme switching with persistence across viewport sizes", async ({ ownerPage, testSlug }) => {
     createTestContext(ownerPage);
 
     await step("Navigate to admin dashboard & verify default light theme")(async () => {
-      await ownerPage.goto("/admin");
+      await ownerPage.goto(adminUrl(testSlug));
 
       // Verify dashboard loads with default light theme
       await expect(ownerPage.getByRole("heading", { name: "Welcome home" })).toBeVisible();
@@ -172,7 +172,7 @@ test.describe("@comprehensive", () => {
     await step("Open new browser tab & verify dark theme persists across sessions")(async () => {
       // Open a new tab in the same context to verify theme persistence
       const newPage = await ownerPage.context().newPage();
-      await newPage.goto("/admin");
+      await newPage.goto(adminUrl(testSlug));
 
       await expect(newPage.getByRole("heading", { name: "Welcome home" })).toBeVisible();
       await expect(newPage.locator("html")).toHaveClass("dark");
@@ -206,7 +206,7 @@ test.describe("@comprehensive", () => {
       await expect(page).toHaveURL("/login/verify");
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(tenant.slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -235,7 +235,7 @@ test.describe("@comprehensive", () => {
 
       await page.getByRole("menuitem", { name: "Log out" }).click();
 
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
       await expect(page.getByRole("heading", { name: "Hi! Welcome back" })).toBeVisible();
 
       // Dark theme should persist after logout
@@ -246,10 +246,10 @@ test.describe("@comprehensive", () => {
       await page.getByRole("textbox", { name: "Email" }).fill(existingUser.email);
       await page.getByRole("button", { name: "Continue" }).click();
 
-      await expect(page).toHaveURL("/login/verify?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\/verify\?returnPath=/);
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(tenant.slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       // Dark theme should persist after login
@@ -258,7 +258,7 @@ test.describe("@comprehensive", () => {
 
     // === 404 PAGE ===
     await step("Navigate to non-existent admin route & verify 404 page displays")(async () => {
-      await page.goto("/admin/does-not-exist");
+      await page.goto(adminUrl(tenant.slug, "/does-not-exist"));
 
       await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
       await expect(page.getByText("The page you are looking for does not exist or was moved.")).toBeVisible();
@@ -273,7 +273,7 @@ test.describe("@comprehensive", () => {
 
     // === ERROR PAGE VIA KONAMI CODE ===
     await step("Navigate to admin dashboard & enter Konami code to trigger error page")(async () => {
-      await page.goto("/admin");
+      await page.goto(adminUrl(tenant.slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       await page.keyboard.press("ArrowUp");

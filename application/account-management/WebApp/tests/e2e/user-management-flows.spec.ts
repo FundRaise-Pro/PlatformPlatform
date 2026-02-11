@@ -26,9 +26,10 @@ test.describe("@smoke", () => {
     const adminUser = testUser();
     const memberUser = testUser();
     const deletableUser = testUser();
+    let slug = "";
 
     await step("Complete owner signup & verify welcome page")(async () => {
-      const { slug } = await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -481,10 +482,11 @@ test.describe("@comprehensive", () => {
     const owner = testUser();
     const user1 = testUser();
     const user2 = testUser();
+    let slug = "";
 
     // === USER SETUP SECTION ===
     await step("Complete owner signup & verify welcome page")(async () => {
-      const { slug } = await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
