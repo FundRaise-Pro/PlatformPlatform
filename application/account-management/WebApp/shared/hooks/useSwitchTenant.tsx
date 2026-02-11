@@ -33,7 +33,9 @@ export function useSwitchTenant(options?: UseSwitchTenantOptions) {
         authSyncService.broadcast(message);
       }
       const target = switchTargetRef.current;
-      if (target) options?.onSuccess?.(target);
+      if (target) {
+        options?.onSuccess?.(target);
+      }
     },
     onError: (error) => {
       switchTargetRef.current = null;
