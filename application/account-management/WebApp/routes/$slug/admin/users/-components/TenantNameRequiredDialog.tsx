@@ -5,7 +5,7 @@ import { Dialog } from "@repo/ui/components/Dialog";
 import { DialogContent, DialogFooter, DialogHeader } from "@repo/ui/components/DialogFooter";
 import { Heading } from "@repo/ui/components/Heading";
 import { Modal } from "@repo/ui/components/Modal";
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { AlertCircleIcon, XIcon } from "lucide-react";
 
 interface TenantNameRequiredDialogProps {
@@ -14,6 +14,7 @@ interface TenantNameRequiredDialogProps {
 }
 
 export function TenantNameRequiredDialog({ isOpen, onOpenChange }: Readonly<TenantNameRequiredDialogProps>) {
+  const { slug } = useParams({ strict: false });
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={true}>
       <Dialog className="sm:w-dialog-md">
@@ -39,7 +40,7 @@ export function TenantNameRequiredDialog({ isOpen, onOpenChange }: Readonly<Tena
               <Button variant="secondary" onPress={close}>
                 <Trans>Cancel</Trans>
               </Button>
-              <Link to="/admin/account">
+              <Link to="/$slug/admin/account" params={{ slug: slug ?? "" }}>
                 <Button variant="primary" onPress={close}>
                   <Trans>Go to account settings</Trans>
                 </Button>

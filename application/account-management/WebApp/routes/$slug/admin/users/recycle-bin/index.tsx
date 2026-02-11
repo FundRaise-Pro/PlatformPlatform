@@ -16,11 +16,12 @@ import { PermanentlyDeleteUserDialog } from "./-components/PermanentlyDeleteUser
 
 type DeletedUserDetails = components["schemas"]["DeletedUserDetails"];
 
-export const Route = createFileRoute("/admin/users/recycle-bin/")({
+export const Route = createFileRoute("/$slug/admin/users/recycle-bin/")({
   component: DeletedUsersPage
 });
 
 export default function DeletedUsersPage() {
+  const { slug } = Route.useParams();
   const [selectedDeletedUsers, setSelectedDeletedUsers] = useState<DeletedUserDetails[]>([]);
   const [usersToDelete, setUsersToDelete] = useState<DeletedUserDetails[]>([]);
   const [isEmptyRecycleBin, setIsEmptyRecycleBin] = useState(false);
@@ -53,7 +54,7 @@ export default function DeletedUsersPage() {
       <AppLayout
         topMenu={
           <TopMenu>
-            <Breadcrumb href="/admin/users">
+            <Breadcrumb href={`/${slug}/admin/users`}>
               <Trans>Users</Trans>
             </Breadcrumb>
             <Breadcrumb>

@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { loggedInPath } from "@repo/infrastructure/auth/constants";
+import { adminPath, loggedInPath } from "@repo/infrastructure/auth/constants";
 import { useIsAuthenticated } from "@repo/infrastructure/auth/hooks";
 import { preferredLocaleKey } from "@repo/infrastructure/translations/constants";
 import { Button } from "@repo/ui/components/Button";
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/signup/verify")({
 
     useEffect(() => {
       if (isAuthenticated) {
-        navigate({ to: loggedInPath });
+        navigate({ to: loggedInPath() });
         return;
       }
 
@@ -130,7 +130,7 @@ export function CompleteSignupForm() {
       onSuccess: () => {
         const slug = getSignupState().slug;
         clearSignupState();
-        window.location.href = slug ? `/${slug}/admin` : loggedInPath;
+        window.location.href = adminPath(slug);
       }
     }
   );

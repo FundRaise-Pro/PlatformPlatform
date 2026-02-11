@@ -26,7 +26,7 @@ export const Route = createFileRoute("/signup/organization")({
 
     useEffect(() => {
       if (isAuthenticated) {
-        navigate({ to: loggedInPath });
+        navigate({ to: loggedInPath() });
         return;
       }
 

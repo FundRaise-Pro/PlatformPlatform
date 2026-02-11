@@ -1,6 +1,7 @@
 import { t } from "@lingui/core/macro";
 import { authSyncService, type TenantSwitchedMessage } from "@repo/infrastructure/auth/AuthSyncService";
 import { useUserInfo } from "@repo/infrastructure/auth/hooks";
+import { useRef } from "react";
 import type { components } from "@/shared/lib/api/api.generated";
 import { api } from "@/shared/lib/api/client";
 
@@ -8,12 +9,13 @@ type TenantInfo = components["schemas"]["TenantInfo"];
 
 interface UseSwitchTenantOptions {
   onMutate?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (switchedTenant: TenantInfo) => void;
   onError?: (error: unknown) => void;
 }
 
 export function useSwitchTenant(options?: UseSwitchTenantOptions) {
   const userInfo = useUserInfo();
+  const switchTargetRef = useRef<TenantInfo | null>(null);
 
   const switchTenantMutation = api.useMutation("post", "/api/account-management/authentication/switch-tenant", {
     onMutate: options?.onMutate,
@@ -30,16 +32,20 @@ export function useSwitchTenant(options?: UseSwitchTenantOptions) {
         };
         authSyncService.broadcast(message);
       }
-      options?.onSuccess?.();
+      const target = switchTargetRef.current;
+      if (target) options?.onSuccess?.(target);
     },
     onError: (error) => {
+      switchTargetRef.current = null;
       options?.onError?.(error);
       // Ensure unhandled rejection triggers global error handler
       setTimeout(() => Promise.reject(error), 0);
     }
   });
 
-  const switchTenant = ({ tenantId, tenantName }: TenantInfo) => {
+  const switchTenant = (tenant: TenantInfo) => {
+    switchTargetRef.current = tenant;
+    const { tenantId, tenantName } = tenant;
     // Store preferences
     if (userInfo?.email) {
       localStorage.setItem(`preferred-tenant-${userInfo.email}`, tenantId);

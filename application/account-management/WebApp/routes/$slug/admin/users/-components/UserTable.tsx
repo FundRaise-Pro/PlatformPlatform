@@ -13,7 +13,7 @@ import { useKeyboardNavigation } from "@repo/ui/hooks/useKeyboardNavigation";
 import { useViewportResize } from "@repo/ui/hooks/useViewportResize";
 import { isMediumViewportOrLarger, isSmallViewportOrLarger, isTouchDevice } from "@repo/ui/utils/responsive";
 import { getInitials } from "@repo/utils/string/getInitials";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { EllipsisVerticalIcon, SettingsIcon, Trash2Icon, UserIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { Selection, SortDescriptor } from "react-aria-components";
@@ -45,6 +45,7 @@ export function UserTable({
   isProfileOpen
 }: Readonly<UserTableProps>) {
   const navigate = useNavigate();
+  const { slug } = useParams({ strict: false });
   const { search, userRole, userStatus, startDate, endDate, orderBy, sortOrder, pageOffset } = useSearch({
     strict: false
   });
@@ -99,7 +100,8 @@ export function UserTable({
   const handlePageChange = useCallback(
     (page: number) => {
       navigate({
-        to: "/admin/users",
+        to: "/$slug/admin/users",
+        params: { slug: slug ?? "" },
         search: (prev) => ({
           ...prev,
           pageOffset: page === 1 ? undefined : page - 1
@@ -117,7 +119,8 @@ export function UserTable({
       const newSortOrder = newSortDescriptor.direction === "ascending" ? SortOrder.Ascending : SortOrder.Descending;
 
       navigate({
-        to: "/admin/users",
+        to: "/$slug/admin/users",
+        params: { slug: slug ?? "" },
         search: (prev) => ({
           ...prev,
           orderBy: newOrderBy === SortableUserProperties.Name ? undefined : newOrderBy,

@@ -30,13 +30,14 @@ const userPageSearchSchema = z.object({
   userId: z.string().optional()
 });
 
-export const Route = createFileRoute("/admin/users/")({
+export const Route = createFileRoute("/$slug/admin/users/")({
   component: UsersPage,
   validateSearch: userPageSearchSchema
 });
 
 export default function UsersPage() {
   const userInfo = useUserInfo();
+  const { slug } = Route.useParams();
   const [selectedUsers, setSelectedUsers] = useState<UserDetails[]>([]);
   const [profileUser, setProfileUser] = useState<UserDetails | null>(null);
   const [userToDelete, setUserToDelete] = useState<UserDetails | null>(null);
@@ -140,7 +141,7 @@ export default function UsersPage() {
         sidePane={getSidePane()}
         topMenu={
           <TopMenu>
-            <Breadcrumb href="/admin/users">
+            <Breadcrumb href={`/${slug}/admin/users`}>
               <Trans>Users</Trans>
             </Breadcrumb>
             <Breadcrumb>

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/signup/")({
     const isAuthenticated = useIsAuthenticated();
 
     if (isAuthenticated) {
-      return <Navigate to={loggedInPath} />;
+      return <Navigate to={loggedInPath()} />;
     }
 
     return (

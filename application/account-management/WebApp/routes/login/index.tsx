@@ -30,7 +30,7 @@ export const Route = createFileRoute("/login/")({
     const isAuthenticated = useIsAuthenticated();
 
     if (isAuthenticated) {
-      return <Navigate to={loggedInPath} />;
+      return <Navigate to={loggedInPath()} />;
     }
 
     return (

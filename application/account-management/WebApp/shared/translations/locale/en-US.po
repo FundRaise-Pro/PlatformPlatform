@@ -170,6 +170,9 @@ msgstr "Back to login"
 msgid "Back to signup"
 msgstr "Back to signup"
 
+msgid "Briefly describe your organization"
+msgstr "Briefly describe your organization"
+
 msgid "Built on <0>PlatformPlatform<1/></0> - an open-source platform by industry experts showcasing how to build enterprise-grade B2B SaaS products"
 msgstr "Built on <0>PlatformPlatform<1/></0> - an open-source platform by industry experts showcasing how to build enterprise-grade B2B SaaS products"
 
@@ -207,6 +210,9 @@ msgstr "Change user role"
 msgid "Change user role for {0}"
 msgstr "Change user role for {0}"
 
+msgid "Charity"
+msgstr "Charity"
+
 msgid "Check your spam folder."
 msgstr "Check your spam folder."
 
@@ -222,6 +228,9 @@ msgstr "Close"
 msgid "Close user profile"
 msgstr "Close user profile"
 
+msgid "Community-based organization"
+msgstr "Community-based organization"
+
 msgid "Compliance"
 msgstr "Compliance"
 
@@ -233,6 +242,9 @@ msgstr "Contact your administrator if you believe this is a mistake."
 
 msgid "Continue"
 msgstr "Continue"
+
+msgid "Country code"
+msgstr "Country code"
 
 msgid "Create your account"
 msgstr "Create your account"
@@ -301,6 +313,9 @@ msgstr "Deleted"
 msgid "Deleted users"
 msgstr "Deleted users"
 
+msgid "Description"
+msgstr "Description"
+
 msgid "Desktop"
 msgstr "Desktop"
 
@@ -319,17 +334,26 @@ msgstr "DPA"
 msgid "E.g. Alex"
 msgstr "E.g. Alex"
 
+msgid "e.g. Helping Hands Foundation"
+msgstr "e.g. Helping Hands Foundation"
+
 msgid "E.g. Software engineer"
 msgstr "E.g. Software engineer"
 
 msgid "E.g. Taylor"
 msgstr "E.g. Taylor"
 
+msgid "e.g. ZAF"
+msgstr "e.g. ZAF"
+
 msgid "Edit"
 msgstr "Edit"
 
 msgid "Edit profile"
 msgstr "Edit profile"
+
+msgid "Educational institution"
+msgstr "Educational institution"
 
 msgid "Email"
 msgstr "Email"
@@ -369,6 +393,9 @@ msgstr "For detailed compliance certifications and audit reports, visit Microsof
 
 msgid "For your protection, you have been logged out. Please log in again to continue."
 msgstr "For your protection, you have been logged out. Please log in again to continue."
+
+msgid "Foundation"
+msgstr "Foundation"
 
 msgid "Free, open-source .NET and React starter kit for building modern SaaS applications."
 msgstr "Free, open-source .NET and React starter kit for building modern SaaS applications."
@@ -441,6 +468,9 @@ msgstr "Invited users"
 
 msgid "IP:"
 msgstr "IP:"
+
+msgid "ISO 3166-1 alpha-3 country code"
+msgstr "ISO 3166-1 alpha-3 country code"
 
 msgid "Just now"
 msgstr "Just now"
@@ -535,6 +565,9 @@ msgstr "Need help? Our support team is here to assist you."
 msgid "Next"
 msgstr "Next"
 
+msgid "NGO"
+msgstr "NGO"
+
 msgid "No active sessions found."
 msgstr "No active sessions found."
 
@@ -553,8 +586,20 @@ msgstr "Only trusted personnel access data through Azure AD authentication"
 msgid "Open navigation menu"
 msgstr "Open navigation menu"
 
+msgid "Optional"
+msgstr "Optional"
+
 msgid "Organization"
 msgstr "Organization"
+
+msgid "Organization name"
+msgstr "Organization name"
+
+msgid "Organization type"
+msgstr "Organization type"
+
+msgid "Other"
+msgstr "Other"
 
 msgid "Our support team will assist you with the account deletion process and ensure all your data is properly removed."
 msgstr "Our support team will assist you with the account deletion process and ensure all your data is properly removed."
@@ -635,8 +680,14 @@ msgstr "Recycle bin"
 msgid "Region"
 msgstr "Region"
 
+msgid "Registration number"
+msgstr "Registration number"
+
 msgid "Regulatory standards and certifications"
 msgstr "Regulatory standards and certifications"
+
+msgid "Religious organization"
+msgstr "Religious organization"
 
 msgid "Reload"
 msgstr "Reload"
@@ -750,6 +801,9 @@ msgstr "Stay"
 msgid "Strict separation prevents production data from leaking to other environments"
 msgstr "Strict separation prevents production data from leaking to other environments"
 
+msgid "Subdomain"
+msgstr "Subdomain"
+
 msgid "Success"
 msgstr "Success"
 
@@ -761,6 +815,9 @@ msgstr "System"
 
 msgid "Tablet"
 msgstr "Tablet"
+
+msgid "Tell us about your organization"
+msgstr "Tell us about your organization"
 
 msgid "Terms"
 msgstr "Terms"
@@ -791,6 +848,9 @@ msgstr "This action cannot be undone."
 
 msgid "This is the region where your data is stored"
 msgstr "This is the region where your data is stored"
+
+msgid "This subdomain is not available"
+msgstr "This subdomain is not available"
 
 msgid "This will permanently delete <0>{totalDeletedUsersCount} users</0> in the recycle bin."
 msgstr "This will permanently delete <0>{totalDeletedUsersCount} users</0> in the recycle bin."
@@ -918,6 +978,9 @@ msgstr "View users"
 msgid "We detected suspicious activity on your account. Someone may have attempted to take over your session."
 msgstr "We detected suspicious activity on your account. Someone may have attempted to take over your session."
 
+msgid "We'll use this to set up your workspace."
+msgstr "We'll use this to set up your workspace."
+
 msgid "Welcome home"
 msgstr "Welcome home"
 
@@ -976,6 +1039,9 @@ msgstr "Your verification code has expired"
 
 msgid "Your verification code is valid for {expiresInString}"
 msgstr "Your verification code is valid for {expiresInString}"
+
+msgid "your-organization"
+msgstr "your-organization"
 
 msgid "yourname@example.com"
 msgstr "yourname@example.com"

@@ -170,6 +170,9 @@ msgstr "Tilbage til login"
 msgid "Back to signup"
 msgstr "Tilbage til tilmelding"
 
+msgid "Briefly describe your organization"
+msgstr ""
+
 msgid "Built on <0>PlatformPlatform<1/></0> - an open-source platform by industry experts showcasing how to build enterprise-grade B2B SaaS products"
 msgstr "Bygget på <0>PlatformPlatform<1/></0> - en open-source platform af brancheeksperter til professionel B2B SaaS udvikling"
 
@@ -207,6 +210,9 @@ msgstr "Skift brugerrolle"
 msgid "Change user role for {0}"
 msgstr "Skift brugerrolle for {0}"
 
+msgid "Charity"
+msgstr ""
+
 msgid "Check your spam folder."
 msgstr "Tjek din spammappe."
 
@@ -222,6 +228,9 @@ msgstr "Luk"
 msgid "Close user profile"
 msgstr "Luk brugerprofil"
 
+msgid "Community-based organization"
+msgstr ""
+
 msgid "Compliance"
 msgstr "Overholdelse"
 
@@ -233,6 +242,9 @@ msgstr "Kontakt din administrator, hvis du mener, dette er en fejl."
 
 msgid "Continue"
 msgstr "Fortsæt"
+
+msgid "Country code"
+msgstr ""
 
 msgid "Create your account"
 msgstr "Opret din konto"
@@ -301,6 +313,9 @@ msgstr "Slettet"
 msgid "Deleted users"
 msgstr "Slettede brugere"
 
+msgid "Description"
+msgstr ""
+
 msgid "Desktop"
 msgstr "Stationær"
 
@@ -319,17 +334,26 @@ msgstr "DBA"
 msgid "E.g. Alex"
 msgstr "F.eks. Alex"
 
+msgid "e.g. Helping Hands Foundation"
+msgstr ""
+
 msgid "E.g. Software engineer"
 msgstr "F.eks. Softwareingeniør"
 
 msgid "E.g. Taylor"
 msgstr "F.eks. Taylor"
 
+msgid "e.g. ZAF"
+msgstr ""
+
 msgid "Edit"
 msgstr "Rediger"
 
 msgid "Edit profile"
 msgstr "Rediger profil"
+
+msgid "Educational institution"
+msgstr ""
 
 msgid "Email"
 msgstr "E-mail"
@@ -369,6 +393,9 @@ msgstr "For detaljerede certificeringer og revisionsrapporter, besøg Microsofts
 
 msgid "For your protection, you have been logged out. Please log in again to continue."
 msgstr "For din beskyttelse er du blevet logget ud. Log venligst ind igen for at fortsætte."
+
+msgid "Foundation"
+msgstr ""
 
 msgid "Free, open-source .NET and React starter kit for building modern SaaS applications."
 msgstr "Gratis, open-source .NET og React startpakke til at bygge moderne SaaS-applikationer."
@@ -441,6 +468,9 @@ msgstr "Inviterede brugere"
 
 msgid "IP:"
 msgstr "IP:"
+
+msgid "ISO 3166-1 alpha-3 country code"
+msgstr ""
 
 msgid "Just now"
 msgstr "Lige nu"
@@ -535,6 +565,9 @@ msgstr "Har du brug for hjælp? Vores supportteam er klart til at hjælpe."
 msgid "Next"
 msgstr "Næste"
 
+msgid "NGO"
+msgstr ""
+
 msgid "No active sessions found."
 msgstr "Ingen aktive sessioner fundet."
 
@@ -553,8 +586,20 @@ msgstr "Kun betroet personale får adgang til data gennem Azure AD autentificeri
 msgid "Open navigation menu"
 msgstr "Åbn navigationsmenu"
 
+msgid "Optional"
+msgstr ""
+
 msgid "Organization"
 msgstr "Organisation"
+
+msgid "Organization name"
+msgstr ""
+
+msgid "Organization type"
+msgstr ""
+
+msgid "Other"
+msgstr ""
 
 msgid "Our support team will assist you with the account deletion process and ensure all your data is properly removed."
 msgstr "Vores supportteam hjælper dig med at slette din konto og sikrer, at alle dine data bliver fjernet."
@@ -635,8 +680,14 @@ msgstr "Papirkurv"
 msgid "Region"
 msgstr "Region"
 
+msgid "Registration number"
+msgstr ""
+
 msgid "Regulatory standards and certifications"
 msgstr "Lovgivningsmæssige standarder og certificeringer"
+
+msgid "Religious organization"
+msgstr ""
 
 msgid "Reload"
 msgstr "Genindlæs"
@@ -750,6 +801,9 @@ msgstr "Bliv"
 msgid "Strict separation prevents production data from leaking to other environments"
 msgstr "Streng adskillelse forhindrer produktionsdata i at lække til andre miljøer"
 
+msgid "Subdomain"
+msgstr ""
+
 msgid "Success"
 msgstr "Succes"
 
@@ -761,6 +815,9 @@ msgstr "System"
 
 msgid "Tablet"
 msgstr "Tablet"
+
+msgid "Tell us about your organization"
+msgstr ""
 
 msgid "Terms"
 msgstr "Vilkår"
@@ -791,6 +848,9 @@ msgstr "Denne handling kan ikke fortrydes."
 
 msgid "This is the region where your data is stored"
 msgstr "Dette er den region, hvor dine data er lagret"
+
+msgid "This subdomain is not available"
+msgstr ""
 
 msgid "This will permanently delete <0>{totalDeletedUsersCount} users</0> in the recycle bin."
 msgstr "Dette vil permanent slette <0>{totalDeletedUsersCount} brugere</0> i papirkurven."
@@ -918,6 +978,9 @@ msgstr "Se brugere"
 msgid "We detected suspicious activity on your account. Someone may have attempted to take over your session."
 msgstr "Vi opdagede mistænkelig aktivitet på din konto. Nogen kan have forsøgt at overtage din session."
 
+msgid "We'll use this to set up your workspace."
+msgstr ""
+
 msgid "Welcome home"
 msgstr "Velkommen hjem"
 
@@ -976,6 +1039,9 @@ msgstr "Din bekræftelseskode er udløbet"
 
 msgid "Your verification code is valid for {expiresInString}"
 msgstr "Din bekræftelseskode er gyldig i {expiresInString}"
+
+msgid "your-organization"
+msgstr ""
 
 msgid "yourname@example.com"
 msgstr "ditnavn@eksempel.com"

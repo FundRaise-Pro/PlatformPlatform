@@ -12,7 +12,7 @@ import { Select, SelectItem } from "@repo/ui/components/Select";
 import { Tooltip, TooltipTrigger } from "@repo/ui/components/Tooltip";
 import { useDebounce } from "@repo/ui/hooks/useDebounce";
 import { useSideMenuLayout } from "@repo/ui/hooks/useSideMenuLayout";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { Filter, FilterX, XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type SortableUserProperties, type SortOrder, UserRole, UserStatus } from "@/shared/lib/api/client";
@@ -48,6 +48,7 @@ interface UserQueryingProps {
  */
 export function UserQuerying({ onFilterStateChange, onFiltersUpdated }: UserQueryingProps = {}) {
   const navigate = useNavigate();
+  const { slug } = useParams({ strict: false });
   const searchParams = (useLocation().search as SearchParams) ?? {};
   const { isOverlayOpen, isMobileMenuOpen } = useSideMenuLayout();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +73,8 @@ export function UserQuerying({ onFilterStateChange, onFiltersUpdated }: UserQuer
   const updateFilter = useCallback(
     (params: Partial<SearchParams>, isSearchUpdate = false) => {
       navigate({
-        to: "/admin/users",
+        to: "/$slug/admin/users",
+        params: { slug: slug ?? "" },
         search: (prev) => ({
           ...prev,
           ...params,
@@ -89,7 +91,8 @@ export function UserQuerying({ onFilterStateChange, onFiltersUpdated }: UserQuer
 
   useEffect(() => {
     navigate({
-      to: "/admin/users",
+      to: "/$slug/admin/users",
+      params: { slug: slug ?? "" },
       search: (prev) => ({
         ...prev,
         search: debouncedSearch || undefined,

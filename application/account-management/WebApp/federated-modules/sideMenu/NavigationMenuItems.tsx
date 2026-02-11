@@ -1,5 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
+import { adminPath, tenantPath } from "@repo/infrastructure/auth/constants";
 import { useUserInfo } from "@repo/infrastructure/auth/hooks";
 import { FederatedMenuButton, SideMenuSeparator } from "@repo/ui/components/SideMenu";
 import { BoxIcon, CircleUserIcon, HeartIcon, HomeIcon, UsersIcon } from "lucide-react";
@@ -10,13 +11,14 @@ export function NavigationMenuItems({
   currentSystem
 }: Readonly<{ currentSystem: FederatedSideMenuProps["currentSystem"] }>) {
   const userInfo = useUserInfo();
+  const slug = userInfo?.tenantSlug;
 
   return (
     <>
       <FederatedMenuButton
         icon={HomeIcon}
         label={t`Home`}
-        href="/admin"
+        href={adminPath(slug)}
         isCurrentSystem={currentSystem === "account-management"}
       />
 
@@ -27,13 +29,13 @@ export function NavigationMenuItems({
       <FederatedMenuButton
         icon={CircleUserIcon}
         label={t`Account`}
-        href="/admin/account"
+        href={adminPath(slug, "account")}
         isCurrentSystem={currentSystem === "account-management"}
       />
       <FederatedMenuButton
         icon={UsersIcon}
         label={t`Users`}
-        href="/admin/users"
+        href={adminPath(slug, "users")}
         isCurrentSystem={currentSystem === "account-management"}
       />
 
@@ -44,7 +46,7 @@ export function NavigationMenuItems({
       <FederatedMenuButton
         icon={HeartIcon}
         label={t`Fundraiser`}
-        href="/fundraiser"
+        href={tenantPath(slug, "fundraiser")}
         isCurrentSystem={currentSystem === "fundraiser"}
       />
 
@@ -57,7 +59,7 @@ export function NavigationMenuItems({
           <FederatedMenuButton
             icon={BoxIcon}
             label={t`Dashboard`}
-            href="/back-office"
+            href={tenantPath(slug, "back-office")}
             isCurrentSystem={currentSystem === "back-office"}
           />
         </>
