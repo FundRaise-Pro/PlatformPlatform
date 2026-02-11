@@ -7,6 +7,28 @@ import type { TestContext } from "./test-assertions";
 import { expectToastMessage, typeOneTimeCode } from "./test-assertions";
 
 /**
+ * Build a slug-based admin URL for E2E tests.
+ * @param slug Tenant slug
+ * @param path Optional sub-path (e.g. "/users")
+ * @param queryParams Optional query parameters
+ * @param hash Optional hash fragment (e.g. "#x")
+ */
+export function adminUrl(slug: string, path?: string, queryParams?: Record<string, string>, hash?: string): string {
+  let url = `/${slug}/admin`;
+  if (path) {
+    url += path.startsWith("/") ? path : `/${path}`;
+  }
+  if (queryParams && Object.keys(queryParams).length > 0) {
+    const params = new URLSearchParams(queryParams);
+    url += `?${params.toString()}`;
+  }
+  if (hash) {
+    url += hash.startsWith("#") ? hash : `#${hash}`;
+  }
+  return url;
+}
+
+/**
  * Read platform settings from the shared-kernel JSONC file.
  * This ensures tests use the same configuration as the application.
  */
@@ -138,8 +160,9 @@ export async function completeSignupFlow(
   expect: typeof import("@playwright/test").expect,
   user: { email: string; firstName: string; lastName: string },
   context: TestContext,
-  keepUserLoggedIn = true
-): Promise<void> {
+  keepUserLoggedIn = true,
+  slug?: string
+): Promise<{ slug: string }> {
   // Step 1: Navigate directly to signup page
   await page.goto("/signup");
 
@@ -154,17 +177,17 @@ export async function completeSignupFlow(
   await expect(page).toHaveURL("/signup/organization");
 
   // Step 3: Fill organization details
-  const slug = `test-${Date.now()}`;
+  const effectiveSlug = slug ?? `test-${Date.now()}`;
   await page.getByRole("textbox", { name: "Organization name" }).fill("Test Organization");
   await page.getByRole("textbox", { name: "Subdomain" }).clear();
-  await page.getByRole("textbox", { name: "Subdomain" }).fill(slug);
+  await page.getByRole("textbox", { name: "Subdomain" }).fill(effectiveSlug);
   await page.getByRole("textbox", { name: "Country code" }).fill("ZAF");
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL("/signup/verify");
 
   // Step 4: Enter verification code (auto-submits after 6 characters)
   await typeOneTimeCode(page, getVerificationCode());
-  await page.waitForURL(`**/${slug}/admin`);
+  await page.waitForURL(`**/${effectiveSlug}/admin`);
   await expect(page.getByRole("dialog", { name: "User profile" })).toBeVisible();
 
   // Step 5: Complete profile setup and verify successful save
@@ -182,4 +205,6 @@ export async function completeSignupFlow(
     await page.getByRole("menuitem", { name: "Log out" }).click();
     await expect(page).toHaveURL(/\/login\?returnPath=/);
   }
+
+  return { slug: effectiveSlug };
 }

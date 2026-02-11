@@ -60,10 +60,12 @@ export function createTenantWithUsers(workerIndex: number, selfContainedSystemPr
 
   // Return tenant structure - actual signup will be implemented when needed
   const tenantId = `tenant-${workerIndex}-${timestamp}`;
+  const slug = `e2e-${prefix}w${workerIndex}-${timestamp}`.toLowerCase();
 
   return {
     tenantId,
     tenantName,
+    slug,
     owner,
     admin,
     member
@@ -91,7 +93,7 @@ export async function ensureTenantUsersExist(tenant: Tenant): Promise<void> {
     // Create the owner user through centralized signup flow
     const { createTestContext } = await import("../utils/test-assertions.js");
     const testContext = createTestContext(page);
-    await completeSignupFlow(page, expect, tenant.owner, testContext);
+    await completeSignupFlow(page, expect, tenant.owner, testContext, true, tenant.slug);
 
     // Save authentication state for reuse
     const authManager = createAuthStateManager(0, "account-management"); // Use worker 0 for shared users

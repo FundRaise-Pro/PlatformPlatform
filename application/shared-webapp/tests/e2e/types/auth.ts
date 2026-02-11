@@ -23,6 +23,7 @@ export interface User {
 export interface Tenant {
   tenantId: string;
   tenantName: string;
+  slug: string;
   owner: User;
   admin: User;
   member: User;

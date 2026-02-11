@@ -7,7 +7,7 @@ import {
   expectValidationError,
   typeOneTimeCode
 } from "@shared/e2e/utils/test-assertions";
-import { getVerificationCode, testUser, uniqueEmail } from "@shared/e2e/utils/test-data";
+import { adminUrl, getVerificationCode, testUser, uniqueEmail } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@smoke", () => {
@@ -169,7 +169,7 @@ test.describe("@smoke", () => {
     await step("Navigate to signup page while authenticated & verify redirect to admin")(async () => {
       await page.goto("/signup");
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(testSlug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 

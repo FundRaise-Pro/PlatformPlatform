@@ -2,7 +2,7 @@ import type { Browser, BrowserContext, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { test } from "@shared/e2e/fixtures/page-auth";
 import { createTestContext, expectToastMessage, typeOneTimeCode } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 const accessTokenCookieName = "__Host_Access_Token";
@@ -57,7 +57,7 @@ test.describe("@smoke", () => {
     const sessionsDialog = page.getByRole("dialog", { name: "Sessions" });
 
     await step("Complete owner signup & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      const { slug } = await completeSignupFlow(page, expect, owner, context);
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -97,7 +97,7 @@ test.describe("@smoke", () => {
       await expect(secondPage).toHaveURL("/login/verify");
       await typeOneTimeCode(secondPage, getVerificationCode());
 
-      await expect(secondPage).toHaveURL("/admin");
+      await expect(secondPage).toHaveURL(adminUrl(slug));
       await expect(secondPage.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       await secondContext.close();
@@ -180,7 +180,7 @@ test.describe("@comprehensive", () => {
     const browser = page.context().browser() as Browser;
 
     await step("Sign up user in primary browser & verify dashboard")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      const { slug } = await completeSignupFlow(page, expect, owner, context);
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -197,7 +197,7 @@ test.describe("@comprehensive", () => {
       await expect(secondPage).toHaveURL("/login/verify");
       await typeOneTimeCode(secondPage, getVerificationCode());
 
-      await expect(secondPage).toHaveURL("/admin");
+      await expect(secondPage).toHaveURL(adminUrl(slug));
       await expect(secondPage.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -274,7 +274,7 @@ test.describe("@comprehensive", () => {
     const browser = page.context().browser() as Browser;
 
     await step("Sign up user & verify dashboard")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      const { slug } = await completeSignupFlow(page, expect, owner, context);
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -294,13 +294,13 @@ test.describe("@comprehensive", () => {
       const secondPageContext = createTestContext(secondPage);
       secondPageContext.monitoring.expectedStatusCodes.push(401);
 
-      await secondPage.goto("/admin");
-      await expect(secondPage).toHaveURL("/admin");
+      await secondPage.goto(adminUrl(slug));
+      await expect(secondPage).toHaveURL(adminUrl(slug));
       await expect(secondPage.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       await deleteAccessTokenCookie(secondPage);
       await secondPage.getByRole("link", { name: "Users", exact: true }).click();
-      await expect(secondPage).toHaveURL("/admin/users");
+      await expect(secondPage).toHaveURL(adminUrl(slug, "/users"));
       await expect(secondPage.getByRole("heading", { name: "Users" })).toBeVisible();
     })();
 
