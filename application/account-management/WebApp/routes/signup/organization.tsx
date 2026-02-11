@@ -7,12 +7,13 @@ import { DomainInputField } from "@repo/ui/components/DomainInputField";
 import { Form } from "@repo/ui/components/Form";
 import { Heading } from "@repo/ui/components/Heading";
 import { Link } from "@repo/ui/components/Link";
-import { Select, SelectItem } from "@repo/ui/components/Select";
+import { Select } from "@repo/ui/components/Select";
 import { TextArea } from "@repo/ui/components/TextArea";
 import { TextField } from "@repo/ui/components/TextField";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import FederatedErrorPage from "@/federated-modules/errorPages/FederatedErrorPage";
+import { NpoTypeItems } from "@/shared/components/NpoTypeItems";
 import logoMarkUrl from "@/shared/images/logo-mark.svg";
 import logoWrapUrl from "@/shared/images/logo-wrap.svg";
 import { HorizontalHeroLayout } from "@/shared/layouts/HorizontalHeroLayout";
@@ -172,27 +173,7 @@ function OrganizationDetailsForm() {
         isRequired={true}
         className="flex w-full flex-col"
       >
-        <SelectItem id={NpoType.Charity}>
-          <Trans>Charity</Trans>
-        </SelectItem>
-        <SelectItem id={NpoType.Foundation}>
-          <Trans>Foundation</Trans>
-        </SelectItem>
-        <SelectItem id={NpoType.Ngo}>
-          <Trans>NGO</Trans>
-        </SelectItem>
-        <SelectItem id={NpoType.Religious}>
-          <Trans>Religious organization</Trans>
-        </SelectItem>
-        <SelectItem id={NpoType.Educational}>
-          <Trans>Educational institution</Trans>
-        </SelectItem>
-        <SelectItem id={NpoType.CommunityBased}>
-          <Trans>Community-based organization</Trans>
-        </SelectItem>
-        <SelectItem id={NpoType.Other}>
-          <Trans>Other</Trans>
-        </SelectItem>
+        <NpoTypeItems />
       </Select>
 
       <TextField

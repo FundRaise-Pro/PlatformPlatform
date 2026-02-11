@@ -5,10 +5,11 @@ import { Breadcrumb } from "@repo/ui/components/Breadcrumbs";
 import { Button } from "@repo/ui/components/Button";
 import { Form } from "@repo/ui/components/Form";
 import { Menu, MenuItem, MenuSeparator, MenuTrigger } from "@repo/ui/components/Menu";
+import { Select } from "@repo/ui/components/Select";
 import { TenantLogo } from "@repo/ui/components/TenantLogo";
+import { TextArea } from "@repo/ui/components/TextArea";
 import { TextField } from "@repo/ui/components/TextField";
 import { toastQueue } from "@repo/ui/components/Toast";
-import { mutationSubmitter } from "@repo/ui/forms/mutationSubmitter";
 import { useUnsavedChangesGuard } from "@repo/ui/hooks/useUnsavedChangesGuard";
 import type { FileUploadMutation } from "@repo/ui/types/FileUpload";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,9 +19,10 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileTrigger, Label, Separator } from "react-aria-components";
 import FederatedSideMenu from "@/federated-modules/sideMenu/FederatedSideMenu";
+import { NpoTypeItems } from "@/shared/components/NpoTypeItems";
 import { TopMenu } from "@/shared/components/topMenu";
 import { UnsavedChangesDialog } from "@/shared/components/UnsavedChangesDialog";
-import { api, UserRole } from "@/shared/lib/api/client";
+import { api, NpoType, UserRole } from "@/shared/lib/api/client";
 import DeleteAccountConfirmation from "./-components/DeleteAccountConfirmation";
 
 export const Route = createFileRoute("/$slug/admin/account/")({
@@ -242,6 +244,9 @@ function DangerZone({ setIsDeleteModalOpen }: { setIsDeleteModalOpen: (open: boo
 export function AccountSettings() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const [orgType, setOrgType] = useState<NpoType>(NpoType.Other);
+  const [country, setCountry] = useState("");
+  const [descriptionValue, setDescriptionValue] = useState("");
   const logoFileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
@@ -256,7 +261,7 @@ export function AccountSettings() {
       setIsFormDirty(false);
       toastQueue.add({
         title: t`Success`,
-        description: t`Account name updated successfully`,
+        description: t`Account settings updated successfully`,
         variant: "success"
       });
       refetchTenant();
@@ -275,20 +280,50 @@ export function AccountSettings() {
 
   const isOwner = currentUser?.role === UserRole.Owner;
 
+  useEffect(() => {
+    if (tenant && !isFormDirty) {
+      setOrgType(tenant.orgType ?? NpoType.Other);
+      setCountry(tenant.country ?? "");
+      setDescriptionValue(tenant.description ?? "");
+    }
+  }, [tenant, isFormDirty]);
+
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.target as HTMLFormElement);
+      updateCurrentTenantMutation.mutate({
+        body: {
+          name: formData.get("name") as string,
+          orgType: formData.get("orgType") as NpoType,
+          country: (formData.get("country") as string) || null,
+          registrationNumber: (formData.get("registrationNumber") as string) || null,
+          description: (formData.get("description") as string) || null
+        }
+      });
+    },
+    [updateCurrentTenantMutation]
+  );
+
   const { isConfirmDialogOpen, confirmLeave, cancelLeave } = useUnsavedChangesGuard({
     hasUnsavedChanges: isFormDirty && isOwner
   });
 
-  // Dispatch event to notify components about tenant updates
   useEffect(() => {
-    if (
-      updateCurrentTenantMutation.isSuccess ||
-      updateTenantLogoMutation.isSuccess ||
-      removeTenantLogoMutation.isSuccess
-    ) {
-      window.dispatchEvent(new CustomEvent("tenant-updated"));
+    if (updateCurrentTenantMutation.isSuccess) {
+      window.dispatchEvent(
+        new CustomEvent("tenant-updated", {
+          detail: { fields: ["name", "orgType", "country", "registrationNumber", "description"] }
+        })
+      );
     }
-  }, [updateCurrentTenantMutation.isSuccess, updateTenantLogoMutation.isSuccess, removeTenantLogoMutation.isSuccess]);
+  }, [updateCurrentTenantMutation.isSuccess]);
+
+  useEffect(() => {
+    if (updateTenantLogoMutation.isSuccess || removeTenantLogoMutation.isSuccess) {
+      window.dispatchEvent(new CustomEvent("tenant-updated", { detail: { fields: ["logo"] } }));
+    }
+  }, [updateTenantLogoMutation.isSuccess, removeTenantLogoMutation.isSuccess]);
 
   if (tenantLoading || userLoading) {
     return null;
@@ -310,7 +345,7 @@ export function AccountSettings() {
         subtitle={t`Manage your account here.`}
       >
         <Form
-          onSubmit={isOwner ? mutationSubmitter(updateCurrentTenantMutation) : undefined}
+          onSubmit={isOwner ? handleSubmit : undefined}
           validationErrors={isOwner ? updateCurrentTenantMutation.error?.errors : undefined}
           validationBehavior="aria"
           className="flex flex-col gap-4"
@@ -339,10 +374,72 @@ export function AccountSettings() {
             isReadOnly={!isOwner}
             label={t`Account name`}
             tooltip={isOwner ? t`The name of your account, shown to users and in email notifications` : undefined}
-            description={!isOwner ? t`Only account owners can modify the account name` : undefined}
+            description={!isOwner ? t`Only account owners can modify account settings` : undefined}
             validationBehavior="aria"
             onChange={() => setIsFormDirty(true)}
           />
+
+          <Select
+            name="orgType"
+            label={t`Organization type`}
+            selectedKey={orgType}
+            onSelectionChange={(key) => {
+              setOrgType(key as NpoType);
+              setIsFormDirty(true);
+            }}
+            isRequired={true}
+            isDisabled={!isOwner || updateCurrentTenantMutation.isPending}
+          >
+            <NpoTypeItems />
+          </Select>
+
+          <TextField
+            name="country"
+            label={t`Country code`}
+            value={country}
+            onChange={(value) => {
+              setCountry(
+                value
+                  .toUpperCase()
+                  .replace(/[^A-Z]/g, "")
+                  .slice(0, 3)
+              );
+              setIsFormDirty(true);
+            }}
+            maxLength={3}
+            placeholder={t`e.g. ZAF`}
+            description={t`ISO 3166-1 alpha-3 country code`}
+            isDisabled={updateCurrentTenantMutation.isPending}
+            isReadOnly={!isOwner}
+          />
+
+          <TextField
+            name="registrationNumber"
+            label={t`Registration number`}
+            defaultValue={tenant?.registrationNumber ?? ""}
+            maxLength={50}
+            placeholder={t`Optional`}
+            isDisabled={updateCurrentTenantMutation.isPending}
+            isReadOnly={!isOwner}
+            onChange={() => setIsFormDirty(true)}
+          />
+
+          <TextArea
+            name="description"
+            label={t`Description`}
+            value={descriptionValue}
+            onChange={(value) => {
+              setDescriptionValue(value);
+              setIsFormDirty(true);
+            }}
+            maxLength={500}
+            rows={3}
+            placeholder={t`Briefly describe your organization`}
+            description={isOwner ? `${descriptionValue.length}/500` : undefined}
+            isDisabled={updateCurrentTenantMutation.isPending}
+            isReadOnly={!isOwner}
+          />
+
           {isOwner && (
             <Button type="submit" className="mt-4" isDisabled={updateCurrentTenantMutation.isPending}>
               {updateCurrentTenantMutation.isPending ? <Trans>Saving...</Trans> : <Trans>Save changes</Trans>}
