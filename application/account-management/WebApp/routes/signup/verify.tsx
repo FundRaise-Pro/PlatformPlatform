@@ -16,7 +16,7 @@ import FederatedErrorPage from "@/federated-modules/errorPages/FederatedErrorPag
 import logoMarkUrl from "@/shared/images/logo-mark.svg";
 import logoWrapUrl from "@/shared/images/logo-wrap.svg";
 import { HorizontalHeroLayout } from "@/shared/layouts/HorizontalHeroLayout";
-import { api } from "@/shared/lib/api/client";
+import { api, NpoType } from "@/shared/lib/api/client";
 
 import {
   clearSignupState,
@@ -39,6 +39,12 @@ export const Route = createFileRoute("/signup/verify")({
 
       if (!hasSignupState()) {
         navigate({ to: "/signup", replace: true });
+        return;
+      }
+
+      const state = getSignupState();
+      if (!state.organizationName || !state.slug || !state.country) {
+        navigate({ to: "/signup/organization", replace: true });
       }
     }, [isAuthenticated, navigate]);
 
@@ -122,8 +128,9 @@ export function CompleteSignupForm() {
     "/api/account-management/signups/{emailConfirmationId}/complete",
     {
       onSuccess: () => {
+        const slug = getSignupState().slug;
         clearSignupState();
-        window.location.href = loggedInPath;
+        window.location.href = slug ? `/${slug}/admin` : loggedInPath;
       }
     }
   );
@@ -168,21 +175,30 @@ export function CompleteSignupForm() {
     <div className="w-full max-w-sm space-y-3">
       <Form
         onSubmit={(event) => {
+          event.preventDefault();
           const formData = new FormData(event.currentTarget);
           const oneTimePassword = formData.get("oneTimePassword") as string;
           if (oneTimePassword.length === 6) {
             setLastSubmittedCode(oneTimePassword);
           }
-          const handler = mutationSubmitter(completeSignupMutation, {
-            path: { emailConfirmationId: emailConfirmationId }
+          const state = getSignupState();
+          completeSignupMutation.mutate({
+            body: {
+              oneTimePassword,
+              preferredLocale: localStorage.getItem(preferredLocaleKey) ?? "",
+              organizationName: state.organizationName ?? "",
+              slug: state.slug ?? "",
+              orgType: state.orgType ?? NpoType.Other,
+              country: state.country ?? "",
+              registrationNumber: state.registrationNumber ?? null,
+              description: state.description ?? null
+            },
+            params: { path: { emailConfirmationId } }
           });
-          return handler(event);
         }}
         validationErrors={completeSignupMutation.error?.errors}
         validationBehavior="aria"
       >
-        <input type="hidden" name="emailConfirmationId" value={emailConfirmationId} />
-        <input type="hidden" name="preferredLocale" value={localStorage.getItem(preferredLocaleKey) ?? ""} />
         <div className="flex w-full flex-col gap-4 rounded-lg px-6 pt-8 pb-4">
           <div className="flex justify-center">
             <Link href="/" className="cursor-pointer">

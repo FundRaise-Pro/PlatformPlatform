@@ -1,7 +1,7 @@
-import { faker } from "@faker-js/faker";
-import type { Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { faker } from "@faker-js/faker";
+import type { Page } from "@playwright/test";
 import { isLocalhost } from "./constants";
 import type { TestContext } from "./test-assertions";
 import { expectToastMessage, typeOneTimeCode } from "./test-assertions";
@@ -11,7 +11,10 @@ import { expectToastMessage, typeOneTimeCode } from "./test-assertions";
  * This ensures tests use the same configuration as the application.
  */
 function readPlatformSettings(): { identity: { internalEmailDomain: string } } {
-  const settingsPath = path.resolve(__dirname, "../../../../shared-kernel/SharedKernel/Platform/platform-settings.jsonc");
+  const settingsPath = path.resolve(
+    __dirname,
+    "../../../../shared-kernel/SharedKernel/Platform/platform-settings.jsonc"
+  );
   const content = fs.readFileSync(settingsPath, "utf-8");
   const jsonWithoutComments = content.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
   return JSON.parse(jsonWithoutComments);
@@ -148,26 +151,35 @@ export async function completeSignupFlow(
   // Step 2: Enter email and submit
   await page.getByRole("textbox", { name: "Email" }).fill(user.email);
   await page.getByRole("button", { name: "Create your account" }).click();
+  await expect(page).toHaveURL("/signup/organization");
+
+  // Step 3: Fill organization details
+  const slug = `test-${Date.now()}`;
+  await page.getByRole("textbox", { name: "Organization name" }).fill("Test Organization");
+  await page.getByRole("textbox", { name: "Subdomain" }).clear();
+  await page.getByRole("textbox", { name: "Subdomain" }).fill(slug);
+  await page.getByRole("textbox", { name: "Country code" }).fill("ZAF");
+  await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL("/signup/verify");
 
-  // Step 3: Enter verification code (auto-submits after 6 characters)
+  // Step 4: Enter verification code (auto-submits after 6 characters)
   await typeOneTimeCode(page, getVerificationCode());
-  await expect(page).toHaveURL("/admin");
+  await page.waitForURL(`**/${slug}/admin`);
   await expect(page.getByRole("dialog", { name: "User profile" })).toBeVisible();
 
-  // Step 4: Complete profile setup and verify successful save
+  // Step 5: Complete profile setup and verify successful save
   await page.getByRole("textbox", { name: "First name" }).fill(user.firstName);
   await page.getByRole("textbox", { name: "Last name" }).fill(user.lastName);
   await page.getByRole("button", { name: "Save changes" }).click();
   await expectToastMessage(context, "Profile updated successfully");
 
-  // Step 5: Wait for successful completion
+  // Step 6: Wait for successful completion
   await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
-  // Step 6: Logout if requested (useful for login flow tests)
+  // Step 7: Logout if requested (useful for login flow tests)
   if (!keepUserLoggedIn) {
     await page.getByRole("button", { name: "User profile menu" }).click();
     await page.getByRole("menuitem", { name: "Log out" }).click();
-    await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+    await expect(page).toHaveURL(/\/login\?returnPath=/);
   }
 }

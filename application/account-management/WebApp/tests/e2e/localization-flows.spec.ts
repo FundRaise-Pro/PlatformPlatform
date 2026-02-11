@@ -29,6 +29,18 @@ test.describe("@comprehensive", () => {
       await page.getByRole("textbox", { name: "E-mail" }).fill(user.email);
       await page.getByRole("button", { name: "Opret din konto" }).click();
 
+      await expect(page).toHaveURL("/signup/organization");
+    })();
+
+    const testSlug = `test-da-${Date.now()}`;
+
+    await step("Fill organization details in Danish flow & navigate to verify")(async () => {
+      await page.getByRole("textbox", { name: "Organization name" }).fill("Test Org DK");
+      await page.getByRole("textbox", { name: "Subdomain" }).clear();
+      await page.getByRole("textbox", { name: "Subdomain" }).fill(testSlug);
+      await page.getByRole("textbox", { name: "Country code" }).fill("DNK");
+      await page.getByRole("button", { name: "Continue" }).click();
+
       await expect(page).toHaveURL("/signup/verify");
       await expect(page.getByRole("heading", { name: "Indtast din bekræftelseskode" })).toBeVisible();
     })();
@@ -36,7 +48,7 @@ test.describe("@comprehensive", () => {
     await step("Complete verification with Danish interface & verify navigation to admin")(async () => {
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await page.waitForURL(`**/${testSlug}/admin`);
     })();
 
     await step("Complete profile setup in Danish & verify profile form works")(async () => {
@@ -120,9 +132,20 @@ test.describe("@comprehensive", () => {
       // Complete signup flow
       await page1.getByRole("textbox", { name: "E-mail" }).fill(user1.email);
       await page1.getByRole("button", { name: "Opret din konto" }).click();
+      await expect(page1).toHaveURL("/signup/organization");
+
+      // Fill organization details
+      const user1Slug = `test-da-persist-${Date.now()}`;
+      await page1.getByRole("textbox", { name: "Organization name" }).fill("Test Org DK Persist");
+      await page1.getByRole("textbox", { name: "Subdomain" }).clear();
+      await page1.getByRole("textbox", { name: "Subdomain" }).fill(user1Slug);
+      await page1.getByRole("textbox", { name: "Country code" }).fill("DNK");
+      await page1.getByRole("button", { name: "Continue" }).click();
       await expect(page1).toHaveURL("/signup/verify");
 
       await typeOneTimeCode(page1, getVerificationCode());
+
+      await page1.waitForURL(`**/${user1Slug}/admin`);
 
       // Complete profile in Danish
       await page1.getByRole("textbox", { name: "Fornavn" }).fill(user1.firstName);

@@ -1,4 +1,4 @@
-import type { Schemas } from "@/shared/lib/api/client";
+import type { NpoType, Schemas } from "@/shared/lib/api/client";
 
 interface SignupState {
   emailConfirmationId: Schemas["EmailConfirmationId"];
@@ -10,6 +10,12 @@ interface SignupState {
   lastSubmittedCode?: string;
   currentOtpValue?: string;
   validForSeconds?: number;
+  organizationName?: string;
+  slug?: string;
+  orgType?: NpoType;
+  country?: string;
+  registrationNumber?: string;
+  description?: string;
 }
 
 let currentSignupState: SignupState | undefined;

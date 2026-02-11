@@ -54,7 +54,7 @@ export function StartSignupForm() {
       expireAt: new Date(Date.now() + validForSeconds * 1000)
     });
 
-    return <Navigate to="/signup/verify" />;
+    return <Navigate to="/signup/organization" />;
   }
 
   return (
