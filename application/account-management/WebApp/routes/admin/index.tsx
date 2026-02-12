@@ -12,6 +12,7 @@ function LegacyAdminRedirect() {
     const rest = window.location.pathname.replace(/^\/admin/, "");
 
     if (import.meta.build_env.buildType === "development") {
+      // biome-ignore lint/suspicious/noConsole: intentional dev-only routing debug log
       console.info("[routing] legacy redirect:", window.location.pathname);
     }
 

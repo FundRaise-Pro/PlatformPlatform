@@ -1,15 +1,22 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { AppLayout } from "@repo/ui/components/AppLayout";
-import { Breadcrumb } from "@repo/ui/components/Breadcrumbs";
+import { BreadcrumbPage } from "@repo/ui/components/Breadcrumb";
 import { Button } from "@repo/ui/components/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@repo/ui/components/DropdownMenu";
+import { Field, FieldLabel } from "@repo/ui/components/Field";
 import { Form } from "@repo/ui/components/Form";
-import { Menu, MenuItem, MenuSeparator, MenuTrigger } from "@repo/ui/components/Menu";
 import { Select } from "@repo/ui/components/Select";
+import { Separator } from "@repo/ui/components/Separator";
 import { TenantLogo } from "@repo/ui/components/TenantLogo";
 import { TextArea } from "@repo/ui/components/TextArea";
 import { TextField } from "@repo/ui/components/TextField";
-import { toastQueue } from "@repo/ui/components/Toast";
 import { useUnsavedChangesGuard } from "@repo/ui/hooks/useUnsavedChangesGuard";
 import type { FileUploadMutation } from "@repo/ui/types/FileUpload";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,7 +24,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CameraIcon, Trash2, Trash2Icon } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FileTrigger, Label, Separator } from "react-aria-components";
+import { toast } from "sonner";
 import FederatedSideMenu from "@/federated-modules/sideMenu/FederatedSideMenu";
 import { NpoTypeItems } from "@/shared/components/NpoTypeItems";
 import { TopMenu } from "@/shared/components/topMenu";
@@ -91,11 +98,7 @@ function useLogoManagement(
       await queryClient.invalidateQueries();
       refetchTenant();
 
-      toastQueue.add({
-        title: t`Success`,
-        description: t`Logo uploaded successfully`,
-        variant: "success"
-      });
+      toast.success(t`Logo uploaded successfully`);
     },
     [updateTenantLogoMutation, refetchTenant, queryClient]
   );
@@ -110,11 +113,7 @@ function useLogoManagement(
     // Trigger input clearing via state
     setShouldClearInput(true);
 
-    toastQueue.add({
-      title: t`Success`,
-      description: t`Logo removed successfully`,
-      variant: "success"
-    });
+    toast.success(t`Logo removed successfully`);
   }, [removeTenantLogoMutation, refetchTenant, queryClient]);
 
   const cleanupLogoPreview = useCallback(() => {
@@ -156,65 +155,68 @@ function LogoSection({
 }>) {
   return (
     <>
-      <FileTrigger
+      <input
+        type="file"
         ref={logoFileInputRef}
-        onSelect={(files) => {
+        onChange={(e) => {
           setLogoMenuOpen(false);
-          handleLogoUpload(files);
+          handleLogoUpload(e.target.files);
         }}
-        acceptedFileTypes={ALLOWED_FILE_TYPES}
+        accept={ALLOWED_FILE_TYPES.join(",")}
+        className="hidden"
       />
 
-      <Label>
-        <Trans>Logo</Trans>
-      </Label>
-
-      <MenuTrigger isOpen={logoMenuOpen} onOpenChange={setLogoMenuOpen}>
-        <Button variant="icon" className="h-16 w-16 rounded-md" aria-label={t`Change logo`} isDisabled={!isOwner}>
-          {tenant?.logoUrl || logoPreviewUrl ? (
-            <img
-              src={logoPreviewUrl ?? tenant?.logoUrl ?? ""}
-              className="h-full w-full rounded-md object-contain"
-              alt={t`Logo`}
-            />
-          ) : (
-            <TenantLogo
-              key={tenant?.logoUrl || "no-logo"}
-              logoUrl={null}
-              tenantName={tenant?.name ?? ""}
-              size="lg"
-              isRound={false}
-              className="h-full w-full"
-            />
-          )}
-        </Button>
-        <Menu>
-          <MenuItem
-            onAction={() => {
-              logoFileInputRef.current?.click();
-            }}
-          >
-            <CameraIcon className="h-4 w-4" />
-            <Trans>Upload logo</Trans>
-          </MenuItem>
-          {(tenant?.logoUrl || logoPreviewUrl) && (
-            <>
-              <MenuSeparator />
-              <MenuItem
-                onAction={() => {
-                  setLogoMenuOpen(false);
-                  handleLogoRemoval();
-                }}
+      <Field className="w-fit">
+        <FieldLabel>
+          <Trans>Logo</Trans>
+        </FieldLabel>
+        <DropdownMenu open={logoMenuOpen} onOpenChange={setLogoMenuOpen}>
+          <DropdownMenuTrigger
+            disabled={!isOwner}
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-16 rounded-md"
+                aria-label={t`Change logo`}
+                disabled={!isOwner}
               >
-                <Trash2Icon className="h-4 w-4 text-destructive" />
-                <span className="text-destructive">
+                <TenantLogo
+                  key={logoPreviewUrl ?? tenant?.logoUrl ?? "no-logo"}
+                  logoUrl={logoPreviewUrl ?? tenant?.logoUrl}
+                  tenantName={tenant?.name ?? ""}
+                  size="lg"
+                />
+              </Button>
+            }
+          />
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              onClick={() => {
+                logoFileInputRef.current?.click();
+              }}
+            >
+              <CameraIcon className="size-4" />
+              <Trans>Upload logo</Trans>
+            </DropdownMenuItem>
+            {(tenant?.logoUrl || logoPreviewUrl) && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => {
+                    setLogoMenuOpen(false);
+                    handleLogoRemoval();
+                  }}
+                >
+                  <Trash2Icon className="size-4" />
                   <Trans>Remove logo</Trans>
-                </span>
-              </MenuItem>
-            </>
-          )}
-        </Menu>
-      </MenuTrigger>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Field>
     </>
   );
 }
@@ -222,17 +224,17 @@ function LogoSection({
 // Danger zone component
 function DangerZone({ setIsDeleteModalOpen }: { setIsDeleteModalOpen: (open: boolean) => void }) {
   return (
-    <div className="mt-6 flex flex-col gap-4">
-      <h2>
+    <div className="mt-12 flex flex-col gap-4">
+      <h3>
         <Trans>Danger zone</Trans>
-      </h2>
+      </h3>
       <Separator />
       <div className="flex flex-col gap-4">
-        <p>
+        <p className="text-sm">
           <Trans>Delete your account and all data. This action is irreversible—proceed with caution.</Trans>
         </p>
 
-        <Button variant="destructive" onPress={() => setIsDeleteModalOpen(true)} className="w-fit">
+        <Button variant="destructive" onClick={() => setIsDeleteModalOpen(true)} className="max-sm:w-full">
           <Trash2 />
           <Trans>Delete account</Trans>
         </Button>
@@ -259,11 +261,7 @@ export function AccountSettings() {
   const updateCurrentTenantMutation = api.useMutation("put", "/api/account-management/tenants/current", {
     onSuccess: () => {
       setIsFormDirty(false);
-      toastQueue.add({
-        title: t`Success`,
-        description: t`Account settings updated successfully`,
-        variant: "success"
-      });
+      toast.success(t`Account settings updated successfully`);
       refetchTenant();
     }
   });
@@ -336,9 +334,9 @@ export function AccountSettings() {
         variant="center"
         topMenu={
           <TopMenu>
-            <Breadcrumb>
+            <BreadcrumbPage>
               <Trans>Account settings</Trans>
-            </Breadcrumb>
+            </BreadcrumbPage>
           </TopMenu>
         }
         title={t`Account settings`}
@@ -350,9 +348,9 @@ export function AccountSettings() {
           validationBehavior="aria"
           className="flex flex-col gap-4"
         >
-          <h2>
+          <h3>
             <Trans>Account information</Trans>
-          </h2>
+          </h3>
           <Separator />
 
           <LogoSection
@@ -441,7 +439,7 @@ export function AccountSettings() {
           />
 
           {isOwner && (
-            <Button type="submit" className="mt-4" isDisabled={updateCurrentTenantMutation.isPending}>
+            <Button type="submit" className="mt-4 max-sm:w-full" disabled={updateCurrentTenantMutation.isPending}>
               {updateCurrentTenantMutation.isPending ? <Trans>Saving...</Trans> : <Trans>Save changes</Trans>}
             </Button>
           )}

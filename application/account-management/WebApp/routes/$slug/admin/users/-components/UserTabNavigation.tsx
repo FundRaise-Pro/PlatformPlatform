@@ -1,4 +1,6 @@
+import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
+import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/Tabs";
 import { Link, useParams } from "@tanstack/react-router";
 
 type UserTabNavigationProps = {
@@ -7,27 +9,24 @@ type UserTabNavigationProps = {
 
 export function UserTabNavigation({ activeTab }: UserTabNavigationProps) {
   const { slug } = useParams({ strict: false });
-  const baseTabClasses =
-    "flex cursor-pointer items-center gap-2 border-b-2 px-2 py-2 text-center font-semibold text-sm transition-colors -mb-px";
-  const selectedClasses = "border-primary text-foreground";
-  const unselectedClasses = "border-transparent text-muted-foreground hover:text-muted-foreground/90";
-
   return (
-    <nav className="mb-8 flex gap-4 border-border border-b" aria-label="User tabs">
-      <Link
-        to="/$slug/admin/users"
-        params={{ slug: slug ?? "" }}
-        className={`${baseTabClasses} ${activeTab === "all-users" ? selectedClasses : unselectedClasses}`}
-      >
-        <Trans>All users</Trans>
-      </Link>
-      <Link
-        to="/$slug/admin/users/recycle-bin"
-        params={{ slug: slug ?? "" }}
-        className={`${baseTabClasses} ${activeTab === "recycle-bin" ? selectedClasses : unselectedClasses}`}
-      >
-        <Trans>Recycle bin</Trans>
-      </Link>
-    </nav>
+    <Tabs value={activeTab} className="relative z-10 mb-4 sm:mb-8">
+      <TabsList aria-label={t`User tabs`}>
+        <TabsTrigger
+          value="all-users"
+          nativeButton={false}
+          render={<Link to="/$slug/admin/users" params={{ slug: slug ?? "" }} />}
+        >
+          <Trans>All users</Trans>
+        </TabsTrigger>
+        <TabsTrigger
+          value="recycle-bin"
+          nativeButton={false}
+          render={<Link to="/$slug/admin/users/recycle-bin" params={{ slug: slug ?? "" }} />}
+        >
+          <Trans>Recycle bin</Trans>
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }
