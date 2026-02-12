@@ -15,7 +15,7 @@ const RESERVED_SLUGS = new Set([
   "well-known",
   "favicon.ico",
   "robots.txt",
-  "sitemap.xml",
+  "sitemap.xml"
 ]);
 
 export const Route = createFileRoute("/$slug")({
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/$slug")({
       throw notFound();
     }
   },
-  component: SlugLayout,
+  component: SlugLayout
 });
 
 function SlugLayout() {

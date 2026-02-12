@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import { useTenant } from "@/providers/tenant-provider";
-import { getPublicNavLinks } from "./nav-config";
 import { DesktopNavigation } from "./DesktopNavigation";
 import { MobileMenu } from "./MobileMenu";
+import { getPublicNavLinks } from "./nav-config";
 
 /**
  * Main navigation bar – tenant-aware.
@@ -36,12 +36,7 @@ export function Navbar() {
         <DesktopNavigation links={navLinks} />
 
         {/* Mobile Menu */}
-        <MobileMenu
-          orgName={orgName}
-          links={navLinks}
-          mobileOpen={mobileOpen}
-          onOpenChange={setMobileOpen}
-        />
+        <MobileMenu orgName={orgName} links={navLinks} mobileOpen={mobileOpen} onOpenChange={setMobileOpen} />
       </nav>
     </header>
   );

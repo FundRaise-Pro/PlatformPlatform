@@ -1,7 +1,7 @@
 "use server";
 
-import { apiUrl } from "@/lib/http";
 import { handleResponse } from "@/lib/api/utils";
+import { apiUrl } from "@/lib/http";
 
 export interface PublicCampaignSummary {
   slug: string;
@@ -34,7 +34,7 @@ export async function getPublicCampaigns(): Promise<PublicCampaignSummary[]> {
   const response = await fetch(apiUrl("/api/fundraiser/public/campaigns"), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }
   });
   return handleResponse<PublicCampaignSummary[]>(response);
 }
@@ -43,7 +43,7 @@ export async function getPublicCampaignBySlug(slug: string): Promise<PublicCampa
   const response = await fetch(apiUrl(`/api/fundraiser/public/campaigns/${slug}`), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }
   });
   return handleResponse<PublicCampaign>(response);
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getPublicCampaigns } from "@/actions/campaigns.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const orgName = settings.brand.organizationName ?? "Fundraiser";
   return {
     title: `${label}s`,
-    description: `Browse active ${label.toLowerCase()}s from ${orgName}. Support our cause today.`,
+    description: `Browse active ${label.toLowerCase()}s from ${orgName}. Support our cause today.`
   };
 }
 
@@ -35,9 +35,7 @@ export default async function CampaignsPage() {
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Our {content.campaignLabel}s
-          </h1>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Our {content.campaignLabel}s</h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Find a {content.causeType.toLowerCase()} that matters to you and make an impact
           </p>
@@ -74,9 +72,7 @@ export default async function CampaignsPage() {
                       Active
                     </Badge>
                     <CardTitle className="line-clamp-2">{campaign.title}</CardTitle>
-                    <CardDescription className="line-clamp-3">
-                      {campaign.summary}
-                    </CardDescription>
+                    <CardDescription className="line-clamp-3">{campaign.summary}</CardDescription>
                   </CardHeader>
                   {campaign.tags.length > 0 && (
                     <CardContent>

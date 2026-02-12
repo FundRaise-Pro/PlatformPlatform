@@ -1,7 +1,7 @@
 "use server";
 
-import { apiUrl } from "@/lib/http";
 import { handleResponse } from "@/lib/api/utils";
+import { apiUrl } from "@/lib/http";
 import type { TenantSettings } from "@/lib/tenant-config";
 import { DEFAULT_TENANT_SETTINGS } from "@/lib/tenant-config";
 
@@ -19,7 +19,7 @@ export async function getTenantSettings(): Promise<TenantSettings> {
     const response = await fetch(apiUrl("/api/fundraiser/public/settings"), {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      next: { revalidate: 60 },
+      next: { revalidate: 60 }
     });
     return await handleResponse<TenantSettings>(response);
   } catch (error) {

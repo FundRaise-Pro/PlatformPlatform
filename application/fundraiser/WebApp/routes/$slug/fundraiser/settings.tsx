@@ -11,7 +11,7 @@ import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/fundraiser/settings")({
+export const Route = createFileRoute("/$slug/fundraiser/settings")({
   component: SettingsPage
 });
 
@@ -55,10 +55,7 @@ export default function SettingsPage() {
 
             <Separator />
 
-            <SettingsSection
-              title={t`Theme`}
-              description={t`Customize colors, fonts, and visual appearance.`}
-            >
+            <SettingsSection title={t`Theme`} description={t`Customize colors, fonts, and visual appearance.`}>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <ColorPreview label={t`Primary`} color={settings?.theme?.primaryColor ?? "#10b981"} />
                 <ColorPreview label={t`Secondary`} color={settings?.theme?.secondaryColor ?? "#6366f1"} />
@@ -73,11 +70,11 @@ export default function SettingsPage() {
 
             <Separator />
 
-            <SettingsSection
-              title={t`Domain`}
-              description={t`Configure your subdomain and custom domains.`}
-            >
-              <SettingsField label={t`Subdomain`} value={settings?.domain?.subdomain ? `${settings.domain.subdomain}.fundraiseos.com` : undefined} />
+            <SettingsSection title={t`Domain`} description={t`Configure your subdomain and custom domains.`}>
+              <SettingsField
+                label={t`Subdomain`}
+                value={settings?.domain?.subdomain ? `${settings.domain.subdomain}.fundraiseos.com` : undefined}
+              />
               <div className="mt-4">
                 <Button variant="secondary" onPress={() => {}}>
                   <Trans>Edit domain</Trans>

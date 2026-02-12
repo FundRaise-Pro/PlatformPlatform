@@ -9,7 +9,7 @@ import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/fundraiser/events")({
+export const Route = createFileRoute("/$slug/fundraiser/events")({
   component: EventsPage
 });
 
@@ -25,9 +25,7 @@ export default function EventsPage() {
         subtitle={t`Plan and manage fundraising events.`}
       >
         <div className="mb-4 flex items-center justify-between">
-          <Text className="text-muted-foreground">
-            {events ? t`${events.length} events` : t`Loading...`}
-          </Text>
+          <Text className="text-muted-foreground">{events ? t`${events.length} events` : t`Loading...`}</Text>
           <Button onPress={() => {}}>
             <PlusIcon className="mr-2 h-4 w-4" />
             <Trans>Create event</Trans>
@@ -48,9 +46,7 @@ export default function EventsPage() {
                 <Text className="mt-1 text-muted-foreground text-sm">
                   {new Date(event.eventDate).toLocaleDateString()}
                 </Text>
-                {event.location && (
-                  <Text className="mt-1 text-muted-foreground text-sm">{event.location}</Text>
-                )}
+                {event.location && <Text className="mt-1 text-muted-foreground text-sm">{event.location}</Text>}
               </div>
             ))}
           </div>

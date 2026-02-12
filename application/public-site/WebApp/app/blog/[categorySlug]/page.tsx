@@ -1,10 +1,10 @@
+import { ArrowLeft, Calendar, Folder } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Folder } from "lucide-react";
-import { getPublicBlogPosts, getPublicBlogCategories } from "@/actions/blog.server";
+import { getPublicBlogCategories, getPublicBlogPosts } from "@/actions/blog.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${name} | Blog`,
-    description: `Browse ${name} posts from ${orgName}.`,
+    description: `Browse ${name} posts from ${orgName}.`
   };
 }
 
@@ -40,7 +40,7 @@ export default async function BlogCategoryPage({ params }: Props) {
   try {
     [posts, categories] = await Promise.all([
       getPublicBlogPosts(categorySlug),
-      getPublicBlogCategories().catch(() => []),
+      getPublicBlogCategories().catch(() => [])
     ]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Failed to load posts";
@@ -87,9 +87,7 @@ export default async function BlogCategoryPage({ params }: Props) {
         {!error && posts.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">
-                No posts in this category yet. Check back soon!
-              </p>
+              <p className="text-muted-foreground">No posts in this category yet. Check back soon!</p>
             </CardContent>
           </Card>
         )}
@@ -102,9 +100,7 @@ export default async function BlogCategoryPage({ params }: Props) {
                 <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer">
                   <CardHeader>
                     <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-                    <CardDescription className="line-clamp-3">
-                      {post.summary || "Read more..."}
-                    </CardDescription>
+                    <CardDescription className="line-clamp-3">{post.summary || "Read more..."}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {post.publishedAt && (

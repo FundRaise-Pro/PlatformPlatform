@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Folder } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getPublicBlogPostBySlug } from "@/actions/blog.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: post.title,
         description: post.summary ?? "",
         type: "article",
-        publishedTime: post.publishedAt ?? undefined,
-      },
+        publishedTime: post.publishedAt ?? undefined
+      }
     };
   } catch {
     return { title: "Post Not Found" };
@@ -54,16 +54,13 @@ export default async function BlogPostPage({ params }: Props) {
     datePublished: post.publishedAt,
     publisher: {
       "@type": "Organization",
-      name: orgName,
-    },
+      name: orgName
+    }
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         <article className="container mx-auto px-4 py-12 max-w-3xl">
           {/* Back */}
@@ -84,9 +81,7 @@ export default async function BlogPostPage({ params }: Props) {
           )}
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            {post.title}
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{post.title}</h1>
 
           {/* Meta */}
           {post.publishedAt && (
@@ -95,7 +90,7 @@ export default async function BlogPostPage({ params }: Props) {
               {new Date(post.publishedAt).toLocaleDateString(undefined, {
                 year: "numeric",
                 month: "long",
-                day: "numeric",
+                day: "numeric"
               })}
             </div>
           )}
@@ -109,10 +104,7 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* Content */}
           {post.content && (
-            <div
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
           )}
         </article>
       </main>

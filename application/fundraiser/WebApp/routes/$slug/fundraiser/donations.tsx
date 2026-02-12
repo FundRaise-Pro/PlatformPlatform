@@ -1,67 +1,70 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { AppLayout } from "@repo/ui/components/AppLayout";
-import { Button } from "@repo/ui/components/Button";
+import { Badge } from "@repo/ui/components/Badge";
 import { Text } from "@repo/ui/components/Text";
 import { createFileRoute } from "@tanstack/react-router";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/fundraiser/users")({
-  component: UsersPage
+export const Route = createFileRoute("/$slug/fundraiser/donations")({
+  component: DonationsPage
 });
 
-export default function UsersPage() {
-  const { data: users, isLoading } = api.useQuery("get", "/api/fundraiser/tenant-users");
+export default function DonationsPage() {
+  const { data: donations, isLoading } = api.useQuery("get", "/api/fundraiser/donations");
 
   return (
     <>
       <FundraiserSideMenu />
       <AppLayout
-        topMenu={<TopMenu breadcrumbs={[{ label: t`Users` }]} />}
-        title={t`Team members`}
-        subtitle={t`Manage users and their roles within your organization.`}
+        topMenu={<TopMenu breadcrumbs={[{ label: t`Donations` }]} />}
+        title={t`Donations`}
+        subtitle={t`View and manage donations and transactions.`}
       >
-        <div className="mb-4 flex items-center justify-end">
-          <Button onPress={() => {}}>
-            <Trans>Invite user</Trans>
-          </Button>
-        </div>
-
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Text className="text-muted-foreground">
-              <Trans>Loading users...</Trans>
+              <Trans>Loading donations...</Trans>
             </Text>
           </div>
-        ) : users && users.length > 0 ? (
+        ) : donations && donations.length > 0 ? (
           <div className="overflow-hidden rounded-lg border border-border">
             <table className="w-full">
               <thead className="border-border border-b bg-muted/50">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Name</Trans>
+                    <Trans>Donor</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Email</Trans>
+                    <Trans>Date</Trans>
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground text-sm">
+                    <Trans>Transaction</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Roles</Trans>
+                    <Trans>Type</Trans>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={String(user.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
+                {donations.map((donation) => (
+                  <tr
+                    key={String(donation.id)}
+                    className="border-border border-b last:border-b-0 hover:bg-hover-background"
+                  >
                     <td className="px-4 py-3 font-medium">
-                      {user.displayName}
+                      {donation.isAnonymous ? t`Anonymous` : donation.transactionId}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {user.userId}
+                      {donation.donatedAt ? new Date(donation.donatedAt).toLocaleDateString() : "-"}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {user.roles.map((r) => r.role).join(", ")}
+                    <td className="px-4 py-3 text-right font-medium">{donation.transactionId}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={donation.isRecurring ? "info" : "success"}>
+                        {donation.isRecurring ? t`Recurring` : t`One-time`}
+                      </Badge>
                     </td>
                   </tr>
                 ))}
@@ -71,10 +74,10 @@ export default function UsersPage() {
         ) : (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
             <Text className="mb-2 text-muted-foreground">
-              <Trans>No team members yet</Trans>
+              <Trans>No donations yet</Trans>
             </Text>
             <Text className="text-muted-foreground text-sm">
-              <Trans>Invite team members to help manage your organization.</Trans>
+              <Trans>Donations will appear here once campaigns start receiving contributions.</Trans>
             </Text>
           </div>
         )}

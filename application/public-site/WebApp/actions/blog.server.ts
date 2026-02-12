@@ -1,7 +1,7 @@
 "use server";
 
-import { apiUrl } from "@/lib/http";
 import { handleResponse } from "@/lib/api/utils";
+import { apiUrl } from "@/lib/http";
 
 export interface PublicBlogCategory {
   title: string;
@@ -40,36 +40,28 @@ export async function getPublicBlogCategories(): Promise<PublicBlogCategory[]> {
   const response = await fetch(apiUrl("/api/fundraiser/public/blog/categories"), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }
   });
   return handleResponse<PublicBlogCategory[]>(response);
 }
 
-export async function getPublicBlogPosts(
-  categorySlug?: string
-): Promise<PublicBlogPostSummary[]> {
+export async function getPublicBlogPosts(categorySlug?: string): Promise<PublicBlogPostSummary[]> {
   const url = categorySlug
     ? `/api/fundraiser/public/blog?categorySlug=${encodeURIComponent(categorySlug)}`
     : "/api/fundraiser/public/blog";
   const response = await fetch(apiUrl(url), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }
   });
   return handleResponse<PublicBlogPostSummary[]>(response);
 }
 
-export async function getPublicBlogPostBySlug(
-  categorySlug: string,
-  postSlug: string
-): Promise<PublicBlogPost> {
-  const response = await fetch(
-    apiUrl(`/api/fundraiser/public/blog/${categorySlug}/${postSlug}`),
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      next: { revalidate: 60 },
-    }
-  );
+export async function getPublicBlogPostBySlug(categorySlug: string, postSlug: string): Promise<PublicBlogPost> {
+  const response = await fetch(apiUrl(`/api/fundraiser/public/blog/${categorySlug}/${postSlug}`), {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    next: { revalidate: 60 }
+  });
   return handleResponse<PublicBlogPost>(response);
 }

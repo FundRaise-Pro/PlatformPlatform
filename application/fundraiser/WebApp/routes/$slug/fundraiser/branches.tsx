@@ -9,7 +9,7 @@ import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/fundraiser/branches")({
+export const Route = createFileRoute("/$slug/fundraiser/branches")({
   component: BranchesPage
 });
 
@@ -25,9 +25,7 @@ export default function BranchesPage() {
         subtitle={t`Manage your organization's locations and branches.`}
       >
         <div className="mb-4 flex items-center justify-between">
-          <Text className="text-muted-foreground">
-            {branches ? t`${branches.length} branches` : t`Loading...`}
-          </Text>
+          <Text className="text-muted-foreground">{branches ? t`${branches.length} branches` : t`Loading...`}</Text>
           <Button onPress={() => {}}>
             <PlusIcon className="mr-2 h-4 w-4" />
             <Trans>Add branch</Trans>
@@ -48,9 +46,7 @@ export default function BranchesPage() {
                 <Text className="mt-1 text-muted-foreground text-sm">
                   {[branch.city, branch.state, branch.postalCode].filter(Boolean).join(", ")}
                 </Text>
-                <Text className="mt-1 text-muted-foreground text-sm">
-                  {t`${String(branch.serviceCount)} services`}
-                </Text>
+                <Text className="mt-1 text-muted-foreground text-sm">{t`${String(branch.serviceCount)} services`}</Text>
               </div>
             ))}
           </div>

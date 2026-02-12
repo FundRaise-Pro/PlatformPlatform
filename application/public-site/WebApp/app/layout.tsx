@@ -1,29 +1,29 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navigation/navbar";
-import { Footer } from "@/components/navigation/footer";
-import { TenantProvider } from "@/providers/tenant-provider";
-import { getTenantSettings } from "@/actions/settings.server";
 import { Toaster } from "sonner";
+import { getTenantSettings } from "@/actions/settings.server";
+import { Footer } from "@/components/navigation/footer";
+import { Navbar } from "@/components/navigation/navbar";
 import type { TenantSettings } from "@/lib/tenant-config";
+import { TenantProvider } from "@/providers/tenant-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap",
+  display: "swap"
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: "swap",
+  display: "swap"
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 5
 };
 
 /**
@@ -52,15 +52,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: {
       default: orgName,
-      template: `%s | ${orgName}`,
+      template: `%s | ${orgName}`
     },
     description: settings.brand.tagline ?? `Welcome to ${orgName}`,
-    robots: { index: true, follow: true },
+    robots: { index: true, follow: true }
   };
 }
 
 export default async function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
@@ -73,17 +73,11 @@ export default async function RootLayout({
         {/* Inject tenant theme as CSS custom properties */}
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
         {/* Optional custom font */}
-        {settings.theme.fontUrl && (
-          <link rel="stylesheet" href={settings.theme.fontUrl} />
-        )}
+        {settings.theme.fontUrl && <link rel="stylesheet" href={settings.theme.fontUrl} />}
         {/* Optional favicon */}
-        {settings.theme.faviconUrl && (
-          <link rel="icon" href={settings.theme.faviconUrl} />
-        )}
+        {settings.theme.faviconUrl && <link rel="icon" href={settings.theme.faviconUrl} />}
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <TenantProvider settings={settings}>
           <div className="flex min-h-screen flex-col">
             <Navbar />
@@ -91,7 +85,7 @@ export default async function RootLayout({
             <Footer settings={settings} />
           </div>
         </TenantProvider>
-        <Toaster position="top-center" richColors />
+        <Toaster position="top-center" richColors={true} />
       </body>
     </html>
   );

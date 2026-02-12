@@ -1,7 +1,7 @@
 "use server";
 
-import { apiUrl } from "@/lib/http";
 import { handleResponse } from "@/lib/api/utils";
+import { apiUrl } from "@/lib/http";
 
 export interface PublicEvent {
   slug: string;
@@ -21,7 +21,7 @@ export async function getPublicEvents(): Promise<PublicEvent[]> {
   const response = await fetch(apiUrl("/api/fundraiser/public/events"), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }
   });
   return handleResponse<PublicEvent[]>(response);
 }

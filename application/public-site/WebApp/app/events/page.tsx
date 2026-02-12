@@ -1,9 +1,9 @@
+import { Calendar, Clock, MapPin } from "lucide-react";
 import type { Metadata } from "next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Clock } from "lucide-react";
 import { getPublicEvents } from "@/actions/events.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const orgName = settings.brand.organizationName ?? "Fundraiser";
   return {
     title: "Events",
-    description: `Upcoming events from ${orgName}. Join us and make a difference.`,
+    description: `Upcoming events from ${orgName}. Join us and make a difference.`
   };
 }
 
@@ -35,12 +35,8 @@ export default async function EventsPage() {
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Events
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Upcoming events and activities from {orgName}
-          </p>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Events</h1>
+          <p className="mt-4 text-lg text-muted-foreground">Upcoming events and activities from {orgName}</p>
         </div>
 
         {/* Error */}
@@ -56,9 +52,7 @@ export default async function EventsPage() {
         {!error && events.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">
-                No upcoming events at the moment. Check back soon!
-              </p>
+              <p className="text-muted-foreground">No upcoming events at the moment. Check back soon!</p>
             </CardContent>
           </Card>
         )}
@@ -78,7 +72,7 @@ export default async function EventsPage() {
                           weekday: "long",
                           year: "numeric",
                           month: "long",
-                          day: "numeric",
+                          day: "numeric"
                         })}
                       </span>
                     )}
@@ -87,7 +81,7 @@ export default async function EventsPage() {
                         <Clock className="h-3 w-3" />
                         {new Date(event.eventDate).toLocaleTimeString(undefined, {
                           hour: "2-digit",
-                          minute: "2-digit",
+                          minute: "2-digit"
                         })}
                       </span>
                     )}
@@ -101,9 +95,7 @@ export default async function EventsPage() {
                 </CardHeader>
                 {event.description && (
                   <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-4">
-                      {event.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground line-clamp-4">{event.description}</p>
                   </CardContent>
                 )}
               </Card>

@@ -1,11 +1,11 @@
+import { ArrowRight, Heart, Megaphone } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getPublicCampaigns } from "@/actions/campaigns.server";
+import { getTenantSettings } from "@/actions/settings.server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, ArrowRight, Megaphone } from "lucide-react";
-import { getTenantSettings } from "@/actions/settings.server";
-import { getPublicCampaigns } from "@/actions/campaigns.server";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const orgName = settings.brand.organizationName ?? "Fundraiser";
   return {
     title: `${settings.content.donationLabel}`,
-    description: `Make a ${settings.content.donationLabel.toLowerCase()} to ${orgName} and make a real difference.`,
+    description: `Make a ${settings.content.donationLabel.toLowerCase()} to ${orgName} and make a real difference.`
   };
 }
 
@@ -32,9 +32,7 @@ export default async function DonatePage() {
         <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <Heart className="h-12 w-12 mx-auto mb-4 text-white/80" />
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-              {content.donationLabel}
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">{content.donationLabel}</h1>
             <p className="text-lg md:text-xl text-white/80 leading-relaxed">
               Your {content.donationLabel.toLowerCase()} to {orgName} helps us support more{" "}
               {content.beneficiaryLabel.toLowerCase()}s. Every contribution counts.
@@ -57,11 +55,10 @@ export default async function DonatePage() {
           <CardContent className="p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">How to {content.donationLabel}</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              {content.donationLabel} options will be configured by {orgName} and made available
-              here. In the meantime, please contact us directly to discuss how you can support our{" "}
-              {content.causeType.toLowerCase()}.
+              {content.donationLabel} options will be configured by {orgName} and made available here. In the meantime,
+              please contact us directly to discuss how you can support our {content.causeType.toLowerCase()}.
             </p>
-            <Button asChild>
+            <Button asChild={true}>
               <Link href="/contact">
                 Contact Us
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -83,19 +80,17 @@ export default async function DonatePage() {
                   <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer">
                     <CardHeader>
                       <CardTitle className="line-clamp-2">{campaign.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">
-                      {campaign.summary}
-                    </CardDescription>
-                  </CardHeader>
-                  {campaign.tags.length > 0 && (
-                    <CardContent>
-                      <div className="flex flex-wrap gap-1">
-                        {campaign.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
+                      <CardDescription className="line-clamp-2">{campaign.summary}</CardDescription>
+                    </CardHeader>
+                    {campaign.tags.length > 0 && (
+                      <CardContent>
+                        <div className="flex flex-wrap gap-1">
+                          {campaign.tags.slice(0, 3).map((tag) => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
                       </CardContent>
                     )}
                   </Card>

@@ -1,6 +1,6 @@
+import { Facebook, Globe, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react";
 import Link from "next/link";
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter, Globe } from "lucide-react";
-import type { TenantSettings, SocialLink } from "@/lib/tenant-config";
+import type { SocialLink, TenantSettings } from "@/lib/tenant-config";
 
 interface FooterProps {
   settings: TenantSettings;
@@ -12,7 +12,7 @@ const socialIconMap: Record<string, React.ComponentType<{ className?: string }>>
   instagram: Instagram,
   linkedin: Linkedin,
   twitter: Twitter,
-  x: Twitter,
+  x: Twitter
 };
 
 /**
@@ -36,9 +36,7 @@ export function Footer({ settings }: FooterProps) {
           {/* About Section */}
           <div className="space-y-4">
             <span className="font-bold text-lg text-primary">{orgName}</span>
-            {brand.tagline && (
-              <p className="text-sm text-muted-foreground">{brand.tagline}</p>
-            )}
+            {brand.tagline && <p className="text-sm text-muted-foreground">{brand.tagline}</p>}
             {socialLinks.length > 0 && (
               <div className="flex space-x-4">
                 {socialLinks.map((social: SocialLink) => {
@@ -62,15 +60,10 @@ export function Footer({ settings }: FooterProps) {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-sm uppercase tracking-wider">
-              Quick Links
-            </h3>
+            <h3 className="font-semibold text-sm uppercase tracking-wider">Quick Links</h3>
             <ul className="space-y-3">
               <li>
-                <Link
-                  href="/"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
+                <Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                   Home
                 </Link>
               </li>
@@ -83,18 +76,12 @@ export function Footer({ settings }: FooterProps) {
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
+                <Link href="/blog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
+                <Link href="/contact" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                   Contact Us
                 </Link>
               </li>
@@ -123,12 +110,10 @@ export function Footer({ settings }: FooterProps) {
 
           {/* Donate CTA */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-sm uppercase tracking-wider">
-              Support Us
-            </h3>
+            <h3 className="font-semibold text-sm uppercase tracking-wider">Support Us</h3>
             <p className="text-sm text-muted-foreground">
-              Your {content.donationLabel.toLowerCase()} makes a difference.
-              Help us reach more {content.beneficiaryLabel.toLowerCase()}s.
+              Your {content.donationLabel.toLowerCase()} makes a difference. Help us reach more{" "}
+              {content.beneficiaryLabel.toLowerCase()}s.
             </p>
             <Link
               href="/donate"

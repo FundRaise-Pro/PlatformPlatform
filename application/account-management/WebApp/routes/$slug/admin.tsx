@@ -13,7 +13,7 @@ export const Route = createFileRoute("/$slug/admin")({
     }
   },
   component: AdminLayout,
-  notFoundComponent: FederatedNotFoundPage,
+  notFoundComponent: FederatedNotFoundPage
 });
 
 function AdminLayout() {

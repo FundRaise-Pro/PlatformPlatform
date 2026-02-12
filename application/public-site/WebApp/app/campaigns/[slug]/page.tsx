@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Heart } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getPublicCampaignBySlug } from "@/actions/campaigns.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const orgName = settings.brand.organizationName ?? "Fundraiser";
     return {
       title: campaign.title,
-      description: campaign.summary?.substring(0, 160) ?? `Support this ${settings.content.campaignLabel.toLowerCase()} at ${orgName}`,
+      description:
+        campaign.summary?.substring(0, 160) ??
+        `Support this ${settings.content.campaignLabel.toLowerCase()} at ${orgName}`
     };
   } catch {
     return { title: "Not Found" };
@@ -56,9 +58,7 @@ export default async function CampaignDetailPage({ params }: Props) {
         </Link>
 
         {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-          {campaign.title}
-        </h1>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{campaign.title}</h1>
 
         {/* Meta */}
         <div className="flex flex-wrap gap-3 mb-8">
@@ -83,22 +83,14 @@ export default async function CampaignDetailPage({ params }: Props) {
 
         {/* Content */}
         {campaign.content && (
-          <div
-            className="prose prose-lg max-w-none mb-8"
-            dangerouslySetInnerHTML={{ __html: campaign.content }}
-          />
+          <div className="prose prose-lg max-w-none mb-8" dangerouslySetInnerHTML={{ __html: campaign.content }} />
         )}
 
         {/* Images */}
         {campaign.images.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 mb-8">
             {campaign.images.map((img) => (
-              <img
-                key={img.id}
-                src={img.blobUrl}
-                alt={campaign.title}
-                className="rounded-lg w-full object-cover"
-              />
+              <img key={img.id} src={img.blobUrl} alt={campaign.title} className="rounded-lg w-full object-cover" />
             ))}
           </div>
         )}
@@ -107,7 +99,7 @@ export default async function CampaignDetailPage({ params }: Props) {
         {campaign.externalFundingUrl && (
           <Card className="mb-8">
             <CardContent className="pt-6 text-center">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild={true}>
                 <a href={campaign.externalFundingUrl} target="_blank" rel="noopener noreferrer">
                   <Heart className="mr-2 h-4 w-4" />
                   {content.donationLabel} to this {content.campaignLabel}
@@ -119,7 +111,7 @@ export default async function CampaignDetailPage({ params }: Props) {
 
         {/* CTA */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button size="lg" asChild>
+          <Button size="lg" asChild={true}>
             <Link href="/donate">
               <Heart className="mr-2 h-4 w-4" />
               {content.donationLabel}

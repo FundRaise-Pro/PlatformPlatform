@@ -1,12 +1,12 @@
+import { ArrowRight, Calendar, Heart, Megaphone } from "lucide-react";
 import Link from "next/link";
-import { Heart, ArrowRight, Calendar, Megaphone } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getTenantSettings } from "@/actions/settings.server";
+import { getPublicBlogPosts } from "@/actions/blog.server";
 import { getPublicCampaigns } from "@/actions/campaigns.server";
 import { getPublicEvents } from "@/actions/events.server";
-import { getPublicBlogPosts } from "@/actions/blog.server";
+import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * Homepage for the public storefront.
@@ -25,7 +25,7 @@ export default async function HomePage() {
   const [campaigns, events, blogPosts] = await Promise.all([
     getPublicCampaigns().catch(() => []),
     getPublicEvents().catch(() => []),
-    getPublicBlogPosts().catch(() => []),
+    getPublicBlogPosts().catch(() => [])
   ]);
 
   return (
@@ -35,27 +35,16 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-10" />
         <div className="container mx-auto px-4 py-20 md:py-28 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              {orgName}
-            </h1>
-            {brand.tagline && (
-              <p className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed">
-                {brand.tagline}
-              </p>
-            )}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">{orgName}</h1>
+            {brand.tagline && <p className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed">{brand.tagline}</p>}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary" asChild>
+              <Button size="lg" variant="secondary" asChild={true}>
                 <Link href="/donate">
                   <Heart className="mr-2 h-4 w-4" />
                   {content.donationLabel}
                 </Link>
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-black hover:bg-white/10"
-                asChild
-              >
+              <Button size="lg" variant="outline" className="border-white text-black hover:bg-white/10" asChild={true}>
                 <Link href="/campaigns">
                   View {content.campaignLabel}s
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -83,9 +72,7 @@ export default async function HomePage() {
               <Megaphone className="w-3 h-3 mr-1" />
               Active {content.campaignLabel}s
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Support Our {content.causeType}
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Support Our {content.causeType}</h2>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {campaigns.slice(0, 3).map((campaign) => (
@@ -93,9 +80,7 @@ export default async function HomePage() {
                 <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer">
                   <CardHeader>
                     <CardTitle className="line-clamp-2">{campaign.title}</CardTitle>
-                    <CardDescription className="line-clamp-3">
-                      {campaign.summary}
-                    </CardDescription>
+                    <CardDescription className="line-clamp-3">{campaign.summary}</CardDescription>
                   </CardHeader>
                   {campaign.tags.length > 0 && (
                     <CardContent>
@@ -114,7 +99,7 @@ export default async function HomePage() {
           </div>
           {campaigns.length > 3 && (
             <div className="text-center mt-8">
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild={true}>
                 <Link href="/campaigns">
                   View All {content.campaignLabel}s
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -134,9 +119,7 @@ export default async function HomePage() {
                 <Calendar className="w-3 h-3 mr-1" />
                 Upcoming Events
               </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold">
-                Join Us
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold">Join Us</h2>
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {events.slice(0, 3).map((event) => (
@@ -151,7 +134,7 @@ export default async function HomePage() {
                             weekday: "long",
                             year: "numeric",
                             month: "long",
-                            day: "numeric",
+                            day: "numeric"
                           })}
                         </span>
                       )}
@@ -159,9 +142,7 @@ export default async function HomePage() {
                   </CardHeader>
                   {event.description && (
                     <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {event.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground line-clamp-3">{event.description}</p>
                     </CardContent>
                   )}
                 </Card>
@@ -169,7 +150,7 @@ export default async function HomePage() {
             </div>
             {events.length > 3 && (
               <div className="text-center mt-8">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild={true}>
                   <Link href="/events">
                     View All Events
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -186,16 +167,11 @@ export default async function HomePage() {
         <section className="container mx-auto px-4 py-16">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Latest Updates</h2>
-            <p className="text-muted-foreground mt-2">
-              News and stories from {orgName}
-            </p>
+            <p className="text-muted-foreground mt-2">News and stories from {orgName}</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {blogPosts.slice(0, 3).map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.categorySlug}/${post.slug}`}
-              >
+              <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`}>
                 <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer">
                   <CardHeader>
                     {post.categoryTitle && (
@@ -204,9 +180,7 @@ export default async function HomePage() {
                       </Badge>
                     )}
                     <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-                    <CardDescription className="line-clamp-3">
-                      {post.summary}
-                    </CardDescription>
+                    <CardDescription className="line-clamp-3">{post.summary}</CardDescription>
                   </CardHeader>
                   {post.publishedAt && (
                     <CardContent>
@@ -220,7 +194,7 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="text-center mt-8">
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild={true}>
               <Link href="/blog">
                 Read More
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -235,15 +209,13 @@ export default async function HomePage() {
         <Card className="bg-gradient-to-br from-[var(--tenant-primary)] to-[var(--tenant-secondary)] text-white border-0 overflow-hidden relative">
           <CardContent className="p-8 md:p-12 relative z-10">
             <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Make a Difference?
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Make a Difference?</h2>
               <p className="text-white/80 mb-8 text-lg">
-                Every {content.donationLabel.toLowerCase()} helps us reach more{" "}
-                {content.beneficiaryLabel.toLowerCase()}s. Join us today.
+                Every {content.donationLabel.toLowerCase()} helps us reach more {content.beneficiaryLabel.toLowerCase()}
+                s. Join us today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="secondary" asChild>
+                <Button size="lg" variant="secondary" asChild={true}>
                   <Link href="/donate">
                     {content.donationLabel} Now
                     <Heart className="ml-2 h-4 w-4" />
@@ -253,7 +225,7 @@ export default async function HomePage() {
                   size="lg"
                   variant="outline"
                   className="border-white text-black hover:bg-white/10"
-                  asChild
+                  asChild={true}
                 >
                   <Link href="/contact">Contact Us</Link>
                 </Button>

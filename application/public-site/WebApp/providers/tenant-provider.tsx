@@ -1,21 +1,13 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { TenantSettings } from "@/lib/tenant-config";
 import { DEFAULT_TENANT_SETTINGS } from "@/lib/tenant-config";
 
 const TenantContext = createContext<TenantSettings>(DEFAULT_TENANT_SETTINGS);
 
-export function TenantProvider({
-  settings,
-  children,
-}: {
-  settings: TenantSettings;
-  children: ReactNode;
-}) {
-  return (
-    <TenantContext.Provider value={settings}>{children}</TenantContext.Provider>
-  );
+export function TenantProvider({ settings, children }: { settings: TenantSettings; children: ReactNode }) {
+  return <TenantContext.Provider value={settings}>{children}</TenantContext.Provider>;
 }
 
 export function useTenant(): TenantSettings {

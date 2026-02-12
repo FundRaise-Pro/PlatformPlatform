@@ -25,16 +25,11 @@ export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProp
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      ...(item.url ? { item: item.url } : {}),
-    })),
+      ...(item.url ? { item: item.url } : {})
+    }))
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
 }
 
 interface OrganizationStructuredDataProps {
@@ -48,42 +43,32 @@ interface OrganizationStructuredDataProps {
  * Renders JSON-LD Organization structured data.
  * All values derived from tenant settings at the page level.
  */
-export function OrganizationStructuredData({
-  name,
-  description,
-  url,
-  socialLinks,
-}: OrganizationStructuredDataProps) {
+export function OrganizationStructuredData({ name, description, url, socialLinks }: OrganizationStructuredDataProps) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name,
     ...(description ? { description } : {}),
     ...(url ? { url } : {}),
-    ...(socialLinks && socialLinks.length > 0 ? { sameAs: socialLinks } : {}),
+    ...(socialLinks && socialLinks.length > 0 ? { sameAs: socialLinks } : {})
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
 }
 
-interface FAQItem {
+interface FaqItem {
   question: string;
   answer: string;
 }
 
-interface FAQStructuredDataProps {
-  faqs: FAQItem[];
+interface FaqStructuredDataProps {
+  faqs: FaqItem[];
 }
 
 /**
  * Renders JSON-LD FAQPage structured data.
  */
-export function FAQStructuredData({ faqs }: FAQStructuredDataProps) {
+export function FAQStructuredData({ faqs }: FaqStructuredDataProps) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -92,17 +77,12 @@ export function FAQStructuredData({ faqs }: FAQStructuredDataProps) {
       name: faq.question,
       acceptedAnswer: {
         "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
+        text: faq.answer
+      }
+    }))
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
 }
 
 interface LocalBusinessStructuredDataProps {
@@ -127,7 +107,7 @@ export function LocalBusinessStructuredData({
   address,
   phone,
   openingHours,
-  coordinates,
+  coordinates
 }: LocalBusinessStructuredDataProps) {
   const jsonLd = {
     "@context": "https://schema.org",
@@ -139,7 +119,7 @@ export function LocalBusinessStructuredData({
       addressLocality: address.city,
       ...(address.region ? { addressRegion: address.region } : {}),
       ...(address.postalCode ? { postalCode: address.postalCode } : {}),
-      addressCountry: address.country,
+      addressCountry: address.country
     },
     ...(phone ? { telephone: phone } : {}),
     ...(openingHours ? { openingHours } : {}),
@@ -148,16 +128,11 @@ export function LocalBusinessStructuredData({
           geo: {
             "@type": "GeoCoordinates",
             latitude: coordinates.lat,
-            longitude: coordinates.lng,
-          },
+            longitude: coordinates.lng
+          }
         }
-      : {}),
+      : {})
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
 }

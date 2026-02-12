@@ -51,14 +51,14 @@ export const DEFAULT_TENANT_SETTINGS: TenantSettings = {
     fontFamily: null,
     fontUrl: null,
     faviconUrl: null,
-    customCss: null,
+    customCss: null
   },
   brand: {
     organizationName: null,
     tagline: null,
     socialLinks: null,
     termsUrl: null,
-    privacyUrl: null,
+    privacyUrl: null
   },
   content: {
     applicationLabel: "Application",
@@ -66,7 +66,7 @@ export const DEFAULT_TENANT_SETTINGS: TenantSettings = {
     beneficiaryLabel: "Beneficiary",
     donationLabel: "Donation",
     campaignLabel: "Campaign",
-    branchLabel: "Branch",
+    branchLabel: "Branch"
   },
-  featureFlags: {},
+  featureFlags: {}
 };

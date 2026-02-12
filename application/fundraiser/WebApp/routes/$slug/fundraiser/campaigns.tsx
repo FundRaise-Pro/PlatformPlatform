@@ -1,9 +1,10 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
+import { tenantPath } from "@repo/infrastructure/auth/constants";
+import { useUserInfo } from "@repo/infrastructure/auth/hooks";
 import { AppLayout } from "@repo/ui/components/AppLayout";
 import { Badge } from "@repo/ui/components/Badge";
 import { Button } from "@repo/ui/components/Button";
-import { Table } from "@repo/ui/components/Table";
 import { Text } from "@repo/ui/components/Text";
 import { createFileRoute } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
@@ -11,11 +12,12 @@ import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/fundraiser/campaigns")({
+export const Route = createFileRoute("/$slug/fundraiser/campaigns")({
   component: CampaignsPage
 });
 
 export default function CampaignsPage() {
+  const slug = useUserInfo()?.tenantSlug;
   const { data: campaigns, isLoading } = api.useQuery("get", "/api/fundraiser/campaigns");
 
   return (
@@ -27,10 +29,8 @@ export default function CampaignsPage() {
         subtitle={t`Manage your fundraising campaigns.`}
       >
         <div className="mb-4 flex items-center justify-between">
-          <Text className="text-muted-foreground">
-            {campaigns ? t`${campaigns.length} campaigns` : t`Loading...`}
-          </Text>
-          <Button onPress={() => window.location.href = "/fundraiser/campaigns"}>
+          <Text className="text-muted-foreground">{campaigns ? t`${campaigns.length} campaigns` : t`Loading...`}</Text>
+          <Button onPress={() => (window.location.href = tenantPath(slug, "fundraiser", "campaigns"))}>
             <PlusIcon className="mr-2 h-4 w-4" />
             <Trans>Create campaign</Trans>
           </Button>
@@ -60,16 +60,20 @@ export default function CampaignsPage() {
               </thead>
               <tbody>
                 {campaigns.map((campaign) => (
-                  <tr key={String(campaign.id)} className="border-border border-b last:border-b-0 hover:bg-hover-background">
+                  <tr
+                    key={String(campaign.id)}
+                    className="border-border border-b last:border-b-0 hover:bg-hover-background"
+                  >
                     <td className="px-4 py-3">
-                      <a href={`/fundraiser/campaigns/${campaign.id}`} className="font-medium text-foreground hover:underline">
+                      <a
+                        href={tenantPath(slug, "fundraiser", `campaigns/${campaign.id}`)}
+                        className="font-medium text-foreground hover:underline"
+                      >
                         {campaign.title}
                       </a>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={campaign.status === "Published" ? "success" : "neutral"}>
-                        {campaign.status}
-                      </Badge>
+                      <Badge variant={campaign.status === "Published" ? "success" : "neutral"}>{campaign.status}</Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-muted-foreground">
                       {campaign.publishedAt ? new Date(campaign.publishedAt).toLocaleDateString() : "-"}

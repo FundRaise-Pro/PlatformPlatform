@@ -1,11 +1,11 @@
+import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Mail, MessageCircle, Globe } from "lucide-react";
-import { getTenantSettings } from "@/actions/settings.server";
 import { getPublicBranches } from "@/actions/branches.server";
+import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const orgName = settings.brand.organizationName ?? "Fundraiser";
   return {
     title: "Contact Us",
-    description: `Get in touch with ${orgName}. Find our locations and contact details.`,
+    description: `Get in touch with ${orgName}. Find our locations and contact details.`
   };
 }
 
@@ -43,9 +43,7 @@ export default async function ContactPage() {
               <MessageCircle className="w-3 h-3 mr-1" />
               Get in Touch
             </Badge>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-              Contact Us
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Contact Us</h1>
             <p className="text-lg md:text-xl text-white/80 leading-relaxed">
               We&apos;d love to hear from you. Reach out to {orgName} any time.
             </p>
@@ -91,9 +89,7 @@ export default async function ContactPage() {
 
         {!error && branches.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">
-              Our {content.branchLabel}s
-            </h2>
+            <h2 className="text-2xl font-bold mb-6">Our {content.branchLabel}s</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {branches.map((branch) => (
                 <Card key={branch.id} className="h-full hover:shadow-lg transition-shadow">
@@ -147,13 +143,11 @@ export default async function ContactPage() {
             <CardContent className="p-8">
               <h2 className="text-2xl font-bold mb-2">Have Questions?</h2>
               <p className="text-white/80 mb-6">
-                We&apos;re here to help. Reach out to any of our{" "}
-                {content.branchLabel.toLowerCase()}s above or connect with us on social media.
+                We&apos;re here to help. Reach out to any of our {content.branchLabel.toLowerCase()}s above or connect
+                with us on social media.
               </p>
-              <Button variant="secondary" size="lg" asChild>
-                <Link href="/donate">
-                  Support {orgName}
-                </Link>
+              <Button variant="secondary" size="lg" asChild={true}>
+                <Link href="/donate">Support {orgName}</Link>
               </Button>
             </CardContent>
           </Card>

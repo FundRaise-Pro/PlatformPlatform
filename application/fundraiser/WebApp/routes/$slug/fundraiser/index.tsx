@@ -1,5 +1,7 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
+import { tenantPath } from "@repo/infrastructure/auth/constants";
+import { useUserInfo } from "@repo/infrastructure/auth/hooks";
 import { AppLayout } from "@repo/ui/components/AppLayout";
 import { Card } from "@repo/ui/components/Card";
 import { Heading } from "@repo/ui/components/Heading";
@@ -10,7 +12,7 @@ import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/fundraiser/")({
+export const Route = createFileRoute("/$slug/fundraiser/")({
   component: Dashboard
 });
 
@@ -39,6 +41,7 @@ function StatCard({
 }
 
 export default function Dashboard() {
+  const slug = useUserInfo()?.tenantSlug;
   const { data: campaigns } = api.useQuery("get", "/api/fundraiser/campaigns");
   const { data: donations } = api.useQuery("get", "/api/fundraiser/donations");
   const { data: blogPosts } = api.useQuery("get", "/api/fundraiser/blogs");
@@ -52,11 +55,7 @@ export default function Dashboard() {
   return (
     <>
       <FundraiserSideMenu />
-      <AppLayout
-        topMenu={<TopMenu />}
-        title={t`Dashboard`}
-        subtitle={t`Overview of your fundraising platform.`}
-      >
+      <AppLayout topMenu={<TopMenu />} title={t`Dashboard`} subtitle={t`Overview of your fundraising platform.`}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard icon={HeartIcon} label={t`Campaigns`} value={campaignCount} />
           <StatCard icon={CreditCardIcon} label={t`Donations`} value={donationCount} />
@@ -71,10 +70,26 @@ export default function Dashboard() {
             <Trans>Quick actions</Trans>
           </Heading>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <QuickActionCard href="/fundraiser/campaigns" label={t`Create campaign`} icon={HeartIcon} />
-            <QuickActionCard href="/fundraiser/blogs" label={t`Write blog post`} icon={BookOpenIcon} />
-            <QuickActionCard href="/fundraiser/events" label={t`Plan event`} icon={CalendarIcon} />
-            <QuickActionCard href="/fundraiser/forms" label={t`Design form`} icon={FileTextIcon} />
+            <QuickActionCard
+              href={tenantPath(slug, "fundraiser", "campaigns")}
+              label={t`Create campaign`}
+              icon={HeartIcon}
+            />
+            <QuickActionCard
+              href={tenantPath(slug, "fundraiser", "blogs")}
+              label={t`Write blog post`}
+              icon={BookOpenIcon}
+            />
+            <QuickActionCard
+              href={tenantPath(slug, "fundraiser", "events")}
+              label={t`Plan event`}
+              icon={CalendarIcon}
+            />
+            <QuickActionCard
+              href={tenantPath(slug, "fundraiser", "forms")}
+              label={t`Design form`}
+              icon={FileTextIcon}
+            />
           </div>
         </div>
       </AppLayout>

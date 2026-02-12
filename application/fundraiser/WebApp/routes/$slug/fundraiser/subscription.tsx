@@ -11,7 +11,7 @@ import { CheckIcon } from "lucide-react";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 
-export const Route = createFileRoute("/fundraiser/subscription")({
+export const Route = createFileRoute("/$slug/fundraiser/subscription")({
   component: SubscriptionPage
 });
 
@@ -124,11 +124,7 @@ function PlanCard({ plan }: Readonly<{ plan: PlanInfo }>) {
       </div>
 
       <div className="mt-auto">
-        <Button
-          variant={plan.highlighted ? "primary" : "secondary"}
-          className="w-full"
-          onPress={() => {}}
-        >
+        <Button variant={plan.highlighted ? "primary" : "secondary"} className="w-full" onPress={() => {}}>
           {plan.price === "Custom" ? <Trans>Contact us</Trans> : <Trans>Upgrade</Trans>}
         </Button>
       </div>

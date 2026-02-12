@@ -1,8 +1,5 @@
-import React from "react";
-import {
-  NavigationMenuItem,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
+import type React from "react";
+import { NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
 
 interface NavigationPlainLinkProps {
   href: string;
@@ -11,12 +8,7 @@ interface NavigationPlainLinkProps {
   className?: string;
 }
 
-export const NavigationPlainLink: React.FC<NavigationPlainLinkProps> = ({
-  href,
-  label,
-  isActive,
-  className,
-}) => (
+export const NavigationPlainLink: React.FC<NavigationPlainLinkProps> = ({ href, label, isActive, className }) => (
   <NavigationMenuItem>
     <NavigationMenuLink className={className} href={href} active={isActive}>
       {label}

@@ -1,12 +1,8 @@
 "use client";
 
+import { BookOpen, Calendar, Heart, Home, Mail, Megaphone } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Home, Heart, Mail, BookOpen, Calendar, Megaphone } from "lucide-react";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+import { NavigationMenu, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { NavigationPlainLink } from "./NavigationPlainLink";
 import type { NavLink } from "./nav-config";
@@ -22,7 +18,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "/blog": BookOpen,
   "/events": Calendar,
   "/donate": Heart,
-  "/contact": Mail,
+  "/contact": Mail
 };
 
 /**
@@ -40,9 +36,7 @@ export function DesktopNavigation({ links }: DesktopNavigationProps) {
       <NavigationMenu viewport={false}>
         <NavigationMenuList className="gap-1">
           {links.map((link) => {
-            const isActive =
-              pathname === link.href ||
-              (link.href !== "/" && pathname?.startsWith(link.href));
+            const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
             const Icon = iconMap[link.href];
 
             return (

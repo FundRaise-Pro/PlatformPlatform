@@ -1,10 +1,10 @@
+import { Calendar, Folder } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Folder } from "lucide-react";
 import { getPublicBlogCategories, getPublicBlogPosts } from "@/actions/blog.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const orgName = settings.brand.organizationName ?? "Fundraiser";
   return {
     title: "Blog",
-    description: `Read the latest stories, news, and updates from ${orgName}.`,
+    description: `Read the latest stories, news, and updates from ${orgName}.`
   };
 }
 
@@ -26,10 +26,7 @@ export default async function BlogPage() {
   let error: string | null = null;
 
   try {
-    [categories, posts] = await Promise.all([
-      getPublicBlogCategories().catch(() => []),
-      getPublicBlogPosts(),
-    ]);
+    [categories, posts] = await Promise.all([getPublicBlogCategories().catch(() => []), getPublicBlogPosts()]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Failed to load blog";
     console.error("Error loading blog:", err);
@@ -41,9 +38,7 @@ export default async function BlogPage() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Our Blog</h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Stories, updates, and insights from {orgName}
-          </p>
+          <p className="mt-4 text-lg text-muted-foreground">Stories, updates, and insights from {orgName}</p>
         </div>
 
         {/* Categories */}
@@ -79,9 +74,7 @@ export default async function BlogPage() {
         {!error && posts.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">
-                No blog posts available yet. Check back soon!
-              </p>
+              <p className="text-muted-foreground">No blog posts available yet. Check back soon!</p>
             </CardContent>
           </Card>
         )}
@@ -104,9 +97,7 @@ export default async function BlogPage() {
                           </Badge>
                         )}
                         <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-                        <CardDescription className="line-clamp-3">
-                          {post.summary || "Read more..."}
-                        </CardDescription>
+                        <CardDescription className="line-clamp-3">{post.summary || "Read more..."}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         {post.publishedAt && (

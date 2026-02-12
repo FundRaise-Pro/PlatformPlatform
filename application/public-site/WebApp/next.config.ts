@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import path from "node:path";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
@@ -16,9 +16,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
-      },
-    ],
+        hostname: "**"
+      }
+    ]
   },
 
   compress: true,
@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: {
     // Monorepo workspace root where hoisted dependencies (including `next`) live.
-    root: path.resolve(__dirname, "../.."),
+    root: path.resolve(__dirname, "../..")
   },
 
   // Security headers
@@ -39,17 +39,15 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        ],
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
+        ]
       },
       {
         source: "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2)",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }]
+      }
     ];
-  },
+  }
 };
 
 export default nextConfig;

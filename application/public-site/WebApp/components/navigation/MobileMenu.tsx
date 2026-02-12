@@ -1,13 +1,13 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { BookOpen, Calendar, Heart, Home, Mail, Megaphone, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Home, Heart, Mail, BookOpen, Calendar, Megaphone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import type { NavLink } from "./nav-config";
 
 interface MobileMenuProps {
@@ -21,13 +21,13 @@ const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+    transition: { staggerChildren: 0.1 }
+  }
 };
 
 const itemVariants = {
   hidden: { opacity: 0, x: 20 },
-  show: { opacity: 1, x: 0 },
+  show: { opacity: 1, x: 0 }
 };
 
 /** Icon mapping – best-effort icons per route */
@@ -37,7 +37,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "/blog": BookOpen,
   "/events": Calendar,
   "/donate": Heart,
-  "/contact": Mail,
+  "/contact": Mail
 };
 
 /**
@@ -55,12 +55,8 @@ export function MobileMenu({ orgName, links, mobileOpen, onOpenChange }: MobileM
   return (
     <div className="md:hidden">
       <Sheet open={mobileOpen} onOpenChange={onOpenChange}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden transition-colors duration-200 hover:bg-accent mt-2"
-          >
+        <SheetTrigger asChild={true}>
+          <Button variant="ghost" size="icon" className="md:hidden transition-colors duration-200 hover:bg-accent mt-2">
             <nav className="border shadow-sm rounded-md p-1 border-blue-300/20">
               <Menu className="size-6" />
             </nav>
@@ -82,7 +78,7 @@ export function MobileMenu({ orgName, links, mobileOpen, onOpenChange }: MobileM
               </div>
               <span className="font-bold text-lg tracking-tight">{orgName}</span>
             </SheetTitle>
-            <SheetClose asChild>
+            <SheetClose asChild={true}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -105,14 +101,10 @@ export function MobileMenu({ orgName, links, mobileOpen, onOpenChange }: MobileM
               >
                 {/* Navigation Links */}
                 <motion.div variants={itemVariants} className="space-y-1">
-                  <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    Menu
-                  </p>
+                  <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Menu</p>
                   <div className="flex flex-col space-y-1">
                     {links.map((link) => {
-                      const isActive =
-                        pathname === link.href ||
-                        (link.href !== "/" && pathname?.startsWith(link.href));
+                      const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
                       const Icon = iconMap[link.href];
 
                       return (
@@ -123,17 +115,12 @@ export function MobileMenu({ orgName, links, mobileOpen, onOpenChange }: MobileM
                           className={cn(
                             "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
                             "hover:bg-primary/5 hover:text-primary hover:translate-x-1",
-                            isActive
-                              ? "bg-primary/10 text-primary font-semibold shadow-sm"
-                              : "text-muted-foreground"
+                            isActive ? "bg-primary/10 text-primary font-semibold shadow-sm" : "text-muted-foreground"
                           )}
                         >
                           {Icon && (
                             <Icon
-                              className={cn(
-                                "size-5 shrink-0",
-                                isActive ? "text-primary" : "text-muted-foreground"
-                              )}
+                              className={cn("size-5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")}
                             />
                           )}
                           <span>{link.label}</span>
