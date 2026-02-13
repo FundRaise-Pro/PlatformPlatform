@@ -45,7 +45,7 @@ export function TenantNameRequiredDialog({ isOpen, onOpenChange }: Readonly<Tena
             <Trans>Cancel</Trans>
           </DialogClose>
           <Link to="/$slug/admin/account" params={{ slug: slug ?? "" }}>
-            <Button variant="primary">
+            <Button>
               <Trans>Go to account settings</Trans>
             </Button>
           </Link>

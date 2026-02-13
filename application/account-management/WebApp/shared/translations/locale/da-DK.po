@@ -75,11 +75,11 @@ msgstr "Kontoinformation"
 msgid "Account name"
 msgstr "Kontonavn"
 
-msgid "Account name updated successfully"
-msgstr "Kontonavn opdateret succesfuldt"
-
 msgid "Account settings"
 msgstr "Kontoindstillinger"
+
+msgid "Account settings updated successfully"
+msgstr ""
 
 msgid "Account switched"
 msgstr "Konto skiftet"
@@ -219,6 +219,9 @@ msgstr ""
 msgid "Check your spam folder."
 msgstr "Tjek din spammappe."
 
+msgid "Choose the category that best matches your organization"
+msgstr ""
+
 msgid "Clear"
 msgstr "Ryd"
 
@@ -319,14 +322,14 @@ msgstr "Slettet"
 msgid "Deleted users"
 msgstr "Slettede brugere"
 
-msgid "Description"
-msgstr "Beskrivelse"
-
 msgid "Deleted users loading"
 msgstr "Slettede brugere indlæses"
 
 msgid "Deleted users will appear here for recovery"
 msgstr "Slettede brugere vil blive vist her til gendannelse"
+
+msgid "Description"
+msgstr "Beskrivelse"
 
 msgid "Desktop"
 msgstr "Stationær"
@@ -589,9 +592,6 @@ msgstr "Næste"
 msgid "NGO"
 msgstr "NGO"
 
-msgid "No active sessions found."
-msgstr "Ingen aktive sessioner fundet."
-
 msgid "No active sessions"
 msgstr "Ingen aktive sessioner"
 
@@ -601,8 +601,8 @@ msgstr "Ingen brugere fundet"
 msgid "OK"
 msgstr "OK"
 
-msgid "Only account owners can modify the account name"
-msgstr "Kun kontoejere kan ændre kontonavnet"
+msgid "Only account owners can modify account settings"
+msgstr ""
 
 msgid "Only owners can change user roles"
 msgstr "Kun ejere kan ændre brugerroller"
@@ -797,6 +797,9 @@ msgstr "Vælg alle brugere"
 msgid "Select dates"
 msgstr "Vælg datoer"
 
+msgid "Select organization type"
+msgstr ""
+
 msgid "Send invite"
 msgstr "Send invitation"
 
@@ -853,9 +856,6 @@ msgstr "Streng adskillelse forhindrer produktionsdata i at lække til andre milj
 
 msgid "Subdomain"
 msgstr "Underdomæne"
-
-msgid "Success"
-msgstr "Succes"
 
 msgid "Switching account..."
 msgstr "Skifter konto..."
@@ -1107,6 +1107,10 @@ msgstr "Din bekræftelseskode er udløbet"
 
 msgid "Your verification code is valid for {expiresInString}"
 msgstr "Din bekræftelseskode er gyldig i {expiresInString}"
+
+#. placeholder {0}: slug || t`your-organization`
+msgid "Your workspace URL: {0}.fundraiseos.com"
+msgstr ""
 
 msgid "your-organization"
 msgstr ""

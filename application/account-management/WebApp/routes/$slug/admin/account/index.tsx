@@ -12,10 +12,9 @@ import {
 } from "@repo/ui/components/DropdownMenu";
 import { Field, FieldLabel } from "@repo/ui/components/Field";
 import { Form } from "@repo/ui/components/Form";
-import { Select } from "@repo/ui/components/Select";
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@repo/ui/components/Select";
 import { Separator } from "@repo/ui/components/Separator";
 import { TenantLogo } from "@repo/ui/components/TenantLogo";
-import { TextArea } from "@repo/ui/components/TextArea";
 import { TextField } from "@repo/ui/components/TextField";
 import { useUnsavedChangesGuard } from "@repo/ui/hooks/useUnsavedChangesGuard";
 import type { FileUploadMutation } from "@repo/ui/types/FileUpload";
@@ -373,23 +372,29 @@ export function AccountSettings() {
             label={t`Account name`}
             tooltip={isOwner ? t`The name of your account, shown to users and in email notifications` : undefined}
             description={!isOwner ? t`Only account owners can modify account settings` : undefined}
-            validationBehavior="aria"
             onChange={() => setIsFormDirty(true)}
           />
 
-          <Select
-            name="orgType"
-            label={t`Organization type`}
-            selectedKey={orgType}
-            onSelectionChange={(key) => {
-              setOrgType(key as NpoType);
-              setIsFormDirty(true);
-            }}
-            isRequired={true}
-            isDisabled={!isOwner || updateCurrentTenantMutation.isPending}
-          >
-            <NpoTypeItems />
-          </Select>
+          <Field className="flex w-full flex-col">
+            <FieldLabel>{t`Organization type`}</FieldLabel>
+            <Select
+              name="orgType"
+              value={orgType}
+              onValueChange={(value: string | null) => {
+                setOrgType((value ?? NpoType.Other) as NpoType);
+                setIsFormDirty(true);
+              }}
+              required={true}
+              disabled={!isOwner || updateCurrentTenantMutation.isPending}
+            >
+              <SelectTrigger className="w-full" aria-label={t`Organization type`}>
+                <SelectValue>{(value: string) => value || t`Select organization type`}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <NpoTypeItems />
+              </SelectContent>
+            </Select>
+          </Field>
 
           <TextField
             name="country"
@@ -422,16 +427,15 @@ export function AccountSettings() {
             onChange={() => setIsFormDirty(true)}
           />
 
-          <TextArea
+          <TextField
             name="description"
             label={t`Description`}
             value={descriptionValue}
-            onChange={(value) => {
+            onChange={(value: string) => {
               setDescriptionValue(value);
               setIsFormDirty(true);
             }}
             maxLength={500}
-            rows={3}
             placeholder={t`Briefly describe your organization`}
             description={isOwner ? `${descriptionValue.length}/500` : undefined}
             isDisabled={updateCurrentTenantMutation.isPending}

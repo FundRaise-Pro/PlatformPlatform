@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { getTenantSettings } from "@/actions/settings.server";
 import { Footer } from "@/components/navigation/footer";
 import { Navbar } from "@/components/navigation/navbar";
+import { PreviewListener } from "@/components/PreviewListener";
 import type { TenantSettings } from "@/lib/tenant-config";
 import { TenantProvider } from "@/providers/tenant-provider";
 
@@ -86,6 +87,7 @@ export default async function RootLayout({
           </div>
         </TenantProvider>
         <Toaster position="top-center" richColors={true} />
+        <PreviewListener />
       </body>
     </html>
   );

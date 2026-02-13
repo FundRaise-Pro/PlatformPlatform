@@ -75,11 +75,11 @@ msgstr "Account information"
 msgid "Account name"
 msgstr "Account name"
 
-msgid "Account name updated successfully"
-msgstr "Account name updated successfully"
-
 msgid "Account settings"
 msgstr "Account settings"
+
+msgid "Account settings updated successfully"
+msgstr "Account settings updated successfully"
 
 msgid "Account switched"
 msgstr "Account switched"
@@ -219,6 +219,9 @@ msgstr "Charity"
 msgid "Check your spam folder."
 msgstr "Check your spam folder."
 
+msgid "Choose the category that best matches your organization"
+msgstr "Choose the category that best matches your organization"
+
 msgid "Clear"
 msgstr "Clear"
 
@@ -319,14 +322,14 @@ msgstr "Deleted"
 msgid "Deleted users"
 msgstr "Deleted users"
 
-msgid "Description"
-msgstr "Description"
-
 msgid "Deleted users loading"
 msgstr "Deleted users loading"
 
 msgid "Deleted users will appear here for recovery"
 msgstr "Deleted users will appear here for recovery"
+
+msgid "Description"
+msgstr "Description"
 
 msgid "Desktop"
 msgstr "Desktop"
@@ -342,8 +345,10 @@ msgstr "Don't have an account? <0>Create one</0>"
 
 msgid "DPA"
 msgstr "DPA"
+
 msgid "E.g. Alex"
 msgstr "E.g. Alex"
+
 msgid "e.g. Helping Hands Foundation"
 msgstr "e.g. Helping Hands Foundation"
 
@@ -587,9 +592,6 @@ msgstr "Next"
 msgid "NGO"
 msgstr "NGO"
 
-msgid "No active sessions found."
-msgstr "No active sessions found."
-
 msgid "No active sessions"
 msgstr "No active sessions"
 
@@ -599,8 +601,8 @@ msgstr "No users found"
 msgid "OK"
 msgstr "OK"
 
-msgid "Only account owners can modify the account name"
-msgstr "Only account owners can modify the account name"
+msgid "Only account owners can modify account settings"
+msgstr "Only account owners can modify account settings"
 
 msgid "Only owners can change user roles"
 msgstr "Only owners can change user roles"
@@ -795,6 +797,9 @@ msgstr "Select all users"
 msgid "Select dates"
 msgstr "Select dates"
 
+msgid "Select organization type"
+msgstr "Select organization type"
+
 msgid "Send invite"
 msgstr "Send invite"
 
@@ -851,9 +856,6 @@ msgstr "Strict separation prevents production data from leaking to other environ
 
 msgid "Subdomain"
 msgstr "Subdomain"
-
-msgid "Success"
-msgstr "Success"
 
 msgid "Switching account..."
 msgstr "Switching account..."
@@ -1105,6 +1107,10 @@ msgstr "Your verification code has expired"
 
 msgid "Your verification code is valid for {expiresInString}"
 msgstr "Your verification code is valid for {expiresInString}"
+
+#. placeholder {0}: slug || t`your-organization`
+msgid "Your workspace URL: {0}.fundraiseos.com"
+msgstr "Your workspace URL: {0}.fundraiseos.com"
 
 msgid "your-organization"
 msgstr "your-organization"

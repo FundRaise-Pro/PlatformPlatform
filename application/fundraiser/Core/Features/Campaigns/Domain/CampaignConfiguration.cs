@@ -14,11 +14,14 @@ public sealed class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
         builder.MapStronglyTypedLongId<Campaign, TenantId>(c => c.TenantId);
 
         builder.Property(c => c.Title).HasMaxLength(200).IsRequired();
+        builder.Property(c => c.Slug).HasMaxLength(200).IsRequired();
         builder.Property(c => c.Content).IsRequired();
         builder.Property(c => c.Summary).HasMaxLength(2000);
         builder.Property(c => c.FeaturedImageUrl).HasMaxLength(500);
         builder.Property(c => c.ExternalFundingUrl).HasMaxLength(500);
         builder.Property(c => c.Status).HasMaxLength(50);
+
+        builder.HasIndex(c => new { c.TenantId, c.Slug });
 
         builder.OwnsMany(c => c.Images, b =>
         {

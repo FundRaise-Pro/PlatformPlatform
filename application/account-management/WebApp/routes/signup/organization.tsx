@@ -3,12 +3,10 @@ import { Trans } from "@lingui/react/macro";
 import { loggedInPath } from "@repo/infrastructure/auth/constants";
 import { useIsAuthenticated } from "@repo/infrastructure/auth/hooks";
 import { Button } from "@repo/ui/components/Button";
-import { DomainInputField } from "@repo/ui/components/DomainInputField";
+import { Field, FieldDescription, FieldLabel } from "@repo/ui/components/Field";
 import { Form } from "@repo/ui/components/Form";
-import { Heading } from "@repo/ui/components/Heading";
 import { Link } from "@repo/ui/components/Link";
-import { Select } from "@repo/ui/components/Select";
-import { TextArea } from "@repo/ui/components/TextArea";
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@repo/ui/components/Select";
 import { TextField } from "@repo/ui/components/TextField";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -132,9 +130,9 @@ function OrganizationDetailsForm() {
       <Link href="/" className="cursor-pointer">
         <img src={logoMarkUrl} className="h-12 w-12" alt={t`Logo`} />
       </Link>
-      <Heading className="text-2xl">
+      <h2>
         <Trans>Tell us about your organization</Trans>
-      </Heading>
+      </h2>
       <div className="text-center text-muted-foreground text-sm">
         <Trans>We&apos;ll use this to set up your workspace.</Trans>
       </div>
@@ -151,30 +149,36 @@ function OrganizationDetailsForm() {
         className="flex w-full flex-col"
       />
 
-      <DomainInputField
+      <TextField
         name="slug"
         label={t`Subdomain`}
-        domain=".fundraiseos.com"
         isRequired={true}
         value={slug}
         onChange={setSlug}
         maxLength={63}
         placeholder={t`your-organization`}
-        isSubdomainFree={isAvailable}
-        description={isAvailable === false ? t`This subdomain is not available` : undefined}
+        errorMessage={isAvailable === false ? t`This subdomain is not available` : undefined}
+        description={t`Your workspace URL: ${slug || t`your-organization`}.fundraiseos.com`}
         className="flex w-full flex-col"
       />
 
-      <Select
-        name="orgType"
-        label={t`Organization type`}
-        selectedKey={orgType}
-        onSelectionChange={(key) => setOrgType(key as NpoType)}
-        isRequired={true}
-        className="flex w-full flex-col"
-      >
-        <NpoTypeItems />
-      </Select>
+      <Field className="flex w-full flex-col">
+        <FieldLabel>{t`Organization type`}</FieldLabel>
+        <Select
+          name="orgType"
+          value={orgType}
+          onValueChange={(value: string | null) => setOrgType((value ?? NpoType.Other) as NpoType)}
+          required={true}
+        >
+          <SelectTrigger className="w-full" aria-label={t`Organization type`}>
+            <SelectValue>{(value: string) => value || t`Select organization type`}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <NpoTypeItems />
+          </SelectContent>
+        </Select>
+        <FieldDescription>{t`Choose the category that best matches your organization`}</FieldDescription>
+      </Field>
 
       <TextField
         name="country"
@@ -198,21 +202,20 @@ function OrganizationDetailsForm() {
         className="flex w-full flex-col"
       />
 
-      <TextArea
+      <TextField
         name="description"
         label={t`Description`}
         value={description}
         onChange={setDescription}
         maxLength={500}
         placeholder={t`Briefly describe your organization`}
-        rows={3}
         className="flex w-full flex-col"
       />
 
       <Button
         type="submit"
         className="mt-4 w-full text-center"
-        isDisabled={!organizationName || !slug || slug.length < 3 || !country || isAvailable === false}
+        disabled={!organizationName || !slug || slug.length < 3 || !country || isAvailable === false}
       >
         <Trans>Continue</Trans>
       </Button>
@@ -220,7 +223,7 @@ function OrganizationDetailsForm() {
       <Link
         href="/signup"
         className="text-muted-foreground text-xs"
-        onPress={() => {
+        onClick={() => {
           setSignupState({ organizationName: "", slug: "", country: "" });
         }}
       >

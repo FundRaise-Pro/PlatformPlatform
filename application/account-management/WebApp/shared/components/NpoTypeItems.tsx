@@ -5,25 +5,25 @@ import { NpoType } from "@/shared/lib/api/client";
 export function NpoTypeItems() {
   return (
     <>
-      <SelectItem id={NpoType.Charity}>
+      <SelectItem value={NpoType.Charity}>
         <Trans>Charity</Trans>
       </SelectItem>
-      <SelectItem id={NpoType.Foundation}>
+      <SelectItem value={NpoType.Foundation}>
         <Trans>Foundation</Trans>
       </SelectItem>
-      <SelectItem id={NpoType.Ngo}>
+      <SelectItem value={NpoType.Ngo}>
         <Trans>NGO</Trans>
       </SelectItem>
-      <SelectItem id={NpoType.Religious}>
+      <SelectItem value={NpoType.Religious}>
         <Trans>Religious organization</Trans>
       </SelectItem>
-      <SelectItem id={NpoType.Educational}>
+      <SelectItem value={NpoType.Educational}>
         <Trans>Educational institution</Trans>
       </SelectItem>
-      <SelectItem id={NpoType.CommunityBased}>
+      <SelectItem value={NpoType.CommunityBased}>
         <Trans>Community-based organization</Trans>
       </SelectItem>
-      <SelectItem id={NpoType.Other}>
+      <SelectItem value={NpoType.Other}>
         <Trans>Other</Trans>
       </SelectItem>
     </>

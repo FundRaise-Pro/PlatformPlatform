@@ -16,7 +16,7 @@ import { DEFAULT_TENANT_SETTINGS } from "@/lib/tenant-config";
  */
 export async function getTenantSettings(): Promise<TenantSettings> {
   try {
-    const response = await fetch(apiUrl("/api/fundraiser/public/settings"), {
+    const response = await fetch(apiUrl("/api/fundraiser/tenant-settings/public"), {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       next: { revalidate: 60 }

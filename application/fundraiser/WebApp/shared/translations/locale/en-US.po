@@ -45,8 +45,8 @@ msgstr "{0} scans"
 msgid "{0} services"
 msgstr "{0} services"
 
-msgid "Accent"
-msgstr "Accent"
+msgid "Accent color"
+msgstr "Accent color"
 
 msgid "Account"
 msgstr "Account"
@@ -84,6 +84,9 @@ msgstr "Branches"
 msgid "Branding"
 msgstr "Branding"
 
+msgid "Branding updated successfully."
+msgstr "Branding updated successfully."
+
 msgid "Campaign"
 msgstr "Campaign"
 
@@ -95,9 +98,6 @@ msgstr "Coming soon"
 
 msgid "Configure payment gateway for receiving donations."
 msgstr "Configure payment gateway for receiving donations."
-
-msgid "Configure payments"
-msgstr "Configure payments"
 
 msgid "Configure your organization's branding, theme, and integrations."
 msgstr "Configure your organization's branding, theme, and integrations."
@@ -162,20 +162,47 @@ msgstr "Donations will appear here once campaigns start receiving contributions.
 msgid "Donor"
 msgstr "Donor"
 
-msgid "Edit branding"
-msgstr "Edit branding"
+msgid "E.g., +1 (555) 123-4567"
+msgstr "E.g., +1 (555) 123-4567"
 
-msgid "Edit domain"
-msgstr "Edit domain"
+msgid "E.g., Every child deserves a future"
+msgstr "E.g., Every child deserves a future"
 
-msgid "Edit theme"
-msgstr "Edit theme"
+msgid "E.g., https://example.com/favicon.ico"
+msgstr "E.g., https://example.com/favicon.ico"
+
+msgid "E.g., https://example.org/privacy"
+msgstr "E.g., https://example.org/privacy"
+
+msgid "E.g., https://example.org/terms"
+msgstr "E.g., https://example.org/terms"
+
+msgid "E.g., https://fonts.googleapis.com/..."
+msgstr "E.g., https://fonts.googleapis.com/..."
+
+msgid "E.g., Inter, Roboto"
+msgstr "E.g., Inter, Roboto"
+
+msgid "E.g., Save the Children"
+msgstr "E.g., Save the Children"
+
+msgid "E.g., support@example.org"
+msgstr "E.g., support@example.org"
 
 msgid "Email"
 msgstr "Email"
 
 msgid "Events"
 msgstr "Events"
+
+msgid "Favicon URL"
+msgstr "Favicon URL"
+
+msgid "Font family"
+msgstr "Font family"
+
+msgid "Font URL"
+msgstr "Font URL"
 
 msgid "Form name"
 msgstr "Form name"
@@ -210,6 +237,9 @@ msgstr "Invite team members to help manage your organization."
 msgid "Invite user"
 msgstr "Invite user"
 
+msgid "Live preview"
+msgstr "Live preview"
+
 msgid "Loading applications..."
 msgstr "Loading applications..."
 
@@ -234,9 +264,6 @@ msgstr "Loading forms..."
 msgid "Loading QR codes..."
 msgstr "Loading QR codes..."
 
-msgid "Loading settings..."
-msgstr "Loading settings..."
-
 msgid "Loading users..."
 msgstr "Loading users..."
 
@@ -254,6 +281,9 @@ msgstr "Manage your organization's locations and branches."
 
 msgid "Manage your plan and billing."
 msgstr "Manage your plan and billing."
+
+msgid "More information"
+msgstr "More information"
 
 msgid "Name"
 msgstr "Name"
@@ -330,8 +360,11 @@ msgstr "Plan and manage fundraising events."
 msgid "Plan event"
 msgstr "Plan event"
 
-msgid "Primary"
-msgstr "Primary"
+msgid "Primary color"
+msgstr "Primary color"
+
+msgid "Privacy URL"
+msgstr "Privacy URL"
 
 msgid "Published"
 msgstr "Published"
@@ -351,8 +384,20 @@ msgstr "Review and manage beneficiary applications."
 msgid "Roles"
 msgstr "Roles"
 
-msgid "Secondary"
-msgstr "Secondary"
+msgid "Save branding"
+msgstr "Save branding"
+
+msgid "Save theme"
+msgstr "Save theme"
+
+msgid "Saving..."
+msgstr "Saving..."
+
+msgid "Secondary color"
+msgstr "Secondary color"
+
+msgid "See real-time changes as you edit your theme colors."
+msgstr "See real-time changes as you edit your theme colors."
 
 msgid "Settings"
 msgstr "Settings"
@@ -372,6 +417,9 @@ msgstr "Submitted"
 msgid "Subscription"
 msgstr "Subscription"
 
+msgid "Success"
+msgstr "Success"
+
 msgid "Support email"
 msgstr "Support email"
 
@@ -381,8 +429,14 @@ msgstr "Tagline"
 msgid "Team members"
 msgstr "Team members"
 
+msgid "Terms URL"
+msgstr "Terms URL"
+
 msgid "Theme"
 msgstr "Theme"
+
+msgid "Theme updated successfully."
+msgstr "Theme updated successfully."
 
 msgid "Toggle sidebar"
 msgstr "Toggle sidebar"
@@ -404,6 +458,9 @@ msgstr "Version"
 
 msgid "View and manage donations and transactions."
 msgstr "View and manage donations and transactions."
+
+msgid "Website preview"
+msgstr "Website preview"
 
 msgid "Write blog post"
 msgstr "Write blog post"

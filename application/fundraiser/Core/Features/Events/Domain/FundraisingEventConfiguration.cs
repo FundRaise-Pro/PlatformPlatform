@@ -14,11 +14,14 @@ public sealed class FundraisingEventConfiguration : IEntityTypeConfiguration<Fun
         builder.MapStronglyTypedLongId<FundraisingEvent, TenantId>(e => e.TenantId);
 
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.Slug).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Description).IsRequired();
         builder.Property(e => e.Location).HasMaxLength(300);
         builder.Property(e => e.TargetAmount).HasColumnType("decimal(18,2)");
         builder.Property(e => e.RaisedAmount).HasColumnType("decimal(18,2)");
         builder.Property(e => e.Status).HasMaxLength(50);
         builder.Property(e => e.ImageUrl).HasMaxLength(500);
+
+        builder.HasIndex(e => new { e.TenantId, e.Slug });
     }
 }
