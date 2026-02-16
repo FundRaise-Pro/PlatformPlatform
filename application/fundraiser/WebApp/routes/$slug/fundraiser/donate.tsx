@@ -13,8 +13,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
-import { api } from "@/shared/lib/api/client";
-import { FundraisingTargetType, TransactionType } from "@/shared/lib/api/api.generated";
+import { api, type FundraisingTargetType, type TransactionType } from "@/shared/lib/api/client";
 
 export const Route = createFileRoute("/$slug/fundraiser/donate")({
   component: DonatePage
@@ -42,11 +41,11 @@ export default function DonatePage() {
         body: {
           name: String(data.name || t`Online donation`),
           description: String(data.description || ""),
-          type: TransactionType.Donation,
+          type: "Donation" as TransactionType,
           amount: Number(data.amount),
           payeeName: String(data.payeeName || "") || null,
           payeeEmail: String(data.payeeEmail || "") || null,
-          targetType: FundraisingTargetType.Campaign,
+          targetType: "Campaign" as FundraisingTargetType,
           targetId: ""
         }
       });

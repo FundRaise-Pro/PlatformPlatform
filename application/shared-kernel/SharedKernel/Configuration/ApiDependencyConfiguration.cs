@@ -21,17 +21,16 @@ public static class ApiDependencyConfiguration
 {
     private const string LocalhostCorsPolicyName = "LocalhostCorsPolicy";
 
-    private static readonly string LocalhostUrl = Environment.GetEnvironmentVariable(SinglePageAppConfiguration.PublicUrlKey)!;
-
     extension(WebApplicationBuilder builder)
     {
         public WebApplicationBuilder AddApiInfrastructure()
         {
-            if (builder.Environment.IsDevelopment())
+            var localhostUrl = Environment.GetEnvironmentVariable(SinglePageAppConfiguration.PublicUrlKey);
+            if (builder.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(localhostUrl))
             {
                 builder.Services.AddCors(options => options.AddPolicy(
                         LocalhostCorsPolicyName,
-                        policyBuilder => { policyBuilder.WithOrigins(LocalhostUrl).AllowAnyMethod().AllowAnyHeader(); }
+                        policyBuilder => { policyBuilder.WithOrigins(localhostUrl).AllowAnyMethod().AllowAnyHeader(); }
                     )
                 );
             }

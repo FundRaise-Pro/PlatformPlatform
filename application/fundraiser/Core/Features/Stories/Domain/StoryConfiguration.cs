@@ -31,6 +31,7 @@ public sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.OwnsMany(s => s.Images, b =>
         {
+            b.ToTable("StoryImage");
             b.WithOwner().HasForeignKey("StoryId");
             b.Property(i => i.BlobUrl).HasMaxLength(1000).IsRequired();
             b.Property(i => i.BlobName).HasMaxLength(500).IsRequired();
@@ -39,6 +40,7 @@ public sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.OwnsMany(s => s.Updates, b =>
         {
+            b.ToTable("StoryUpdate");
             b.WithOwner().HasForeignKey("StoryId");
             b.Property(u => u.Title).HasMaxLength(200).IsRequired();
             b.Property(u => u.Content).IsRequired();

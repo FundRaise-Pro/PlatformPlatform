@@ -22,6 +22,18 @@ function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(amount);
 }
 
+function getIdValue(id: unknown): string {
+  if (typeof id === "string") return id;
+  if (typeof id === "number") return String(id);
+  if (id && typeof id === "object") {
+    const wrapped = id as { value?: unknown; Value?: unknown };
+    const value = wrapped.value ?? wrapped.Value;
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+  }
+  return "";
+}
+
 export default function CampaignsPage() {
   const slug = useUserInfo()?.tenantSlug;
   const { data: campaigns, isLoading } = api.useQuery("get", "/api/fundraiser/campaigns");
@@ -82,29 +94,33 @@ export default function CampaignsPage() {
                 </tr>
               </thead>
               <tbody>
-                {campaigns.map((campaign) => (
-                  <tr
-                    key={String(campaign.id)}
-                    className="cursor-pointer border-border border-b last:border-b-0 hover:bg-hover-background"
-                    onClick={() => setSelectedCampaignId(String(campaign.id))}
-                  >
-                    <td className="px-4 py-3">
-                      <Text className="font-medium text-foreground">{campaign.title}</Text>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={campaign.status === "Published" ? "success" : "neutral"}>{campaign.status}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">
-                      {(campaign.storyCount ?? 0) + (campaign.eventCount ?? 0)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">
-                      {formatCurrency(campaign.raisedAmount ?? 0)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">
-                      {campaign.publishedAt ? new Date(campaign.publishedAt).toLocaleDateString() : "-"}
-                    </td>
-                  </tr>
-                ))}
+                {campaigns.map((campaign, index) => {
+                  const campaignId = getIdValue(campaign.id);
+
+                  return (
+                    <tr
+                      key={campaignId || `campaign-${index}`}
+                      className="cursor-pointer border-border border-b last:border-b-0 hover:bg-hover-background"
+                      onClick={() => campaignId && setSelectedCampaignId(campaignId)}
+                    >
+                      <td className="px-4 py-3">
+                        <Text className="font-medium text-foreground">{campaign.title}</Text>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={campaign.status === "Published" ? "success" : "neutral"}>{campaign.status}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">
+                        {(campaign.storyCount ?? 0) + (campaign.eventCount ?? 0)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">
+                        {formatCurrency(campaign.raisedAmount ?? 0)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">
+                        {campaign.publishedAt ? new Date(campaign.publishedAt).toLocaleDateString() : "-"}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

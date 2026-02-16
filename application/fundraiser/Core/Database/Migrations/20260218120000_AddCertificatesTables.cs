@@ -12,17 +12,20 @@ public sealed class AddCertificatesTables : Migration
     {
         migrationBuilder.Sql("""
             -- DonorProfile: add SARS identity columns
-            IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'FirstName')
-                ALTER TABLE [dbo].[DonorProfile] ADD [FirstName] NVARCHAR(150) NULL;
+            IF OBJECT_ID('dbo.DonorProfile', 'U') IS NOT NULL
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'FirstName')
+                    ALTER TABLE [dbo].[DonorProfile] ADD [FirstName] NVARCHAR(150) NULL;
 
-            IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'LastName')
-                ALTER TABLE [dbo].[DonorProfile] ADD [LastName] NVARCHAR(150) NULL;
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'LastName')
+                    ALTER TABLE [dbo].[DonorProfile] ADD [LastName] NVARCHAR(150) NULL;
 
-            IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'Email')
-                ALTER TABLE [dbo].[DonorProfile] ADD [Email] NVARCHAR(320) NULL;
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'Email')
+                    ALTER TABLE [dbo].[DonorProfile] ADD [Email] NVARCHAR(320) NULL;
 
-            IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'PhoneNumber')
-                ALTER TABLE [dbo].[DonorProfile] ADD [PhoneNumber] NVARCHAR(30) NULL;
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'PhoneNumber')
+                    ALTER TABLE [dbo].[DonorProfile] ADD [PhoneNumber] NVARCHAR(30) NULL;
+            END
 
             -- CertificateTemplates table
             IF OBJECT_ID('dbo.CertificateTemplate', 'U') IS NULL
@@ -108,17 +111,20 @@ public sealed class AddCertificatesTables : Migration
             IF OBJECT_ID('dbo.CertificateTemplate', 'U') IS NOT NULL
                 DROP TABLE [dbo].[CertificateTemplate];
 
-            IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'PhoneNumber')
-                ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [PhoneNumber];
+            IF OBJECT_ID('dbo.DonorProfile', 'U') IS NOT NULL
+            BEGIN
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'PhoneNumber')
+                    ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [PhoneNumber];
 
-            IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'Email')
-                ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [Email];
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'Email')
+                    ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [Email];
 
-            IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'LastName')
-                ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [LastName];
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'LastName')
+                    ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [LastName];
 
-            IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'FirstName')
-                ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [FirstName];
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.DonorProfile') AND name = 'FirstName')
+                    ALTER TABLE [dbo].[DonorProfile] DROP COLUMN [FirstName];
+            END
             """);
     }
 }

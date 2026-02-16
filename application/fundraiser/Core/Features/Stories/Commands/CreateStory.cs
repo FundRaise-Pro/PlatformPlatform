@@ -14,7 +14,7 @@ public sealed record CreateStoryCommand : ICommand, IRequest<Result<StoryId>>
     public required string Content { get; init; }
     public string? Summary { get; init; }
     public decimal GoalAmount { get; init; }
-    public CampaignId? CampaignId { get; init; }
+    public string? CampaignId { get; init; }
 }
 
 public sealed class CreateStoryValidator : AbstractValidator<CreateStoryCommand>
@@ -25,6 +25,9 @@ public sealed class CreateStoryValidator : AbstractValidator<CreateStoryCommand>
         RuleFor(x => x.Content).NotEmpty();
         RuleFor(x => x.Summary).MaximumLength(2000);
         RuleFor(x => x.GoalAmount).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.CampaignId)
+            .Must(id => string.IsNullOrWhiteSpace(id) || CampaignId.TryParse(id, out _))
+            .WithMessage("Campaign ID is invalid.");
     }
 }
 
@@ -37,7 +40,13 @@ public sealed class CreateStoryHandler(
     public async Task<Result<StoryId>> Handle(CreateStoryCommand command, CancellationToken cancellationToken)
     {
         var tenantId = executionContext.TenantId!;
-        var story = Story.Create(tenantId, command.Title, command.Content, command.GoalAmount, command.CampaignId);
+        CampaignId? campaignId = null;
+        if (!string.IsNullOrWhiteSpace(command.CampaignId) && !CampaignId.TryParse(command.CampaignId, out campaignId))
+        {
+            return Result<StoryId>.BadRequest("Campaign ID is invalid.");
+        }
+
+        var story = Story.Create(tenantId, command.Title, command.Content, command.GoalAmount, campaignId);
 
         if (command.Summary is not null)
             story.UpdateContent(command.Title, command.Content, command.Summary);

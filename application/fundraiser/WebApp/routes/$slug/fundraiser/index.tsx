@@ -41,7 +41,8 @@ function StatCard({
 }
 
 export default function Dashboard() {
-  const slug = useUserInfo()?.tenantSlug;
+  const userInfo = useUserInfo();
+  const slug = userInfo?.tenantSlug;
   const { data: campaigns } = api.useQuery("get", "/api/fundraiser/campaigns");
   const { data: donations } = api.useQuery("get", "/api/fundraiser/donations");
   const { data: stories } = api.useQuery("get", "/api/fundraiser/stories");
@@ -57,7 +58,7 @@ export default function Dashboard() {
   return (
     <>
       <FundraiserSideMenu />
-      <AppLayout topMenu={<TopMenu />} title={t`Dashboard`} subtitle={t`Overview of your fundraising platform.`}>
+      <AppLayout topMenu={<TopMenu />} title={userInfo?.firstName ? t`Welcome home, ${userInfo.firstName}` : t`Welcome home`} subtitle={t`Here's your overview of what's happening.`}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard icon={HeartIcon} label={t`Campaigns`} value={campaignCount} />
           <StatCard icon={BookHeartIcon} label={t`Stories`} value={storyCount} />

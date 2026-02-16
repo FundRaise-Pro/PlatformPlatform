@@ -14,8 +14,7 @@ import { TextField } from "@repo/ui/components/TextField";
 import { mutationSubmitter } from "@repo/ui/forms/mutationSubmitter";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { api } from "@/shared/lib/api/client";
-import { FundraisingTargetType, TransactionType } from "@/shared/lib/api/api.generated";
+import { api, type FundraisingTargetType, type TransactionType } from "@/shared/lib/api/client";
 
 type RecordDonationDialogProps = Readonly<{
   isOpen: boolean;
@@ -47,11 +46,11 @@ export function RecordDonationDialog({ isOpen, onClose }: RecordDonationDialogPr
         body: {
           name: String(data.name || t`Offline donation`),
           description: String(data.description || ""),
-          type: TransactionType.Donation,
+          type: "Donation" as TransactionType,
           amount: Number(data.amount),
           payeeName: String(data.payeeName || "") || null,
           payeeEmail: String(data.payeeEmail || "") || null,
-          targetType: FundraisingTargetType.Campaign,
+          targetType: "Campaign" as FundraisingTargetType,
           targetId: ""
         }
       });

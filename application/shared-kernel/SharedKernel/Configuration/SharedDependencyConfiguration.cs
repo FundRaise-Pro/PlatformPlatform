@@ -18,6 +18,7 @@ using PlatformPlatform.SharedKernel.Integrations.Email;
 using PlatformPlatform.SharedKernel.Persistence;
 using PlatformPlatform.SharedKernel.PipelineBehaviors;
 using PlatformPlatform.SharedKernel.Platform;
+using PlatformPlatform.SharedKernel.StronglyTypedIds;
 using PlatformPlatform.SharedKernel.Telemetry;
 
 namespace PlatformPlatform.SharedKernel.Configuration;
@@ -27,7 +28,7 @@ public static class SharedDependencyConfiguration
     // Ensure that enums are serialized as strings and use CamelCase
     public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new StronglyTypedIdJsonConverterFactory(), new JsonStringEnumConverter() },
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 

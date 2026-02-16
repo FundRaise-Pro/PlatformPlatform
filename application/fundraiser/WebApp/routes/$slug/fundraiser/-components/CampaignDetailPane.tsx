@@ -17,10 +17,22 @@ import { toast } from "sonner";
 import { api } from "@/shared/lib/api/client";
 
 type CampaignDetailPaneProps = Readonly<{
-  campaignId: string;
+  campaignId: unknown;
   isOpen: boolean;
   onClose: () => void;
 }>;
+
+function getIdValue(id: unknown): string {
+  if (typeof id === "string") return id;
+  if (typeof id === "number") return String(id);
+  if (id && typeof id === "object") {
+    const wrapped = id as { value?: unknown; Value?: unknown };
+    const value = wrapped.value ?? wrapped.Value;
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+  }
+  return "";
+}
 
 function campaignStatusVariant(status: string) {
   switch (status) {
@@ -49,8 +61,9 @@ function formatCurrency(amount: number) {
 
 export function CampaignDetailPane({ campaignId, isOpen, onClose }: CampaignDetailPaneProps) {
   const queryClient = useQueryClient();
+  const campaignIdValue = getIdValue(campaignId);
   const { data: campaign, isLoading } = api.useQuery("get", "/api/fundraiser/campaigns/{id}", {
-    params: { path: { id: campaignId } },
+    params: { path: { id: campaignIdValue } },
   });
 
   const invalidate = () => {
@@ -73,7 +86,7 @@ export function CampaignDetailPane({ campaignId, isOpen, onClose }: CampaignDeta
   });
 
   const anyPending = publishMutation.isPending || deleteMutation.isPending;
-  const pathParams = { params: { path: { id: campaignId } } };
+  const pathParams = { params: { path: { id: campaignIdValue } } };
 
   return (
     <SidePane isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>

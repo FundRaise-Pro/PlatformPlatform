@@ -6646,12 +6646,8 @@
             "format": "decimal"
           },
           "campaignId": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/CampaignId"
-              }
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -7842,12 +7838,8 @@
             "format": "decimal"
           },
           "campaignId": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/CampaignId"
-              }
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
