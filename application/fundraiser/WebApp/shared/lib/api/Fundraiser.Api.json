@@ -1096,6 +1096,56 @@
         }
       }
     },
+    "/api/fundraiser/donations/raised-amount/{targetType}/{targetId}": {
+      "get": {
+        "tags": [
+          "Donations"
+        ],
+        "operationId": "GetApiFundraiserDonationsRaisedAmount",
+        "parameters": [
+          {
+            "name": "targetType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FundraisingTargetType"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "targetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetRaisedAmountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/fundraiser/donations/transactions/{id}/success": {
       "post": {
         "tags": [
@@ -1132,6 +1182,59 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/donations/transactions/{id}/initiate-payment": {
+      "post": {
+        "tags": [
+          "Donations"
+        ],
+        "operationId": "PostApiFundraiserDonationsTransactionsInitiatePayment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TransactionId"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiatePaymentCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiatePaymentResponse"
                 }
               }
             }
@@ -1236,6 +1339,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal-api/fundraiser/tenants/{tenantId}/provision": {
+      "post": {
+        "operationId": "PostInternalApiFundraiserTenantsProvision",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TenantId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/internal-api/fundraiser/tenants/resolve": {
+      "get": {
+        "operationId": "GetInternalApiFundraiserTenantsResolve",
+        "parameters": [
+          {
+            "name": "host",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedTenantResponse"
                 }
               }
             }
@@ -1994,55 +2146,6 @@
         }
       }
     },
-    "/internal-api/fundraiser/tenants/{tenantId}/provision": {
-      "post": {
-        "operationId": "PostInternalApiFundraiserTenantsProvision",
-        "parameters": [
-          {
-            "name": "tenantId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/TenantId"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/internal-api/fundraiser/tenants/resolve": {
-      "get": {
-        "operationId": "GetInternalApiFundraiserTenantsResolve",
-        "parameters": [
-          {
-            "name": "host",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResolvedTenantResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/fundraiser/public/settings": {
       "get": {
         "tags": [
@@ -2434,6 +2537,419 @@
             "x-position": 1
           }
         ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories": {
+      "get": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "GetApiFundraiserStoriesAll",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorySummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStories",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoryCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoryId"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}": {
+      "get": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "GetApiFundraiserStories",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PutApiFundraiserStories",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStoryCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "DeleteApiFundraiserStories",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/publish": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesPublish",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/submit-screening": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesSubmitScreening",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/approve": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesApprove",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/complete-fundraising": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesCompleteFundraising",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/mark-fulfilment-in-progress": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesMarkFulfilmentInProgress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/mark-fulfilled": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesMarkFulfilled",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/stories/{id}/updates": {
+      "post": {
+        "tags": [
+          "Stories"
+        ],
+        "operationId": "PostApiFundraiserStoriesUpdates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StoryId"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddStoryUpdateCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
         "responses": {
           "400": {
             "description": "",
@@ -4319,6 +4835,17 @@
               }
             ]
           },
+          "targetType": {
+            "$ref": "#/components/schemas/FundraisingTargetType"
+          },
+          "targetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchantReference": {
+            "type": "string",
+            "nullable": true
+          },
           "completedAt": {
             "type": "string",
             "format": "date-time",
@@ -4393,6 +4920,20 @@
           "GooglePay"
         ]
       },
+      "FundraisingTargetType": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Campaign",
+          "Story",
+          "Event"
+        ],
+        "enum": [
+          "Campaign",
+          "Story",
+          "Event"
+        ]
+      },
       "PaymentProcessingLogResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -4413,6 +4954,22 @@
           }
         }
       },
+      "TargetRaisedAmountResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "targetType": {
+            "$ref": "#/components/schemas/FundraisingTargetType"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
       "CreateTransactionCommand": {
         "type": "object",
         "additionalProperties": false,
@@ -4429,6 +4986,12 @@
           "amount": {
             "type": "number",
             "format": "decimal"
+          },
+          "targetType": {
+            "$ref": "#/components/schemas/FundraisingTargetType"
+          },
+          "targetId": {
+            "type": "string"
           },
           "payeeName": {
             "type": "string",
@@ -4467,6 +5030,36 @@
                 "$ref": "#/components/schemas/PaymentMethod"
               }
             ]
+          }
+        }
+      },
+      "InitiatePaymentResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "actionUrl": {
+            "type": "string"
+          },
+          "formFields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InitiatePaymentCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "transactionId": {
+            "$ref": "#/components/schemas/TransactionId"
+          },
+          "returnUrl": {
+            "type": "string"
+          },
+          "cancelUrl": {
+            "type": "string"
           }
         }
       },
@@ -4575,6 +5168,48 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          }
+        }
+      },
+      "TenantId": {
+        "type": "string"
+      },
+      "StronglyTypedLongIdOfTenantId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfLongAndTenantId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfLongAndTenantId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ResolvedTenantResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenantId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subdomain": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
@@ -4818,10 +5453,6 @@
             "type": "number",
             "format": "decimal"
           },
-          "raisedAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
           "status": {
             "$ref": "#/components/schemas/EventStatus"
           },
@@ -4900,10 +5531,6 @@
             "format": "date-time"
           },
           "targetAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "raisedAmount": {
             "type": "number",
             "format": "decimal"
           },
@@ -5409,48 +6036,6 @@
           }
         }
       },
-      "TenantId": {
-        "type": "string"
-      },
-      "StronglyTypedLongIdOfTenantId": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StronglyTypedIdOfLongAndTenantId"
-          },
-          {
-            "type": "object",
-            "x-abstract": true,
-            "additionalProperties": false
-          }
-        ]
-      },
-      "StronglyTypedIdOfLongAndTenantId": {
-        "type": "object",
-        "x-abstract": true,
-        "additionalProperties": false,
-        "properties": {
-          "value": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "ResolvedTenantResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "tenantId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "subdomain": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      },
       "PublicTenantSettingsResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -5789,10 +6374,6 @@
             "type": "number",
             "format": "decimal"
           },
-          "raisedAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
           "imageUrl": {
             "type": "string",
             "nullable": true
@@ -5977,6 +6558,302 @@
           "ipAddress": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "StorySummaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/StoryId"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fundraisingStatus": {
+            "$ref": "#/components/schemas/FundraisingStatus"
+          },
+          "fulfilmentStatus": {
+            "$ref": "#/components/schemas/FulfilmentStatus"
+          },
+          "campaignId": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignId"
+              }
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StoryId": {
+        "type": "string",
+        "format": "sto_{string}"
+      },
+      "StronglyTypedUlidOfStoryId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndStoryId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndStoryId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "FundraisingStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Draft",
+          "RequiresScreening",
+          "Approved",
+          "Raising",
+          "Funded",
+          "Archived"
+        ],
+        "enum": [
+          "Draft",
+          "RequiresScreening",
+          "Approved",
+          "Raising",
+          "Funded",
+          "Archived"
+        ]
+      },
+      "FulfilmentStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "InProgress",
+          "Fulfilled"
+        ],
+        "enum": [
+          "Pending",
+          "InProgress",
+          "Fulfilled"
+        ]
+      },
+      "StoryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/StoryId"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fundraisingStatus": {
+            "$ref": "#/components/schemas/FundraisingStatus"
+          },
+          "fulfilmentStatus": {
+            "$ref": "#/components/schemas/FulfilmentStatus"
+          },
+          "campaignId": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignId"
+              }
+            ]
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "screeningDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoryImageResponse"
+            }
+          },
+          "updates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoryUpdateResponse"
+            }
+          }
+        }
+      },
+      "StoryImageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "blobUrl": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "fileSizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "StoryUpdateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateStoryCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "campaignId": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignId"
+              }
+            ]
+          }
+        }
+      },
+      "UpdateStoryCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/StoryId"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "AddStoryUpdateCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/StoryId"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
           }
         }
       },

@@ -15,7 +15,7 @@ import { mutationSubmitter } from "@repo/ui/forms/mutationSubmitter";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/shared/lib/api/client";
-import { TransactionType } from "@/shared/lib/api/api.generated";
+import { FundraisingTargetType, TransactionType } from "@/shared/lib/api/api.generated";
 
 type RecordDonationDialogProps = Readonly<{
   isOpen: boolean;
@@ -50,7 +50,9 @@ export function RecordDonationDialog({ isOpen, onClose }: RecordDonationDialogPr
           type: TransactionType.Donation,
           amount: Number(data.amount),
           payeeName: String(data.payeeName || "") || null,
-          payeeEmail: String(data.payeeEmail || "") || null
+          payeeEmail: String(data.payeeEmail || "") || null,
+          targetType: FundraisingTargetType.Campaign,
+          targetId: ""
         }
       });
 

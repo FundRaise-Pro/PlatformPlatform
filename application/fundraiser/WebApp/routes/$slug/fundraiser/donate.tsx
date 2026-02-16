@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
-import { TransactionType } from "@/shared/lib/api/api.generated";
+import { FundraisingTargetType, TransactionType } from "@/shared/lib/api/api.generated";
 
 export const Route = createFileRoute("/$slug/fundraiser/donate")({
   component: DonatePage
@@ -45,7 +45,9 @@ export default function DonatePage() {
           type: TransactionType.Donation,
           amount: Number(data.amount),
           payeeName: String(data.payeeName || "") || null,
-          payeeEmail: String(data.payeeEmail || "") || null
+          payeeEmail: String(data.payeeEmail || "") || null,
+          targetType: FundraisingTargetType.Campaign,
+          targetId: ""
         }
       });
 

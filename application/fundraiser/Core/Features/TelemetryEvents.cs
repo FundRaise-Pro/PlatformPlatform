@@ -7,6 +7,7 @@ using PlatformPlatform.Fundraiser.Features.EndUsers.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.Fundraiser.Features.Forms.Domain;
 using PlatformPlatform.Fundraiser.Features.QRCodes.Domain;
+using PlatformPlatform.Fundraiser.Features.Stories.Domain;
 using PlatformPlatform.Fundraiser.Features.TenantSettings.Domain;
 using PlatformPlatform.Fundraiser.Features.Users.Domain;
 using PlatformPlatform.SharedKernel.Telemetry;
@@ -30,6 +31,31 @@ public sealed class CampaignPublished(CampaignId campaignId)
 
 public sealed class CampaignDeleted(CampaignId campaignId)
     : TelemetryEvent(("campaign_id", campaignId));
+
+// --- Stories ---
+public sealed class StoryCreated(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryUpdated(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryPublished(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryDeleted(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StorySubmittedForScreening(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryApproved(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryFundraisingCompleted(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryFulfilled(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
 
 // --- Blogs ---
 public sealed class BlogCategoryCreated(BlogCategoryId categoryId)
