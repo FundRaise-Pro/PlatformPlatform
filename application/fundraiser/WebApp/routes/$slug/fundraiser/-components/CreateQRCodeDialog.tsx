@@ -35,7 +35,7 @@ export function CreateQRCodeDialog({ isOpen, onClose }: CreateQRCodeDialogProps)
       body: {
         name: String(data.name),
         redirectUrl: String(data.redirectUrl),
-        qrCodeType: String(data.qrCodeType || "DonationPage"),
+        qrCodeType: String(data.qrCodeType || "DonationPage") as never,
       },
     });
   };
