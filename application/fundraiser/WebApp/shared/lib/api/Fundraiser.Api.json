@@ -4434,6 +4434,22 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "storyCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
@@ -4504,6 +4520,22 @@
             "format": "date-time",
             "nullable": true
           },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "storyCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "images": {
             "type": "array",
             "items": {
@@ -4514,6 +4546,18 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "linkedStories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignLinkedStoryResponse"
+            }
+          },
+          "linkedEvents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignLinkedEventResponse"
             }
           }
         }
@@ -4537,6 +4581,146 @@
             "format": "int64"
           }
         }
+      },
+      "CampaignLinkedStoryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/StoryId"
+          },
+          "title": {
+            "type": "string"
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fundraisingStatus": {
+            "$ref": "#/components/schemas/FundraisingStatus"
+          }
+        }
+      },
+      "StoryId": {
+        "type": "string",
+        "format": "sto_{string}"
+      },
+      "StronglyTypedUlidOfStoryId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndStoryId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndStoryId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "FundraisingStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Draft",
+          "RequiresScreening",
+          "Approved",
+          "Raising",
+          "Funded",
+          "Archived"
+        ],
+        "enum": [
+          "Draft",
+          "RequiresScreening",
+          "Approved",
+          "Raising",
+          "Funded",
+          "Archived"
+        ]
+      },
+      "CampaignLinkedEventResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/FundraisingEventId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "targetAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          }
+        }
+      },
+      "FundraisingEventId": {
+        "type": "string",
+        "format": "evt_{string}"
+      },
+      "StronglyTypedUlidOfFundraisingEventId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndFundraisingEventId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndFundraisingEventId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "EventStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Planned",
+          "InProgress",
+          "Completed",
+          "Cancelled"
+        ],
+        "enum": [
+          "Planned",
+          "InProgress",
+          "Completed",
+          "Cancelled"
+        ]
       },
       "CreateCampaignCommand": {
         "type": "object",
@@ -5465,49 +5649,6 @@
             "format": "date-time"
           }
         }
-      },
-      "FundraisingEventId": {
-        "type": "string",
-        "format": "evt_{string}"
-      },
-      "StronglyTypedUlidOfFundraisingEventId": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndFundraisingEventId"
-          },
-          {
-            "type": "object",
-            "x-abstract": true,
-            "additionalProperties": false
-          }
-        ]
-      },
-      "StronglyTypedIdOfStringAndFundraisingEventId": {
-        "type": "object",
-        "x-abstract": true,
-        "additionalProperties": false,
-        "properties": {
-          "value": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "EventStatus": {
-        "type": "string",
-        "description": "",
-        "x-enumNames": [
-          "Planned",
-          "InProgress",
-          "Completed",
-          "Cancelled"
-        ],
-        "enum": [
-          "Planned",
-          "InProgress",
-          "Completed",
-          "Cancelled"
-        ]
       },
       "EventResponse": {
         "type": "object",
@@ -6607,53 +6748,6 @@
             "format": "date-time"
           }
         }
-      },
-      "StoryId": {
-        "type": "string",
-        "format": "sto_{string}"
-      },
-      "StronglyTypedUlidOfStoryId": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndStoryId"
-          },
-          {
-            "type": "object",
-            "x-abstract": true,
-            "additionalProperties": false
-          }
-        ]
-      },
-      "StronglyTypedIdOfStringAndStoryId": {
-        "type": "object",
-        "x-abstract": true,
-        "additionalProperties": false,
-        "properties": {
-          "value": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "FundraisingStatus": {
-        "type": "string",
-        "description": "",
-        "x-enumNames": [
-          "Draft",
-          "RequiresScreening",
-          "Approved",
-          "Raising",
-          "Funded",
-          "Archived"
-        ],
-        "enum": [
-          "Draft",
-          "RequiresScreening",
-          "Approved",
-          "Raising",
-          "Funded",
-          "Archived"
-        ]
       },
       "FulfilmentStatus": {
         "type": "string",
