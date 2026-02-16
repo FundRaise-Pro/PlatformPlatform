@@ -103,6 +103,20 @@ public sealed class PlanFeatureGuard(
         return FeatureCheckResult.Allowed();
     }
 
+    /// <summary>Checks if the tenant can generate Section 18A tax certificates.</summary>
+    public async Task<FeatureCheckResult> CanGenerateCertificatesAsync(CancellationToken cancellationToken)
+    {
+        var info = await GetSubscriptionInfoAsync(cancellationToken);
+        if (info is null) return FeatureCheckResult.Allowed();
+
+        if (!info.CertificatesEnabled)
+        {
+            return FeatureCheckResult.Denied($"Tax certificate generation is not available on the '{info.Plan}' plan. Please upgrade to Pro or Enterprise.");
+        }
+
+        return FeatureCheckResult.Allowed();
+    }
+
     /// <summary>Gets the full subscription info for the current tenant (cached).</summary>
     public async Task<SubscriptionInfo?> GetSubscriptionInfoAsync(CancellationToken cancellationToken)
     {

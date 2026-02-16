@@ -909,6 +909,319 @@
         }
       }
     },
+    "/api/fundraiser/certificates/templates": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "GetApiFundraiserCertificatesTemplatesAll",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CertificateTemplateSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "PostApiFundraiserCertificatesTemplates",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCertificateTemplateCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateTemplateId"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/certificates/templates/{id}": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "GetApiFundraiserCertificatesTemplates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CertificateTemplateId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "PutApiFundraiserCertificatesTemplates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CertificateTemplateId"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCertificateTemplateCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/certificates/eligibility/{taxYear}": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "GetApiFundraiserCertificatesEligibility",
+        "parameters": [
+          {
+            "name": "taxYear",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateEligibilityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/certificates/batches": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "GetApiFundraiserCertificatesBatchesAll",
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CertificateBatchSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/certificates/batches/{id}": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "GetApiFundraiserCertificatesBatches",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CertificateIssuanceBatchId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateBatchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/certificates/generate": {
+      "post": {
+        "tags": [
+          "Certificates"
+        ],
+        "operationId": "PostApiFundraiserCertificatesGenerate",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateCertificatesCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateIssuanceBatchId"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/fundraiser/donations": {
       "get": {
         "tags": [
@@ -4879,6 +5192,504 @@
           }
         }
       },
+      "CertificateTemplateSummaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CertificateTemplateId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "pboNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CertificateTemplateId": {
+        "type": "string",
+        "format": "ctp_{string}"
+      },
+      "StronglyTypedUlidOfCertificateTemplateId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndCertificateTemplateId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndCertificateTemplateId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CertificateTemplateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CertificateTemplateId"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "pboNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "signatoryName": {
+            "type": "string",
+            "nullable": true
+          },
+          "signatoryTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateCertificateTemplateCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "pboNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "signatoryName": {
+            "type": "string",
+            "nullable": true
+          },
+          "signatoryTitle": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateCertificateTemplateCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CertificateTemplateId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "pboNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "organisationAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "signatoryName": {
+            "type": "string",
+            "nullable": true
+          },
+          "signatoryTitle": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CertificateEligibilityResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalDonorsWithProfile": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eligibleDonors": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ineligibleDonors": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalEligibleAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "donors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonorEligibilitySummary"
+            }
+          }
+        }
+      },
+      "DonorEligibilitySummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "donorProfileId": {
+            "$ref": "#/components/schemas/DonorProfileId"
+          },
+          "donorName": {
+            "type": "string"
+          },
+          "isEligible": {
+            "type": "boolean"
+          },
+          "ineligibilityReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalDonated": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "donationCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DonorProfileId": {
+        "type": "string",
+        "format": "dnr_{string}"
+      },
+      "StronglyTypedUlidOfDonorProfileId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndDonorProfileId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndDonorProfileId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CertificateBatchSummaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CertificateIssuanceBatchId"
+          },
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "templateId": {
+            "$ref": "#/components/schemas/CertificateTemplateId"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus"
+          },
+          "totalCertificates": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "generatedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CertificateIssuanceBatchId": {
+        "type": "string",
+        "format": "cib_{string}"
+      },
+      "StronglyTypedUlidOfCertificateIssuanceBatchId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndCertificateIssuanceBatchId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndCertificateIssuanceBatchId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BatchStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Processing",
+          "Completed",
+          "Failed"
+        ],
+        "enum": [
+          "Pending",
+          "Processing",
+          "Completed",
+          "Failed"
+        ]
+      },
+      "CertificateBatchResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CertificateIssuanceBatchId"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "templateId": {
+            "$ref": "#/components/schemas/CertificateTemplateId"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus"
+          },
+          "totalCertificates": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "generatedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "certificates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxCertificateResponse"
+            }
+          }
+        }
+      },
+      "TaxCertificateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TaxCertificateId"
+          },
+          "donorProfileId": {
+            "$ref": "#/components/schemas/DonorProfileId"
+          },
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receiptNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalDonated": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "donorName": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CertificateStatus"
+          },
+          "certificateUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "TaxCertificateId": {
+        "type": "string",
+        "format": "txc_{string}"
+      },
+      "StronglyTypedUlidOfTaxCertificateId": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndTaxCertificateId"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StronglyTypedIdOfStringAndTaxCertificateId": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CertificateStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Generated",
+          "Failed"
+        ],
+        "enum": [
+          "Pending",
+          "Generated",
+          "Failed"
+        ]
+      },
+      "GenerateCertificatesCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "templateId": {
+            "$ref": "#/components/schemas/CertificateTemplateId"
+          }
+        }
+      },
       "DonationSummaryResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -4984,33 +5795,6 @@
                 "$ref": "#/components/schemas/DonorProfileId"
               }
             ]
-          }
-        }
-      },
-      "DonorProfileId": {
-        "type": "string",
-        "format": "dnr_{string}"
-      },
-      "StronglyTypedUlidOfDonorProfileId": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StronglyTypedIdOfStringAndDonorProfileId"
-          },
-          {
-            "type": "object",
-            "x-abstract": true,
-            "additionalProperties": false
-          }
-        ]
-      },
-      "StronglyTypedIdOfStringAndDonorProfileId": {
-        "type": "object",
-        "x-abstract": true,
-        "additionalProperties": false,
-        "properties": {
-          "value": {
-            "type": "string",
-            "nullable": true
           }
         }
       },

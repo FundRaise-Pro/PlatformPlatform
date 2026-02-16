@@ -11,6 +11,7 @@ import {
 } from "@repo/ui/components/SideMenu";
 import {
   ArrowLeftRightIcon,
+  AwardIcon,
   BookHeartIcon,
   BookOpenIcon,
   CalendarIcon,
@@ -44,6 +45,7 @@ export function FundraiserSideMenu({ currentSystem = "fundraiser" }: Readonly<Fu
       <MenuButton icon={ArrowLeftRightIcon} label={t`Transactions`} href={tenantPath(slug, "fundraiser", "transactions")} />
       <MenuButton icon={CalendarIcon} label={t`Events`} href={tenantPath(slug, "fundraiser", "events")} />
       <MenuButton icon={QrCodeIcon} label={t`QR codes`} href={tenantPath(slug, "fundraiser", "qr-codes")} />
+      <MenuButton icon={AwardIcon} label={t`Certificates`} href={tenantPath(slug, "fundraiser", "certificates")} />
 
       <SideMenuSeparator>
         <Trans>Content</Trans>

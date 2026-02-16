@@ -2,6 +2,7 @@ using PlatformPlatform.Fundraiser.Features.Applications.Domain;
 using PlatformPlatform.Fundraiser.Features.Blogs.Domain;
 using PlatformPlatform.Fundraiser.Features.Branches.Domain;
 using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
+using PlatformPlatform.Fundraiser.Features.Certificates.Domain;
 using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.EndUsers.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
@@ -207,3 +208,14 @@ public sealed class TenantSettingsInitialized(TenantSettingsId tenantSettingsId)
 
 public sealed class ThemeConfigUpdated(TenantSettingsId tenantSettingsId)
     : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
+
+// --- Certificates ---
+
+public sealed class CertificateTemplateCreated(CertificateTemplateId templateId)
+    : TelemetryEvent(("template_id", templateId));
+
+public sealed class CertificateTemplateUpdated(CertificateTemplateId templateId)
+    : TelemetryEvent(("template_id", templateId));
+
+public sealed class CertificateBatchGenerated(CertificateIssuanceBatchId batchId, int totalCertificates)
+    : TelemetryEvent(("batch_id", batchId), ("total_certificates", totalCertificates));
