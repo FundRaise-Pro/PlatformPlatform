@@ -5,20 +5,20 @@ import { Badge } from "@repo/ui/components/Badge";
 import { Button } from "@repo/ui/components/Button";
 import { Text } from "@repo/ui/components/Text";
 import { createFileRoute } from "@tanstack/react-router";
-import { FileTextIcon, PlusIcon } from "lucide-react";
+import { PlusIcon, QrCodeIcon } from "lucide-react";
 import { useState } from "react";
-import { CreateFormVersionDialog } from "./-components/CreateFormVersionDialog";
-import { FormVersionDetailPane } from "./-components/FormVersionDetailPane";
+import { CreateQRCodeDialog } from "./-components/CreateQRCodeDialog";
+import { QRCodeDetailPane } from "./-components/QRCodeDetailPane";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
 
-export const Route = createFileRoute("/$slug/fundraiser/forms")({
-  component: FormsPage
+export const Route = createFileRoute("/$slug/fundraiser/qr-codes")({
+  component: QRCodesPage
 });
 
-export default function FormsPage() {
-  const { data: formVersions, isLoading } = api.useQuery("get", "/api/fundraiser/forms/versions");
+export default function QRCodesPage() {
+  const { data: qrCodes, isLoading } = api.useQuery("get", "/api/fundraiser/qrcodes");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -26,13 +26,13 @@ export default function FormsPage() {
     <>
       <FundraiserSideMenu />
       <AppLayout
-        topMenu={<TopMenu breadcrumbs={[{ label: t`Forms` }]} />}
-        title={t`Forms`}
-        subtitle={t`Design and manage application forms.`}
+        topMenu={<TopMenu breadcrumbs={[{ label: t`QR Codes` }]} />}
+        title={t`QR Codes`}
+        subtitle={t`Create and track QR codes for campaigns and events.`}
         sidePane={
           selectedId ? (
-            <FormVersionDetailPane
-              formVersionId={selectedId}
+            <QRCodeDetailPane
+              qrCodeId={selectedId}
               isOpen={!!selectedId}
               onClose={() => setSelectedId(null)}
             />
@@ -41,56 +41,65 @@ export default function FormsPage() {
       >
         <div className="mb-4 flex items-center justify-between">
           <Text className="text-muted-foreground">
-            {formVersions ? t`${formVersions.length} form versions` : t`Loading...`}
+            {qrCodes ? t`${qrCodes.length} QR codes` : t`Loading...`}
           </Text>
           <Button onPress={() => setIsCreateOpen(true)}>
             <PlusIcon className="mr-2 h-4 w-4" />
-            <Trans>New form</Trans>
+            <Trans>Create QR code</Trans>
           </Button>
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Text className="text-muted-foreground">
-              <Trans>Loading forms...</Trans>
-            </Text>
+            <Text className="text-muted-foreground"><Trans>Loading QR codes...</Trans></Text>
           </div>
-        ) : formVersions && formVersions.length > 0 ? (
+        ) : qrCodes && qrCodes.length > 0 ? (
           <div className="overflow-hidden rounded-lg border border-border">
             <table className="w-full">
               <thead className="border-border border-b bg-muted/50">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Form name</Trans>
+                    <Trans>Name</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
-                    <Trans>Version</Trans>
+                    <Trans>Type</Trans>
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
                     <Trans>Status</Trans>
                   </th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground text-sm">
+                    <Trans>Scans</Trans>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {formVersions.map((form) => (
+                {qrCodes.map((qrCode) => (
                   <tr
-                    key={String(form.id)}
+                    key={String(qrCode.id)}
                     className="cursor-pointer border-border border-b last:border-b-0 hover:bg-hover-background"
-                    onClick={() => setSelectedId(String(form.id))}
+                    onClick={() => setSelectedId(String(qrCode.id))}
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
-                          <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                          <QrCodeIcon className="h-4 w-4 text-muted-foreground" />
                         </div>
-                        <span className="font-medium text-foreground">{form.name}</span>
+                        <div>
+                          <Text className="font-medium text-foreground">{qrCode.name}</Text>
+                          <Text className="line-clamp-1 text-muted-foreground text-xs">{qrCode.redirectUrl}</Text>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">v{form.versionNumber}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={form.isActive ? "success" : "neutral"}>
-                        {form.isActive ? t`Active` : t`Inactive`}
+                      <Badge variant="outline">{qrCode.qrCodeType}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={qrCode.isActive ? "success" : "neutral"}>
+                        {qrCode.isActive ? t`Active` : t`Inactive`}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right font-medium text-foreground">
+                      {qrCode.hitCount}
                     </td>
                   </tr>
                 ))}
@@ -99,17 +108,15 @@ export default function FormsPage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
-            <FileTextIcon className="mb-3 h-8 w-8 text-muted-foreground" />
-            <Text className="mb-2 text-muted-foreground">
-              <Trans>No forms yet</Trans>
-            </Text>
+            <QrCodeIcon className="mb-3 h-8 w-8 text-muted-foreground" />
+            <Text className="mb-2 text-muted-foreground"><Trans>No QR codes yet</Trans></Text>
             <Text className="text-muted-foreground text-sm">
-              <Trans>Create application forms for beneficiaries to fill out.</Trans>
+              <Trans>Create QR codes to drive engagement for your campaigns.</Trans>
             </Text>
           </div>
         )}
 
-        <CreateFormVersionDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+        <CreateQRCodeDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       </AppLayout>
     </>
   );

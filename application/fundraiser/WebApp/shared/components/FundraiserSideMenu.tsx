@@ -43,7 +43,7 @@ export function FundraiserSideMenu({ currentSystem = "fundraiser" }: Readonly<Fu
       <MenuButton icon={CreditCardIcon} label={t`Donations`} href={tenantPath(slug, "fundraiser", "donations")} />
       <MenuButton icon={ArrowLeftRightIcon} label={t`Transactions`} href={tenantPath(slug, "fundraiser", "transactions")} />
       <MenuButton icon={CalendarIcon} label={t`Events`} href={tenantPath(slug, "fundraiser", "events")} />
-      <MenuButton icon={QrCodeIcon} label={t`QR codes`} href={tenantPath(slug, "fundraiser", "qrcodes")} />
+      <MenuButton icon={QrCodeIcon} label={t`QR codes`} href={tenantPath(slug, "fundraiser", "qr-codes")} />
 
       <SideMenuSeparator>
         <Trans>Content</Trans>
