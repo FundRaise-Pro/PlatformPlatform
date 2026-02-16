@@ -103,12 +103,20 @@ var fundraiserApi = builder
 // Cross-SCS: account-management needs to call fundraiser for tenant provisioning
 accountManagementApi.WithReference(fundraiserApi);
 
+var publicSite = builder
+    .AddJavaScriptApp("public-site", "../public-site/WebApp", "dev")
+    .WithNpm(install: false)
+    .WithHttpEndpoint(9400, env: "PORT")
+    .WithEnvironment("PUBLIC_API_BASE_URL", "https://localhost:9000")
+    .WaitFor(fundraiserApi);
+
 var appGateway = builder
     .AddProject<AppGateway>("app-gateway")
     .WithReference(frontendBuild)
     .WithReference(accountManagementApi)
     .WithReference(backOfficeApi)
     .WithReference(fundraiserApi)
+    .WithReference(publicSite)
     .WaitFor(accountManagementApi)
     .WaitFor(frontendBuild)
     .WithUrlForEndpoint("https", url => url.DisplayText = "Web App");

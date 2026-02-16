@@ -238,6 +238,7 @@ public sealed class CompleteLoginTests : EndpointBaseTest<AccountManagementDbCon
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -313,6 +314,7 @@ public sealed class CompleteLoginTests : EndpointBaseTest<AccountManagementDbCon
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Active)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]

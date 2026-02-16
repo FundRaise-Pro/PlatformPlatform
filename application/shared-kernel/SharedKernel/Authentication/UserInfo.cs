@@ -46,6 +46,8 @@ public class UserInfo
 
     public string? TenantName { get; init; }
 
+    public string? TenantSlug { get; init; }
+
     public string? TenantLogoUrl { get; init; }
 
     public bool IsInternalUser { get; init; }
@@ -81,6 +83,7 @@ public class UserInfo
             Title = user.FindFirstValue("title"),
             AvatarUrl = user.FindFirstValue("avatar_url"),
             TenantName = user.FindFirstValue("tenant_name"),
+            TenantSlug = user.FindFirstValue("tenant_slug"),
             TenantLogoUrl = user.FindFirstValue("tenant_logo_url"),
             Locale = GetValidLocale(user.FindFirstValue("locale")),
             IsInternalUser = IsInternalUserEmail(email)

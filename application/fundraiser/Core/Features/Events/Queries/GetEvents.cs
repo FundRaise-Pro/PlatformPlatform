@@ -13,7 +13,6 @@ public sealed record EventSummaryResponse(
     string? Location,
     DateTime EventDate,
     decimal TargetAmount,
-    decimal RaisedAmount,
     EventStatus Status,
     string? ImageUrl,
     DateTimeOffset CreatedAt
@@ -30,7 +29,6 @@ public sealed record EventResponse(
     string? Location,
     DateTime EventDate,
     decimal TargetAmount,
-    decimal RaisedAmount,
     EventStatus Status,
     string? ImageUrl,
     DateTimeOffset CreatedAt,
@@ -45,7 +43,7 @@ public sealed class GetEventsHandler(IFundraisingEventRepository eventRepository
         var events = await eventRepository.GetAllAsync(cancellationToken);
 
         var response = events.Select(e => new EventSummaryResponse(
-            e.Id, e.Name, e.Location, e.EventDate, e.TargetAmount, e.RaisedAmount, e.Status, e.ImageUrl, e.CreatedAt
+            e.Id, e.Name, e.Location, e.EventDate, e.TargetAmount, e.Status, e.ImageUrl, e.CreatedAt
         )).ToArray();
 
         return response;
@@ -63,7 +61,7 @@ public sealed class GetEventHandler(IFundraisingEventRepository eventRepository)
         return new EventResponse(
             fundraisingEvent.Id, fundraisingEvent.Name, fundraisingEvent.Description,
             fundraisingEvent.Location, fundraisingEvent.EventDate, fundraisingEvent.TargetAmount,
-            fundraisingEvent.RaisedAmount, fundraisingEvent.Status, fundraisingEvent.ImageUrl,
+            fundraisingEvent.Status, fundraisingEvent.ImageUrl,
             fundraisingEvent.CreatedAt, fundraisingEvent.ModifiedAt
         );
     }

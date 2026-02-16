@@ -15,6 +15,11 @@ public sealed record TenantResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? ModifiedAt,
     string Name,
+    string Slug,
+    NpoType OrgType,
+    string? RegistrationNumber,
+    string? Description,
+    string? Country,
     TenantState State,
     string? LogoUrl
 );

@@ -26,7 +26,7 @@ export const Route = createFileRoute("/signup/")({
     const isAuthenticated = useIsAuthenticated();
 
     if (isAuthenticated) {
-      return <Navigate to={loggedInPath} />;
+      return <Navigate to={loggedInPath()} />;
     }
 
     return (
@@ -55,7 +55,7 @@ export function StartSignupForm() {
       expireAt: new Date(Date.now() + validForSeconds * 1000)
     });
 
-    return <Navigate to="/signup/verify" />;
+    return <Navigate to="/signup/organization" />;
   }
 
   return (

@@ -45,15 +45,28 @@ builder.Services.AddHttpClient(
     client => { client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("ACCOUNT_MANAGEMENT_API_URL") ?? "https://localhost:9100"); }
 );
 
+builder.Services.AddHttpClient(
+    "FundraiserInternal",
+    client => { client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("FUNDRAISER_API_URL") ?? "https://localhost:9300"); }
+);
+
 builder.Services
     .AddHttpClient()
     .AddHttpForwardHeaders() // Ensure the correct client IP addresses are set for downstream requests
-    .AddOutputCache();
+    .AddOutputCache(options =>
+    {
+        // Configure tenant-aware caching to prevent cross-tenant cache leakage
+        options.AddBasePolicy(TenantAwareCachingPolicy.Instance);
+    });
 
 builder.Services
     .AddSingleton(SharedDependencyConfiguration.GetTokenSigningService())
     .AddSingleton<BlockInternalApiTransform>()
     .AddSingleton<AuthenticationCookieMiddleware>()
+    .AddSingleton<SecurityHeadersMiddleware>()
+    .AddSingleton<RequestValidationMiddleware>()
+    .AddScoped<TenantResolutionMiddleware>()
+    .AddMemoryCache()
     .AddScoped<ApiAggregationService>();
 
 var app = builder.Build();
@@ -61,6 +74,9 @@ var app = builder.Build();
 app.ApiAggregationEndpoints();
 
 app.UseForwardedHeaders() // Enable support for proxy headers such as X-Forwarded-For and X-Forwarded-Proto. Should run before other middleware.
+    .UseMiddleware<RequestValidationMiddleware>() // Validate request size and headers early
+    .UseMiddleware<SecurityHeadersMiddleware>() // Add security headers to all responses
+    .UseMiddleware<TenantResolutionMiddleware>() // Resolve tenant from subdomain and inject X-Tenant-Id header
     .UseOutputCache()
     .UseMiddleware<AuthenticationCookieMiddleware>();
 

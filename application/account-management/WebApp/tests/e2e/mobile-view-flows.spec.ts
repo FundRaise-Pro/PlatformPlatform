@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { expect } from "@playwright/test";
 import { test } from "@shared/e2e/fixtures/page-auth";
 import { createTestContext, expectToastMessage } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow, testUser } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, testUser } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@comprehensive", () => {
@@ -20,16 +20,17 @@ test.describe("@comprehensive", () => {
   test("should handle mobile navigation and user management with keyboard accessibility", async ({ page }) => {
     const context = createTestContext(page);
     const owner = testUser();
+    let slug = "";
 
     // Set mobile viewport
     await page.setViewportSize({ width: 390, height: 844 });
 
     await step("Complete owner signup & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
     })();
 
     await step("Set account name & verify save confirmation")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
       await page.getByRole("textbox", { name: "Account name" }).fill("Mobile Nav Test");
       await page.getByRole("button", { name: "Save changes" }).click();
@@ -37,7 +38,7 @@ test.describe("@comprehensive", () => {
     })();
 
     await step("Navigate to admin dashboard & verify mobile layout")(async () => {
-      await page.goto("/admin");
+      await page.goto(adminUrl(slug));
 
       // Wait for page to load - heading contains the user's name
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -207,7 +208,7 @@ test.describe("@comprehensive", () => {
       await expect(mobileDialog).not.toBeVisible();
 
       // Verify navigation to users page
-      await expect(page).toHaveURL("/admin/users");
+      await expect(page).toHaveURL(adminUrl(slug, "/users"));
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
     })();
 
@@ -379,14 +380,14 @@ test.describe("@comprehensive", () => {
    * - Validation error display on mobile
    * - Modal behavior on mobile viewport
    */
-  test("should handle mobile form interactions and validation correctly", async ({ ownerPage }) => {
+  test("should handle mobile form interactions and validation correctly", async ({ ownerPage, testSlug }) => {
     const context = createTestContext(ownerPage);
 
     // Set mobile viewport
     await ownerPage.setViewportSize({ width: 375, height: 667 });
 
     await step("Set account name & verify save confirmation")(async () => {
-      await ownerPage.goto("/admin/account");
+      await ownerPage.goto(adminUrl(testSlug, "/account"));
       await expect(ownerPage.getByRole("heading", { name: "Account settings" })).toBeVisible();
 
       await ownerPage.getByRole("textbox", { name: "Account name" }).clear();
@@ -396,7 +397,7 @@ test.describe("@comprehensive", () => {
     })();
 
     await step("Navigate to users page & open invite user dialog")(async () => {
-      await ownerPage.goto("/admin/users");
+      await ownerPage.goto(adminUrl(testSlug, "/users"));
       // Check for either English or Danish heading
       await expect(ownerPage.getByRole("heading", { level: 1 })).toBeVisible();
 
@@ -434,16 +435,17 @@ test.describe("@comprehensive", () => {
   test("should handle mobile user selection with mixed keyboard and mouse interactions", async ({ page }) => {
     const context = createTestContext(page);
     const user = testUser();
+    let slug = "";
 
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
     await step("Create a fresh tenant & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, user, context, true);
+      ({ slug } = await completeSignupFlow(page, expect, user, context, true));
     })();
 
     await step("Set account name & verify save confirmation")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
       await page.getByRole("textbox", { name: "Account name" }).fill("Mobile Selection Test");
       await page.getByRole("button", { name: "Save changes" }).click();
@@ -452,7 +454,7 @@ test.describe("@comprehensive", () => {
 
     // === SETUP ===
     await step("Navigate to users page & invite 3 test users")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
 
       // Create 3 test users for selection testing

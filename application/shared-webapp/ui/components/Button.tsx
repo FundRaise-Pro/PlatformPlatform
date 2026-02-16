@@ -1,5 +1,6 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
+import type { MouseEventHandler } from "react";
 
 import { cn } from "../utils";
 
@@ -10,6 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground outline-primary hover:bg-primary/80 active:bg-primary/70",
+        primary: "bg-primary text-primary-foreground outline-primary hover:bg-primary/80 active:bg-primary/70",
         // NOTE: This diverges from stock ShadCN to use bg-white instead of bg-background for light mode.
         outline:
           "border-border bg-white shadow-xs outline-ring hover:bg-muted hover:text-foreground active:bg-accent aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:active:bg-input/60 dark:hover:bg-input/50",
@@ -49,9 +51,21 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  onPress,
+  onClick,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
-  return <ButtonPrimitive data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+}: ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> & {
+    onPress?: MouseEventHandler<HTMLButtonElement>;
+  }) {
+  return (
+    <ButtonPrimitive
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      onClick={onClick ?? onPress}
+      {...props}
+    />
+  );
 }
 
 export { Button, buttonVariants };

@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
-import { loginPath, signUpPath } from "@repo/infrastructure/auth/constants";
-import { useIsAuthenticated } from "@repo/infrastructure/auth/hooks";
+import { adminPath, loginPath, signUpPath } from "@repo/infrastructure/auth/constants";
+import { useIsAuthenticated, useUserInfo } from "@repo/infrastructure/auth/hooks";
 import { Link } from "@repo/ui/components/Link";
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicFooter } from "@/shared/components/PublicFooter";
@@ -10,6 +10,7 @@ export const Route = createFileRoute("/(index)/")({
   beforeLoad: () => ({ disableAuthSync: true }),
   component: function LandingPage() {
     const isAuthenticated = useIsAuthenticated();
+    const slug = useUserInfo()?.tenantSlug;
 
     return (
       <main className="flex min-h-screen w-full flex-col">
@@ -40,7 +41,12 @@ export const Route = createFileRoute("/(index)/")({
               {/* CTAs */}
               <div className="flex justify-center gap-4">
                 {isAuthenticated ? (
-                  <Link href="/admin" variant="button-primary" underline={false} className="h-12 rounded-lg px-8">
+                  <Link
+                    href={adminPath(slug)}
+                    variant="button-primary"
+                    underline={false}
+                    className="h-12 rounded-lg px-8"
+                  >
                     <Trans>Go to app</Trans>
                   </Link>
                 ) : (

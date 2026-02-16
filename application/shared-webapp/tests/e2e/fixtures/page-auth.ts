@@ -3,7 +3,7 @@ import { createAuthStateManager } from "@shared/e2e/auth/auth-state-manager";
 import { getSelfContainedSystemPrefix, getWorkerTenant } from "@shared/e2e/fixtures/worker-auth";
 import type { Tenant, User, UserRole } from "@shared/e2e/types/auth";
 import { assertNoUnexpectedErrors, createTestContext, type TestContext } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow } from "@shared/e2e/utils/test-data";
 
 // Extend the global interface to include testTenant
 declare global {
@@ -36,6 +36,11 @@ export interface PageAuthFixtures {
    * Useful for testing login/signup flows from a clean state while ensuring users exist
    */
   anonymousPage: { page: Page; tenant: Tenant };
+
+  /**
+   * Tenant slug for the current worker's tenant — use with adminUrl() to build URLs
+   */
+  testSlug: string;
 }
 
 /**
@@ -59,11 +64,12 @@ async function performFreshAuthentication(
 
   // Use the centralized signup flow utility
   const testContext = createTestContext(page);
-  await completeSignupFlow(page, expect, user, testContext);
+  await completeSignupFlow(page, expect, user, testContext, true, tenant?.slug);
 
   // Set account name for Owner role to allow user invitations
   if (role === "Owner") {
-    await page.goto("/admin/account");
+    const slug = tenant?.slug ?? "";
+    await page.goto(adminUrl(slug, "/account"));
     await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
     await page.getByRole("textbox", { name: "Account name" }).fill("Test Organization");
     await page.getByRole("button", { name: "Save changes" }).click();
@@ -242,6 +248,14 @@ export const test = base.extend<PageAuthFixtures>({
 
     // Cleanup - close the context and page
     await context.close();
+  },
+
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixture requires destructuring pattern even with no deps
+  testSlug: async ({}, use, testInfo) => {
+    const workerIndex = testInfo.parallelIndex;
+    const systemPrefix = getSelfContainedSystemPrefix();
+    const tenant = await getWorkerTenant(workerIndex, systemPrefix);
+    await use(tenant.slug);
   }
 });
 

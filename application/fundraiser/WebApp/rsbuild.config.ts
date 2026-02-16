@@ -13,7 +13,10 @@ const customBuildEnv: CustomBuildEnv = {};
 
 export default defineConfig({
   dev: {
-    lazyCompilation: false
+    lazyCompilation: false,
+    client: {
+      overlay: false
+    }
   },
   security: {
     nonce: "{{cspNonce}}"

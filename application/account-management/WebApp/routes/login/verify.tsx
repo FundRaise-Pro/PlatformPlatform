@@ -40,7 +40,7 @@ export const Route = createFileRoute("/login/verify")({
 
     useEffect(() => {
       if (isAuthenticated) {
-        navigate({ to: loggedInPath });
+        navigate({ to: loggedInPath() });
         return;
       }
 
@@ -148,7 +148,7 @@ export function CompleteLoginForm() {
       authSyncService.broadcast(message);
 
       clearLoginState();
-      window.location.href = returnPath ?? loggedInPath;
+      window.location.href = returnPath ?? loggedInPath();
     }
   });
 

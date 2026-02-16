@@ -1,4 +1,5 @@
 using PlatformPlatform.SharedKernel.Domain;
+using PlatformPlatform.SharedKernel.DomainEvents;
 using PlatformPlatform.SharedKernel.StronglyTypedIds;
 
 namespace PlatformPlatform.Fundraiser.Features.Donations.Domain;
@@ -22,16 +23,24 @@ public sealed record DonorProfileId(string Value) : StronglyTypedUlid<DonorProfi
 public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEntity
 {
     private Transaction(TransactionId id, TenantId tenantId, string name, string description,
-        TransactionType type, decimal amount) : base(id)
+        TransactionType type, decimal amount, FundraisingTargetType targetType, string targetId) : base(id)
     {
         TenantId = tenantId;
         Name = name;
         Description = description;
         Type = type;
         Amount = amount;
+        TargetType = targetType;
+        TargetId = targetId;
     }
 
     public TenantId TenantId { get; private init; }
+
+    public FundraisingTargetType TargetType { get; private init; }
+
+    public string TargetId { get; private init; } = string.Empty;
+
+    public string MerchantReference { get; private set; } = string.Empty;
 
     public PaymentProvider PaymentProvider { get; private set; } = PaymentProvider.PayFast;
 
@@ -62,12 +71,14 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
     private readonly List<PaymentProcessingLog> _processingLogs = [];
     public IReadOnlyCollection<PaymentProcessingLog> ProcessingLogs => _processingLogs.AsReadOnly();
 
-    public static Transaction Create(TenantId tenantId, string name, string description,
-        TransactionType type, decimal amount, string? payeeName = null, string? payeeEmail = null,
+    public static Transaction Create(TransactionId id, TenantId tenantId, string name, string description,
+        TransactionType type, decimal amount, FundraisingTargetType targetType, string targetId,
+        string merchantReference, string? payeeName = null, string? payeeEmail = null,
         PaymentProvider provider = PaymentProvider.PayFast)
     {
-        return new Transaction(TransactionId.NewId(), tenantId, name, description, type, amount)
+        return new Transaction(id, tenantId, name, description, type, amount, targetType, targetId)
         {
+            MerchantReference = merchantReference,
             PayeeName = payeeName,
             PayeeEmail = payeeEmail,
             PaymentProvider = provider
@@ -82,6 +93,10 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
 
     public void MarkSuccess(string gatewayPaymentId, decimal? fee = null, decimal? net = null, PaymentMethod? method = null)
     {
+        if (Status == TransactionStatus.Success) return;
+        if (Status is TransactionStatus.Failed or TransactionStatus.Refunded or TransactionStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot mark transaction as success when status is {Status}.");
+
         LogStatusChange(TransactionStatus.Success);
         Status = TransactionStatus.Success;
         GatewayPaymentId = gatewayPaymentId;
@@ -89,12 +104,20 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
         AmountNet = net;
         PaymentMethod = method;
         CompletedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new TransactionSucceededDomainEvent(Id, TargetType, TargetId, AmountNet ?? Amount));
     }
 
     public void MarkFailed()
     {
         LogStatusChange(TransactionStatus.Failed);
         Status = TransactionStatus.Failed;
+    }
+
+    public void MarkCancelled()
+    {
+        LogStatusChange(TransactionStatus.Cancelled);
+        Status = TransactionStatus.Cancelled;
     }
 
     public void Refund()
@@ -271,7 +294,27 @@ public sealed class PaymentSubscription : AggregateRoot<SubscriptionId>, ITenant
     }
 }
 
-// Enums
+// --- Domain Events ---
+
+/// <summary>
+///     Raised when a transaction is marked as successful. Handled pre-commit within the same UnitOfWork
+///     by the PublishDomainEventsPipelineBehavior, enabling deterministic side effects like auto-funding stories.
+/// </summary>
+public sealed record TransactionSucceededDomainEvent(
+    TransactionId TransactionId,
+    FundraisingTargetType TargetType,
+    string TargetId,
+    decimal SettledAmount
+) : IDomainEvent;
+
+// --- Enums ---
+
+/// <summary>
+///     The type of fundraising target that a transaction is anchored to.
+///     Every transaction must reference exactly one target.
+/// </summary>
+public enum FundraisingTargetType { Campaign, Story, Event }
+
 public enum TransactionType { Donation, Subscription, ApplicationFee }
 
 public enum TransactionStatus { Pending, Processing, Success, Failed, Refunded, ManualReview, Cancelled }

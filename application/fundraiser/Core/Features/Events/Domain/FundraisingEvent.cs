@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using PlatformPlatform.SharedKernel.Domain;
 using PlatformPlatform.SharedKernel.StronglyTypedIds;
 
@@ -26,13 +27,13 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
 
     public string Description { get; private set; } = string.Empty;
 
+    public string Slug { get; private set; } = string.Empty;
+
     public DateTime EventDate { get; private set; }
 
     public string? Location { get; private set; }
 
     public decimal TargetAmount { get; private set; }
-
-    public decimal RaisedAmount { get; private set; }
 
     public EventStatus Status { get; private set; } = EventStatus.Planned;
 
@@ -43,6 +44,7 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
     {
         return new FundraisingEvent(FundraisingEventId.NewId(), tenantId, name, description, eventDate)
         {
+            Slug = GenerateSlug(name),
             Location = location,
             TargetAmount = targetAmount
         };
@@ -54,16 +56,12 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
         Description = description;
         EventDate = eventDate;
         Location = location;
+        Slug = GenerateSlug(name);
     }
 
     public void SetTarget(decimal targetAmount)
     {
         TargetAmount = targetAmount;
-    }
-
-    public void RecordContribution(decimal amount)
-    {
-        RaisedAmount += amount;
     }
 
     public void Start()
@@ -84,6 +82,15 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
     public void SetImage(string imageUrl)
     {
         ImageUrl = imageUrl;
+    }
+
+    private static string GenerateSlug(string name)
+    {
+        var slug = name.ToLowerInvariant();
+        slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+        slug = Regex.Replace(slug, @"\s+", "-");
+        slug = Regex.Replace(slug, @"-+", "-");
+        return slug.Trim('-');
     }
 }
 

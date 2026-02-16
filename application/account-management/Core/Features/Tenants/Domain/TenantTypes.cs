@@ -10,3 +10,16 @@ public enum TenantState
     Active,
     Suspended
 }
+
+[PublicAPI]
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum NpoType
+{
+    Charity,
+    Foundation,
+    Ngo,
+    Religious,
+    Educational,
+    CommunityBased,
+    Other
+}

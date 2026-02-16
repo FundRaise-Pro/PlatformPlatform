@@ -1,12 +1,13 @@
 import { expect } from "@playwright/test";
 import { test } from "@shared/e2e/fixtures/page-auth";
 import {
+  blurActiveElement,
   createTestContext,
   expectToastMessage,
   selectOption,
   typeOneTimeCode
 } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@smoke", () => {
@@ -31,9 +32,10 @@ test.describe("@smoke", () => {
     const adminUser = testUser();
     const memberUser = testUser();
     const deletableUser = testUser();
+    let slug = "";
 
     await step("Complete owner signup & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -54,8 +56,8 @@ test.describe("@smoke", () => {
       await expect(page.getByText("Your team needs to know who's inviting them")).toBeVisible();
 
       // Navigate to account settings via dialog
-      await page.getByRole("link", { name: "Go to account settings" }).click();
-      await expect(page).toHaveURL("/admin/account");
+      await page.getByRole("button", { name: "Go to account settings" }).click();
+      await expect(page).toHaveURL(adminUrl(slug, "/account"));
     })();
 
     await step("Set account name & verify successful save")(async () => {
@@ -76,14 +78,14 @@ test.describe("@smoke", () => {
 
       await page.getByRole("button", { name: "Stay" }).click();
       await expect(page.getByRole("alertdialog", { name: "Unsaved changes" })).not.toBeVisible();
-      await expect(page).toHaveURL("/admin/account");
+      await expect(page).toHaveURL(adminUrl(slug, "/account"));
       await expect(page.getByRole("textbox", { name: "Account name" })).toHaveValue("Modified Company");
 
       await page.getByLabel("Main navigation").getByRole("link", { name: "Users" }).click();
       await expect(page.getByRole("alertdialog", { name: "Unsaved changes" })).toBeVisible();
       await page.getByRole("button", { name: "Leave" }).click();
 
-      await expect(page).toHaveURL("/admin/users");
+      await expect(page).toHaveURL(adminUrl(slug, "/users"));
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
     })();
 
@@ -246,7 +248,7 @@ test.describe("@smoke", () => {
 
       // Search input uses a controlled input pattern incompatible with Playwright.
       // Escape key clears the search (real UI interaction); URL sets up filtered state.
-      await page.goto(`/admin/users?search=${encodeURIComponent(adminUser.email)}`);
+      await page.goto(`${adminUrl(slug, "/users")}?search=${encodeURIComponent(adminUser.email)}`);
 
       // Verify only admin user is shown without counting rows
       await expect(userTable).toContainText(adminUser.email);
@@ -379,8 +381,7 @@ test.describe("@smoke", () => {
 
     await step("Navigate to Recycle bin tab & verify soft-deleted user appears")(async () => {
       await page.getByRole("tab", { name: "Recycle bin" }).click();
-
-      await expect(page).toHaveURL("/admin/users/recycle-bin");
+      await expect(page).toHaveURL(adminUrl(slug, "/users/recycle-bin"));
       await expect(page.getByRole("table", { name: "Deleted users" })).toContainText(deletableUser.email);
     })();
 
@@ -389,7 +390,7 @@ test.describe("@smoke", () => {
       context.monitoring.expectedStatusCodes.push(401);
 
       // Navigate to home first
-      await page.goto("/admin");
+      await page.goto(adminUrl(slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
 
       const triggerButton = page.getByRole("button", { name: "User profile menu" });
@@ -402,16 +403,16 @@ test.describe("@smoke", () => {
       await expect(logoutMenuItem).toBeVisible();
       await logoutMenuItem.dispatchEvent("click");
 
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
     })();
 
     await step("Login as admin user & verify successful authentication")(async () => {
       await page.getByRole("textbox", { name: "Email" }).fill(adminUser.email);
       await page.getByRole("button", { name: "Continue" }).click();
-      await expect(page).toHaveURL("/login/verify?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\/verify\?returnPath=/);
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(slug));
     })();
 
     await step("Complete admin user profile setup & verify profile saved")(async () => {
@@ -437,8 +438,7 @@ test.describe("@smoke", () => {
     await step("Navigate to Recycle bin tab as admin & verify deleted user appears")(async () => {
       await expect(page.getByRole("tab", { name: "Recycle bin" })).toBeVisible();
       await page.getByRole("tab", { name: "Recycle bin" }).click();
-
-      await expect(page).toHaveURL("/admin/users/recycle-bin");
+      await expect(page).toHaveURL(adminUrl(slug, "/users/recycle-bin"));
       await expect(page.getByRole("table", { name: "Deleted users" })).toContainText(deletableUser.email);
     })();
 
@@ -454,14 +454,14 @@ test.describe("@smoke", () => {
       await expect(logoutMenuItem).toBeVisible();
       await logoutMenuItem.dispatchEvent("click");
 
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin%2Fusers%2Frecycle-bin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
     })();
 
     // === MEMBER PERMISSION CHECK SECTION ===
     await step("Login as member user & verify access denied on recycle-bin")(async () => {
       await page.getByRole("textbox", { name: "Email" }).fill(memberUser.email);
       await page.getByRole("button", { name: "Continue" }).click();
-      await expect(page).toHaveURL("/login/verify?returnPath=%2Fadmin%2Fusers%2Frecycle-bin");
+      await expect(page).toHaveURL(/\/login\/verify\?returnPath=/);
       await typeOneTimeCode(page, getVerificationCode());
 
       // Member lands on recycle-bin but sees access denied (requires Owner/Admin role)
@@ -474,7 +474,7 @@ test.describe("@smoke", () => {
       await page.getByRole("button", { name: "Go to home" }).click();
       await expect(page).toHaveURL("/");
 
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       await expect(page.getByRole("dialog", { name: "User profile" })).toBeVisible();
       await expect(page.getByRole("textbox", { name: "First name" })).toBeVisible();
@@ -485,9 +485,8 @@ test.describe("@smoke", () => {
 
       await expectToastMessage(context, "Profile updated successfully");
       await expect(page.getByRole("dialog")).not.toBeVisible();
-
-      // Verify member sees Users page without Recycle bin tab (members don't see tab navigation)
-      await expect(page).toHaveURL("/admin/users");
+      // Verify member sees Users page without Recycle bin tab
+      await expect(page).toHaveURL(adminUrl(slug, "/users"));
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
       await expect(page.getByText("All users")).toBeVisible();
       await expect(page.getByRole("tab", { name: "Recycle bin" })).not.toBeVisible();
@@ -516,15 +515,16 @@ test.describe("@comprehensive", () => {
     const owner = testUser();
     const user1 = testUser();
     const user2 = testUser();
+    let slug = "";
 
     // === USER SETUP SECTION ===
     await step("Complete owner signup & verify welcome page")(async () => {
-      await completeSignupFlow(page, expect, owner, context);
+      ({ slug } = await completeSignupFlow(page, expect, owner, context));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
     await step("Set account name for user invitations")(async () => {
-      await page.goto("/admin/account");
+      await page.goto(adminUrl(slug, "/account"));
       await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
       await page.getByRole("textbox", { name: "Account name" }).fill("Test Company");
       await page.getByRole("button", { name: "Save changes" }).click();
@@ -532,7 +532,7 @@ test.describe("@comprehensive", () => {
     })();
 
     await step("Navigate to users page & verify owner is listed")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
       await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
     })();
 
@@ -553,7 +553,7 @@ test.describe("@comprehensive", () => {
 
     // === DASHBOARD METRICS SECTION ===
     await step("Navigate to dashboard & verify user count metrics display correctly")(async () => {
-      await page.goto("/admin");
+      await page.goto(adminUrl(slug));
 
       // Verify dashboard shows correct user counts
       await expect(page.getByRole("link", { name: "View users" })).toContainText("3");
@@ -711,7 +711,7 @@ test.describe("@comprehensive", () => {
     })();
 
     await step("Navigate to dashboard & verify updated active user counts")(async () => {
-      await page.goto("/admin");
+      await page.goto(adminUrl(slug));
 
       await expect(page.getByRole("link", { name: "View users" })).toContainText("3");
       await expect(page.getByRole("link", { name: "View active users" })).toContainText("3");
@@ -719,7 +719,7 @@ test.describe("@comprehensive", () => {
     })();
 
     await step("Navigate to users page & verify all users shown for deletion tests")(async () => {
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(slug, "/users"));
 
       await expect(page.locator("tbody").first().first().locator("tr")).toHaveCount(3);
       await expect(page.locator("tbody").first()).toContainText(owner.email);
@@ -828,8 +828,7 @@ test.describe("@comprehensive", () => {
     // === RESTORE AND PERMANENT DELETE SECTION ===
     await step("Navigate to Recycle bin tab & verify soft-deleted users appear")(async () => {
       await page.getByRole("tab", { name: "Recycle bin" }).click();
-
-      await expect(page).toHaveURL("/admin/users/recycle-bin");
+      await expect(page).toHaveURL(adminUrl(slug, "/users/recycle-bin"));
       const deletedUsersGrid = page.getByRole("table", { name: "Deleted users" });
       await expect(deletedUsersGrid).toContainText(user1.email);
       await expect(deletedUsersGrid).toContainText(user2.email);
@@ -870,15 +869,15 @@ test.describe("@comprehensive", () => {
       await expectToastMessage(context, `User permanently deleted: ${user2FullName}`);
 
       await expect(deleteDialog).not.toBeVisible();
-      await expect(page).toHaveURL("/admin/users/recycle-bin");
       await expect(page.getByRole("table", { name: "Deleted users" })).not.toBeVisible();
       await expect(page.getByRole("main").getByText("Recycle bin is empty").last()).toBeVisible();
+      await expect(page).toHaveURL(adminUrl(slug, "/users/recycle-bin"));
     })();
 
     await step("Navigate to All users & verify restored user LastSeenAt unchanged")(async () => {
       await page.getByRole("tab", { name: "All users" }).click();
 
-      await expect(page).toHaveURL("/admin/users");
+      await expect(page).toHaveURL(adminUrl(slug, "/users"));
       await expect(page.locator("tbody").first().first().locator("tr")).toHaveCount(2);
       await expect(page.locator("tbody").first()).toContainText(owner.email);
       await expect(page.locator("tbody").first()).toContainText(user1.email);

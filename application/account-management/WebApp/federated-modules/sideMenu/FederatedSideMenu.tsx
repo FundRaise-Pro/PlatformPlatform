@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro";
-import { loggedInPath } from "@repo/infrastructure/auth/constants";
+import { adminPath, tenantPath } from "@repo/infrastructure/auth/constants";
 import { SideMenu } from "@repo/ui/components/SideMenu";
 import { useState } from "react";
 import { useSwitchTenant } from "@/shared/hooks/useSwitchTenant";
@@ -32,10 +32,19 @@ export default function FederatedSideMenu({ currentSystem }: Readonly<FederatedS
     onMutate: () => {
       setIsSwitching(true);
     },
-    onSuccess: () => {
-      // Stay on the same path, but default to loggedInPath if on root
-      const targetPath = globalThis.location.pathname === "/" ? loggedInPath : globalThis.location.pathname;
-      globalThis.location.href = targetPath;
+    onSuccess: (switchedTenant) => {
+      const newSlug = switchedTenant.tenantSlug ?? undefined;
+      const pathname = globalThis.location.pathname;
+      const match = pathname.match(/^\/([^/]+)\/(admin|fundraiser|back-office)(\/.*)?$/);
+      if (match && newSlug) {
+        globalThis.location.href =
+          tenantPath(newSlug, match[2], match[3]) + globalThis.location.search + globalThis.location.hash;
+      } else if (pathname.match(/^\/admin(\/|$)/)) {
+        const rest = pathname.replace(/^\/admin/, "");
+        globalThis.location.href = adminPath(newSlug, rest);
+      } else {
+        globalThis.location.href = adminPath(newSlug);
+      }
     },
     onError: () => {
       setIsSwitching(false);

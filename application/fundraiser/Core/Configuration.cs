@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlatformPlatform.Fundraiser.Database;
+using PlatformPlatform.Fundraiser.Features.Certificates.Domain;
+using PlatformPlatform.Fundraiser.Features.Donations.Commands;
+using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.Subscriptions;
 using PlatformPlatform.Fundraiser.Integrations.AccountManagement;
 using PlatformPlatform.Fundraiser.Integrations.BlobStorage;
@@ -59,13 +62,19 @@ public static class Configuration
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
 
-            services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<PayFastGateway>());
-            services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<StripeGateway>());
-            services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<PayPalGateway>());
+            services.AddScoped<IPaymentGateway>(sp => sp.GetRequiredService<PayFastGateway>());
+            services.AddScoped<IPaymentGateway>(sp => sp.GetRequiredService<StripeGateway>());
+            services.AddScoped<IPaymentGateway>(sp => sp.GetRequiredService<PayPalGateway>());
             services.AddScoped<PaymentGatewayFactory>();
 
             // Tenant blob storage isolation
             services.AddScoped<TenantBlobStorageService>();
+
+            // Domain services
+            services.AddScoped<ITransactionTargetResolver, TransactionTargetResolver>();
+            services.AddScoped<IMerchantReferenceGenerator, MerchantReferenceGenerator>();
+            services.AddScoped<IReceiptNumberAllocator, ReceiptNumberAllocator>();
+            services.AddScoped<IPayFastItnHandler, PayFastItnHandler>();
 
             return services;
         }

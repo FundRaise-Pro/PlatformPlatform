@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using PlatformPlatform.AccountManagement.Database;
 using PlatformPlatform.AccountManagement.Features.Tenants.Commands;
+using PlatformPlatform.AccountManagement.Features.Tenants.Domain;
 using PlatformPlatform.SharedKernel.Tests;
 using PlatformPlatform.SharedKernel.Validation;
 using Xunit;
@@ -15,7 +16,7 @@ public sealed class UpdateCurrentTenantTests : EndpointBaseTest<AccountManagemen
     public async Task UpdateCurrentTenant_WhenValid_ShouldUpdateTenant()
     {
         // Arrange
-        var command = new UpdateCurrentTenantCommand { Name = Faker.TenantName() };
+        var command = new UpdateCurrentTenantCommand { Name = Faker.TenantName(), OrgType = NpoType.Other };
 
         // Act
         var response = await AuthenticatedOwnerHttpClient.PutAsJsonAsync("/api/account-management/tenants/current", command);
@@ -32,8 +33,8 @@ public sealed class UpdateCurrentTenantTests : EndpointBaseTest<AccountManagemen
     public async Task UpdateCurrentTenant_WhenInvalid_ShouldReturnBadRequest()
     {
         // Arrange
-        var invalidName = Faker.Random.String2(31);
-        var command = new UpdateCurrentTenantCommand { Name = invalidName };
+        var invalidName = Faker.Random.String2(201);
+        var command = new UpdateCurrentTenantCommand { Name = invalidName, OrgType = NpoType.Other };
 
         // Act
         var response = await AuthenticatedOwnerHttpClient.PutAsJsonAsync("/api/account-management/tenants/current", command);
@@ -41,7 +42,7 @@ public sealed class UpdateCurrentTenantTests : EndpointBaseTest<AccountManagemen
         // Assert
         var expectedErrors = new[]
         {
-            new ErrorDetail("Name", "Name must be between 1 and 30 characters.")
+            new ErrorDetail("Name", "Name must be between 1 and 200 characters.")
         };
         await response.ShouldHaveErrorStatusCode(HttpStatusCode.BadRequest, expectedErrors);
 
@@ -52,7 +53,7 @@ public sealed class UpdateCurrentTenantTests : EndpointBaseTest<AccountManagemen
     public async Task UpdateCurrentTenant_WhenNonOwner_ShouldReturnForbidden()
     {
         // Arrange
-        var command = new UpdateCurrentTenantCommand { Name = Faker.TenantName() };
+        var command = new UpdateCurrentTenantCommand { Name = Faker.TenantName(), OrgType = NpoType.Other };
 
         // Act
         var response = await AuthenticatedMemberHttpClient.PutAsJsonAsync("/api/account-management/tenants/current", command);

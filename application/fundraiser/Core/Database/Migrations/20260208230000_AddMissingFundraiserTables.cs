@@ -169,13 +169,13 @@ public sealed class AddMissingFundraiserTables : Migration
                     [Id] [varchar](32) NOT NULL,
                     [CreatedAt] [datetimeoffset] NOT NULL,
                     [ModifiedAt] [datetimeoffset] NULL,
-                    [Name] [nvarchar](max) NOT NULL,
-                    [Description] [nvarchar](max) NULL,
-                    [Category] [nvarchar](max) NOT NULL,
+                    [Name] [nvarchar](200) NOT NULL,
+                    [Description] [nvarchar](1000) NULL,
+                    [Category] [nvarchar](100) NOT NULL,
                     [IsSystemTemplate] [bit] NOT NULL,
                     [IsPublished] [bit] NOT NULL,
                     [CloneCount] [int] NOT NULL,
-                    [PreviewImageUrl] [nvarchar](max) NULL,
+                    [PreviewImageUrl] [nvarchar](500) NULL,
                     [Sections] [nvarchar](max) NOT NULL,
                     CONSTRAINT [PK_FormTemplates] PRIMARY KEY ([Id])
                 );
@@ -188,6 +188,23 @@ public sealed class AddMissingFundraiserTables : Migration
                 SELECT
                     [Id], [CreatedAt], [ModifiedAt], [Name], [Description], [Category], [IsSystemTemplate], [IsPublished], [CloneCount], [PreviewImageUrl], [Sections]
                 FROM [FormTemplate];
+            END;
+
+            IF OBJECT_ID(N'[FormTemplates]', N'U') IS NOT NULL
+               AND EXISTS (
+                   SELECT 1
+                   FROM sys.columns
+                   WHERE object_id = OBJECT_ID(N'[FormTemplates]')
+                     AND [name] = N'Category'
+                     AND max_length = -1
+               )
+            BEGIN
+                UPDATE [FormTemplates]
+                SET [Category] = LEFT([Category], 100)
+                WHERE LEN([Category]) > 100;
+
+                ALTER TABLE [FormTemplates]
+                ALTER COLUMN [Category] [nvarchar](100) NOT NULL;
             END;
 
             IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_BlogPosts_TenantId_Slug' AND object_id = OBJECT_ID(N'[BlogPosts]'))

@@ -45,7 +45,7 @@ msgstr ""
 msgid "{0} services"
 msgstr ""
 
-msgid "Accent"
+msgid "Accent color"
 msgstr ""
 
 msgid "Account"
@@ -84,6 +84,9 @@ msgstr ""
 msgid "Branding"
 msgstr ""
 
+msgid "Branding updated successfully."
+msgstr ""
+
 msgid "Campaign"
 msgstr ""
 
@@ -94,9 +97,6 @@ msgid "Coming soon"
 msgstr ""
 
 msgid "Configure payment gateway for receiving donations."
-msgstr ""
-
-msgid "Configure payments"
 msgstr ""
 
 msgid "Configure your organization's branding, theme, and integrations."
@@ -162,19 +162,46 @@ msgstr ""
 msgid "Donor"
 msgstr ""
 
-msgid "Edit branding"
+msgid "E.g., +1 (555) 123-4567"
 msgstr ""
 
-msgid "Edit domain"
+msgid "E.g., Every child deserves a future"
 msgstr ""
 
-msgid "Edit theme"
+msgid "E.g., https://example.com/favicon.ico"
+msgstr ""
+
+msgid "E.g., https://example.org/privacy"
+msgstr ""
+
+msgid "E.g., https://example.org/terms"
+msgstr ""
+
+msgid "E.g., https://fonts.googleapis.com/..."
+msgstr ""
+
+msgid "E.g., Inter, Roboto"
+msgstr ""
+
+msgid "E.g., Save the Children"
+msgstr ""
+
+msgid "E.g., support@example.org"
 msgstr ""
 
 msgid "Email"
 msgstr ""
 
 msgid "Events"
+msgstr ""
+
+msgid "Favicon URL"
+msgstr ""
+
+msgid "Font family"
+msgstr ""
+
+msgid "Font URL"
 msgstr ""
 
 msgid "Form name"
@@ -210,6 +237,9 @@ msgstr ""
 msgid "Invite user"
 msgstr ""
 
+msgid "Live preview"
+msgstr ""
+
 msgid "Loading applications..."
 msgstr ""
 
@@ -234,9 +264,6 @@ msgstr ""
 msgid "Loading QR codes..."
 msgstr ""
 
-msgid "Loading settings..."
-msgstr ""
-
 msgid "Loading users..."
 msgstr ""
 
@@ -253,6 +280,9 @@ msgid "Manage your organization's locations and branches."
 msgstr ""
 
 msgid "Manage your plan and billing."
+msgstr ""
+
+msgid "More information"
 msgstr ""
 
 msgid "Name"
@@ -330,7 +360,10 @@ msgstr ""
 msgid "Plan event"
 msgstr ""
 
-msgid "Primary"
+msgid "Primary color"
+msgstr ""
+
+msgid "Privacy URL"
 msgstr ""
 
 msgid "Published"
@@ -351,7 +384,19 @@ msgstr ""
 msgid "Roles"
 msgstr ""
 
-msgid "Secondary"
+msgid "Save branding"
+msgstr ""
+
+msgid "Save theme"
+msgstr ""
+
+msgid "Saving..."
+msgstr ""
+
+msgid "Secondary color"
+msgstr ""
+
+msgid "See real-time changes as you edit your theme colors."
 msgstr ""
 
 msgid "Settings"
@@ -372,6 +417,9 @@ msgstr ""
 msgid "Subscription"
 msgstr ""
 
+msgid "Success"
+msgstr ""
+
 msgid "Support email"
 msgstr ""
 
@@ -381,7 +429,13 @@ msgstr ""
 msgid "Team members"
 msgstr ""
 
+msgid "Terms URL"
+msgstr ""
+
 msgid "Theme"
+msgstr ""
+
+msgid "Theme updated successfully."
 msgstr ""
 
 msgid "Toggle sidebar"
@@ -403,6 +457,9 @@ msgid "Version"
 msgstr ""
 
 msgid "View and manage donations and transactions."
+msgstr ""
+
+msgid "Website preview"
 msgstr ""
 
 msgid "Write blog post"

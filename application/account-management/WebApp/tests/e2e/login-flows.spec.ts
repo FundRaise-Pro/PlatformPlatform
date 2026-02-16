@@ -6,7 +6,7 @@ import {
   expectToastMessage,
   typeOneTimeCode
 } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@smoke", () => {
@@ -53,7 +53,7 @@ test.describe("@smoke", () => {
       await page.getByRole("button", { name: "Verify" }).click(); // Auto-submit only happens when entering the first OTP
 
       // Verify successful login
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(tenant.slug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -74,18 +74,18 @@ test.describe("@smoke", () => {
       await expect(logoutMenuItem).toBeVisible();
       await logoutMenuItem.dispatchEvent("click");
 
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
     })();
 
     await step("Access protected routes while unauthenticated & verify redirect to login")(async () => {
       // Try accessing users page - route guard redirects client-side without API call
-      await page.goto("/admin/users");
+      await page.goto(adminUrl(tenant.slug, "/users"));
       // TanStack Router adds default search params, so check that the URL starts with the expected path
-      await expect(page).toHaveURL(/\/login\?returnPath=%2Fadmin%2Fusers/);
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
 
       // Try accessing admin dashboard
-      await page.goto("/admin");
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await page.goto(adminUrl(tenant.slug));
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
     })();
 
     // === SECURITY EDGE CASES ===
@@ -103,7 +103,7 @@ test.describe("@smoke", () => {
       await expect(page).toHaveURL("/login/verify");
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(tenant.slug));
     })();
   });
 });

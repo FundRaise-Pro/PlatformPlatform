@@ -1,13 +1,16 @@
-import { expect } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { expect } from "@playwright/test";
 import type { Tenant, User } from "@shared/e2e/types/auth";
 
 /**
  * Read and parse platform settings from shared-kernel
  */
 function getPlatformSettings(): { identity: { internalEmailDomain: string } } {
-  const settingsPath = path.resolve(__dirname, "../../../../shared-kernel/SharedKernel/Platform/platform-settings.jsonc");
+  const settingsPath = path.resolve(
+    __dirname,
+    "../../../../shared-kernel/SharedKernel/Platform/platform-settings.jsonc"
+  );
   const content = fs.readFileSync(settingsPath, "utf-8");
   const jsonWithoutComments = content.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
   return JSON.parse(jsonWithoutComments);
@@ -29,7 +32,8 @@ export function createTenantWithUsers(workerIndex: number, selfContainedSystemPr
 
   // Back-office requires internal user email domain (read dynamically from platform-settings.jsonc)
   const internalDomain = getPlatformSettings().identity.internalEmailDomain.replace("@", "");
-  const emailDomain = selfContainedSystemPrefix === "back-office" ? internalDomain : `${workerIndex}.${timestamp}.local`;
+  const emailDomain =
+    selfContainedSystemPrefix === "back-office" ? internalDomain : `${workerIndex}.${timestamp}.local`;
 
   // Generate unique emails for each role with timestamp to avoid conflicts across test runs
   const ownerEmailAddress = `e2e-${prefix}-owner-${workerIndex}-${timestamp}@${emailDomain}`;
@@ -60,10 +64,12 @@ export function createTenantWithUsers(workerIndex: number, selfContainedSystemPr
 
   // Return tenant structure - actual signup will be implemented when needed
   const tenantId = `tenant-${workerIndex}-${timestamp}`;
+  const slug = `e2e-${prefix}w${workerIndex}-${timestamp}`.toLowerCase();
 
   return {
     tenantId,
     tenantName,
+    slug,
     owner,
     admin,
     member
@@ -91,7 +97,7 @@ export async function ensureTenantUsersExist(tenant: Tenant): Promise<void> {
     // Create the owner user through centralized signup flow
     const { createTestContext } = await import("../utils/test-assertions.js");
     const testContext = createTestContext(page);
-    await completeSignupFlow(page, expect, tenant.owner, testContext);
+    await completeSignupFlow(page, expect, tenant.owner, testContext, true, tenant.slug);
 
     // Save authentication state for reuse
     const authManager = createAuthStateManager(0, "account-management"); // Use worker 0 for shared users

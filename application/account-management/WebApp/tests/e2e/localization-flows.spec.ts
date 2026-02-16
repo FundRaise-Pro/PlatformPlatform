@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import { test } from "@shared/e2e/fixtures/page-auth";
 import { createTestContext, expectToastMessage, typeOneTimeCode } from "@shared/e2e/utils/test-assertions";
-import { completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@comprehensive", () => {
@@ -38,6 +38,18 @@ test.describe("@comprehensive", () => {
       await page.getByRole("textbox", { name: "E-mail" }).fill(user.email);
       await page.getByRole("button", { name: "Opret din konto" }).click();
 
+      await expect(page).toHaveURL("/signup/organization");
+    })();
+
+    const testSlug = `test-da-${Date.now()}`;
+
+    await step("Fill organization details in Danish flow & navigate to verify")(async () => {
+      await page.getByRole("textbox", { name: "Organization name" }).fill("Test Org DK");
+      await page.getByRole("textbox", { name: "Subdomain" }).clear();
+      await page.getByRole("textbox", { name: "Subdomain" }).fill(testSlug);
+      await page.getByRole("textbox", { name: "Country code" }).fill("DNK");
+      await page.getByRole("button", { name: "Continue" }).click();
+
       await expect(page).toHaveURL("/signup/verify");
       await expect(page.getByRole("heading", { name: "Indtast din bekræftelseskode" })).toBeVisible();
     })();
@@ -45,7 +57,7 @@ test.describe("@comprehensive", () => {
     await step("Complete verification with Danish interface & verify navigation to admin")(async () => {
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await page.waitForURL(`**/${testSlug}/admin`);
     })();
 
     await step("Complete profile setup in Danish & verify profile form works")(async () => {
@@ -76,7 +88,7 @@ test.describe("@comprehensive", () => {
       await logoutMenuItem.dispatchEvent("click");
 
       // Verify Danish language persists after logout
-      await expect(page).toHaveURL("/login?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\?returnPath=/);
       await expect(page.getByRole("heading", { name: "Hej! Velkommen tilbage" })).toBeVisible();
       await expect(page.evaluate(() => localStorage.getItem("preferred-locale"))).resolves.toBe("da-DK");
     })();
@@ -103,14 +115,14 @@ test.describe("@comprehensive", () => {
       await page.getByRole("textbox", { name: "Email" }).fill(user.email);
       await page.getByRole("button", { name: "Continue" }).click();
 
-      await expect(page).toHaveURL("/login/verify?returnPath=%2Fadmin");
+      await expect(page).toHaveURL(/\/login\/verify\?returnPath=/);
       await expect(page.getByRole("heading", { name: "Enter your verification code" })).toBeVisible();
     })();
 
     await step("Complete login verification & verify language resets to user's saved preference")(async () => {
       await typeOneTimeCode(page, getVerificationCode());
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(testSlug));
       await expect(page.getByRole("heading", { name: "Velkommen hjem" })).toBeVisible();
       await expect(page.evaluate(() => localStorage.getItem("preferred-locale"))).resolves.toBe("da-DK");
     })();
@@ -145,6 +157,8 @@ test.describe("@comprehensive", () => {
     const testContext2 = createTestContext(page2);
     const user1 = testUser();
     const user2 = testUser();
+    let user2Slug = "";
+    let user1Slug = "";
 
     await step("Complete signup for first user with Danish & verify preference saved")(async () => {
       // Set up Danish interface
@@ -166,9 +180,20 @@ test.describe("@comprehensive", () => {
       // Complete signup flow
       await page1.getByRole("textbox", { name: "E-mail" }).fill(user1.email);
       await page1.getByRole("button", { name: "Opret din konto" }).click();
+      await expect(page1).toHaveURL("/signup/organization");
+
+      // Fill organization details
+      user1Slug = `test-da-persist-${Date.now()}`;
+      await page1.getByRole("textbox", { name: "Organization name" }).fill("Test Org DK Persist");
+      await page1.getByRole("textbox", { name: "Subdomain" }).clear();
+      await page1.getByRole("textbox", { name: "Subdomain" }).fill(user1Slug);
+      await page1.getByRole("textbox", { name: "Country code" }).fill("DNK");
+      await page1.getByRole("button", { name: "Continue" }).click();
       await expect(page1).toHaveURL("/signup/verify");
 
       await typeOneTimeCode(page1, getVerificationCode());
+
+      await page1.waitForURL(`**/${user1Slug}/admin`);
 
       // Complete profile in Danish
       await page1.getByRole("textbox", { name: "Fornavn" }).fill(user1.firstName);
@@ -183,7 +208,7 @@ test.describe("@comprehensive", () => {
 
     await step("Complete signup for second user with default English & verify different language preference")(
       async () => {
-        await completeSignupFlow(page2, expect, user2, testContext2, true);
+        ({ slug: user2Slug } = await completeSignupFlow(page2, expect, user2, testContext2, true));
 
         await expect(page2.getByRole("heading", { name: "Welcome home" })).toBeVisible();
         await expect(page2.evaluate(() => localStorage.getItem("preferred-locale"))).resolves.toBe("en-US");
@@ -203,7 +228,7 @@ test.describe("@comprehensive", () => {
       await typeOneTimeCode(newPage1, getVerificationCode());
 
       // Verify Danish preference is restored after login
-      await expect(newPage1).toHaveURL("/admin");
+      await expect(newPage1).toHaveURL(adminUrl(user1Slug));
       await expect(newPage1.getByRole("heading", { name: "Velkommen hjem" })).toBeVisible();
       await expect(newPage1.evaluate(() => localStorage.getItem("preferred-locale"))).resolves.toBe("da-DK");
     })();
@@ -221,7 +246,7 @@ test.describe("@comprehensive", () => {
       await typeOneTimeCode(newPage2, getVerificationCode());
 
       // Verify English preference is maintained
-      await expect(newPage2).toHaveURL("/admin");
+      await expect(newPage2).toHaveURL(adminUrl(user2Slug));
       await expect(newPage2.getByRole("heading", { name: "Welcome home" })).toBeVisible();
       await expect(newPage2.evaluate(() => localStorage.getItem("preferred-locale"))).resolves.toBe("en-US");
     })();

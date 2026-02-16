@@ -27,6 +27,7 @@ public sealed class DeclineInvitationTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Trial)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -97,6 +98,7 @@ public sealed class DeclineInvitationTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Trial)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]
@@ -107,6 +109,7 @@ public sealed class DeclineInvitationTests : EndpointBaseTest<AccountManagementD
                 ("CreatedAt", TimeProvider.GetUtcNow()),
                 ("ModifiedAt", null),
                 ("Name", Faker.Company.CompanyName()),
+                ("Slug", $"test-{Guid.NewGuid():N}"[..20]),
                 ("State", nameof(TenantState.Trial)),
                 ("Logo", """{"Url":null,"Version":0}""")
             ]

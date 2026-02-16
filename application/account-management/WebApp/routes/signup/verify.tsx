@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { loggedInPath } from "@repo/infrastructure/auth/constants";
+import { adminPath, loggedInPath } from "@repo/infrastructure/auth/constants";
 import { useIsAuthenticated } from "@repo/infrastructure/auth/hooks";
 import { preferredLocaleKey } from "@repo/infrastructure/translations/constants";
 import { Button } from "@repo/ui/components/Button";
@@ -16,7 +16,7 @@ import FederatedErrorPage from "@/federated-modules/errorPages/FederatedErrorPag
 import logoMarkUrl from "@/shared/images/logo-mark.svg";
 import logoWrapUrl from "@/shared/images/logo-wrap.svg";
 import { HorizontalHeroLayout } from "@/shared/layouts/HorizontalHeroLayout";
-import { api } from "@/shared/lib/api/client";
+import { api, NpoType } from "@/shared/lib/api/client";
 
 import {
   clearSignupState,
@@ -33,12 +33,18 @@ export const Route = createFileRoute("/signup/verify")({
 
     useEffect(() => {
       if (isAuthenticated) {
-        navigate({ to: loggedInPath });
+        navigate({ to: loggedInPath() });
         return;
       }
 
       if (!hasSignupState()) {
         navigate({ to: "/signup", replace: true });
+        return;
+      }
+
+      const state = getSignupState();
+      if (!state.organizationName || !state.slug || !state.country) {
+        navigate({ to: "/signup/organization", replace: true });
       }
     }, [isAuthenticated, navigate]);
 
@@ -122,8 +128,9 @@ export function CompleteSignupForm() {
     "/api/account-management/signups/{emailConfirmationId}/complete",
     {
       onSuccess: () => {
+        const slug = getSignupState().slug;
         clearSignupState();
-        window.location.href = loggedInPath;
+        window.location.href = adminPath(slug);
       }
     }
   );
@@ -173,13 +180,21 @@ export function CompleteSignupForm() {
             setLastSubmittedCode(otpValue);
           }
 
+          const state = getSignupState();
+
           completeSignupMutation.mutate({
             params: {
               path: { emailConfirmationId }
             },
             body: {
               oneTimePassword: otpValue,
-              preferredLocale: localStorage.getItem(preferredLocaleKey) ?? ""
+              preferredLocale: localStorage.getItem(preferredLocaleKey) ?? "",
+              organizationName: state.organizationName ?? "",
+              slug: state.slug ?? "",
+              orgType: state.orgType ?? NpoType.Other,
+              country: state.country ?? "",
+              registrationNumber: state.registrationNumber ?? null,
+              description: state.description ?? null
             }
           });
         }}

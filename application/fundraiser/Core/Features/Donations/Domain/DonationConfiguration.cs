@@ -25,6 +25,23 @@ public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transact
         builder.Property(t => t.AmountFee).HasColumnType("decimal(18,2)");
         builder.Property(t => t.AmountNet).HasColumnType("decimal(18,2)");
 
+        // Fundraising target anchor — every transaction references exactly one target
+        builder.Property(t => t.TargetType).HasMaxLength(50).IsRequired();
+        builder.Property(t => t.TargetId).HasMaxLength(26).IsRequired();
+
+        // HMAC-signed merchant reference for PayFast ITN tenant resolution
+        builder.Property(t => t.MerchantReference).HasMaxLength(100).IsRequired();
+
+        // Unique indexes — scoped to tenant for SQL Server compatibility
+        builder.HasIndex(t => new { t.TenantId, t.GatewayPaymentId })
+            .IsUnique()
+            .HasFilter("[GatewayPaymentId] IS NOT NULL");
+
+        builder.HasIndex(t => new { t.TenantId, t.MerchantReference }).IsUnique();
+
+        // Composite index for raised-amount aggregation queries
+        builder.HasIndex(t => new { t.TenantId, t.TargetType, t.TargetId, t.Status });
+
         builder.OwnsMany(t => t.ProcessingLogs, plb =>
         {
             plb.WithOwner().HasForeignKey("TransactionId");

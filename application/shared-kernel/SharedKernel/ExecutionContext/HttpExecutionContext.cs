@@ -8,7 +8,24 @@ namespace PlatformPlatform.SharedKernel.ExecutionContext;
 
 public class HttpExecutionContext(IHttpContextAccessor httpContextAccessor) : IExecutionContext
 {
-    public TenantId? TenantId => UserInfo.TenantId;
+    private const string TenantIdHeaderName = "X-Tenant-Id";
+
+    public TenantId? TenantId
+    {
+        get
+        {
+            // Primary: resolve from JWT claims
+            if (UserInfo.TenantId is not null)
+                return UserInfo.TenantId;
+
+            // Fallback: resolve from X-Tenant-Id header (set by gateway for public/anonymous requests)
+            var headerValue = httpContextAccessor.HttpContext?.Request.Headers[TenantIdHeaderName].ToString();
+            if (!string.IsNullOrEmpty(headerValue) && long.TryParse(headerValue, out var tenantIdValue))
+                return new TenantId(tenantIdValue);
+
+            return null;
+        }
+    }
 
     public UserInfo UserInfo
     {

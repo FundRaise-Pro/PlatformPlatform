@@ -32,6 +32,7 @@ public sealed record PaymentRequest(
     string Currency,
     string ItemName,
     string? ItemDescription,
+    string MerchantReference,
     string ReturnUrl,
     string CancelUrl,
     string NotifyUrl,
@@ -41,7 +42,8 @@ public sealed record PaymentRequest(
 
 public sealed record PaymentInitiationResult(
     string GatewayPaymentId,
-    string RedirectUrl
+    string RedirectUrl,
+    IReadOnlyDictionary<string, string>? FormFields = null
 );
 
 public sealed record PaymentVerificationResult(

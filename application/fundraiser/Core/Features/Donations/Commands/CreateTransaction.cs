@@ -17,6 +17,10 @@ public sealed record CreateTransactionCommand : ICommand, IRequest<Result<Transa
 
     public required decimal Amount { get; init; }
 
+    public required FundraisingTargetType TargetType { get; init; }
+
+    public required string TargetId { get; init; }
+
     public string? PayeeName { get; init; }
 
     public string? PayeeEmail { get; init; }
@@ -29,27 +33,52 @@ public sealed class CreateTransactionValidator : AbstractValidator<CreateTransac
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Description).MaximumLength(1000);
         RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.TargetId).NotEmpty().MaximumLength(26);
+        RuleFor(x => x.TargetType).IsInEnum();
         RuleFor(x => x.PayeeName).MaximumLength(200);
         RuleFor(x => x.PayeeEmail).MaximumLength(200).EmailAddress().When(x => !string.IsNullOrEmpty(x.PayeeEmail));
+
+        // Amount limits: min R1, max R1,000,000 for donations; min R50 for subscriptions
+        RuleFor(x => x.Amount)
+            .GreaterThanOrEqualTo(1)
+            .LessThanOrEqualTo(1_000_000)
+            .When(x => x.Type == TransactionType.Donation);
+        RuleFor(x => x.Amount)
+            .GreaterThanOrEqualTo(50)
+            .When(x => x.Type == TransactionType.Subscription);
     }
 }
 
 public sealed class CreateTransactionHandler(
     ITransactionRepository transactionRepository,
+    ITransactionTargetResolver targetResolver,
+    IMerchantReferenceGenerator merchantReferenceGenerator,
     IExecutionContext executionContext,
     ITelemetryEventsCollector events
 ) : IRequestHandler<CreateTransactionCommand, Result<TransactionId>>
 {
     public async Task<Result<TransactionId>> Handle(CreateTransactionCommand command, CancellationToken cancellationToken)
     {
+        var target = await targetResolver.ResolveAsync(command.TargetType, command.TargetId, cancellationToken);
+        if (target is null)
+            return Result<TransactionId>.NotFound($"{command.TargetType} with id '{command.TargetId}' not found.");
+
+        var roundedAmount = PaymentHelpers.RoundAmount(command.Amount);
+        var tenantId = executionContext.TenantId!;
+
+        // Generate merchant reference before creating transaction (need the ID first)
+        var transactionId = TransactionId.NewId();
+        var merchantReference = merchantReferenceGenerator.Generate(tenantId.Value, transactionId);
+
         var transaction = Transaction.Create(
-            executionContext.TenantId!, command.Name, command.Description,
-            command.Type, command.Amount, command.PayeeName, command.PayeeEmail
+            transactionId, tenantId, command.Name, command.Description,
+            command.Type, roundedAmount, command.TargetType, command.TargetId,
+            merchantReference, command.PayeeName, command.PayeeEmail
         );
 
         await transactionRepository.AddAsync(transaction, cancellationToken);
 
-        events.CollectEvent(new TransactionCreated(transaction.Id, command.Type, command.Amount));
+        events.CollectEvent(new TransactionCreated(transaction.Id, command.Type, roundedAmount));
         return transaction.Id;
     }
 }

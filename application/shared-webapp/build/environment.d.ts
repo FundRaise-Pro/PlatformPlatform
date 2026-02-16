@@ -92,6 +92,10 @@ export declare global {
      * Is internal user (has access to BackOffice)
      **/
     isInternalUser?: boolean;
+    /**
+     * Tenant slug for URL routing
+     **/
+    tenantSlug?: string;
   }
 
   /**

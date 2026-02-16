@@ -2015,6 +2015,251 @@
         }
       }
     },
+    "/internal-api/fundraiser/tenants/resolve": {
+      "get": {
+        "operationId": "GetInternalApiFundraiserTenantsResolve",
+        "parameters": [
+          {
+            "name": "host",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedTenantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/settings": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicSettings",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTenantSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/campaigns": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicCampaignsAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicCampaignSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/campaigns/{slug}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicCampaigns",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicCampaignResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/blog/categories": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicBlogCategories",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicBlogCategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/blog": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicBlogAll",
+        "parameters": [
+          {
+            "name": "categorySlug",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicBlogPostSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/blog/{categorySlug}/{postSlug}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicBlog",
+        "parameters": [
+          {
+            "name": "categorySlug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "postSlug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicBlogPostResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/events": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicEvents",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicEventResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/branches": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicBranches",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BranchResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/fundraiser/qrcodes": {
       "get": {
         "tags": [
@@ -5190,6 +5435,373 @@
           }
         }
       },
+      "ResolvedTenantResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenantId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subdomain": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicTenantSettingsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "theme": {
+            "$ref": "#/components/schemas/ThemeConfigResponse"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/PublicBrandResponse"
+          },
+          "content": {
+            "$ref": "#/components/schemas/ContentConfigResponse"
+          },
+          "featureFlags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "ThemeConfigResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "primaryColor": {
+            "type": "string"
+          },
+          "secondaryColor": {
+            "type": "string"
+          },
+          "accentColor": {
+            "type": "string"
+          },
+          "fontFamily": {
+            "type": "string",
+            "nullable": true
+          },
+          "fontUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "faviconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "customCss": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PublicBrandResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "organizationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tagline": {
+            "type": "string",
+            "nullable": true
+          },
+          "socialLinks": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/SocialLink"
+            }
+          },
+          "termsUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "privacyUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SocialLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "platform": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "ContentConfigResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "applicationLabel": {
+            "type": "string"
+          },
+          "causeType": {
+            "type": "string"
+          },
+          "beneficiaryLabel": {
+            "type": "string"
+          },
+          "donationLabel": {
+            "type": "string"
+          },
+          "campaignLabel": {
+            "type": "string"
+          },
+          "branchLabel": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicCampaignSummaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/CampaignStatus"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignImageResponse"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PublicCampaignResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalFundingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/CampaignStatus"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignImageResponse"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PublicBlogCategoryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PublicBlogPostSummaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "categorySlug": {
+            "type": "string"
+          },
+          "categoryTitle": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PublicBlogPostResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "categorySlug": {
+            "type": "string"
+          },
+          "categoryTitle": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PublicEventResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          }
+        }
+      },
       "QRCodeSummaryResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -5434,37 +6046,6 @@
           }
         }
       },
-      "ThemeConfigResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "primaryColor": {
-            "type": "string"
-          },
-          "secondaryColor": {
-            "type": "string"
-          },
-          "accentColor": {
-            "type": "string"
-          },
-          "fontFamily": {
-            "type": "string",
-            "nullable": true
-          },
-          "fontUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "faviconUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "customCss": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
       "BrandConfigResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -5502,18 +6083,6 @@
           }
         }
       },
-      "SocialLink": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "platform": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string"
-          }
-        }
-      },
       "DomainConfigResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -5528,30 +6097,6 @@
             "items": {
               "type": "string"
             }
-          }
-        }
-      },
-      "ContentConfigResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "applicationLabel": {
-            "type": "string"
-          },
-          "causeType": {
-            "type": "string"
-          },
-          "beneficiaryLabel": {
-            "type": "string"
-          },
-          "donationLabel": {
-            "type": "string"
-          },
-          "campaignLabel": {
-            "type": "string"
-          },
-          "branchLabel": {
-            "type": "string"
           }
         }
       },
@@ -5577,56 +6122,6 @@
           },
           "currency": {
             "type": "string"
-          }
-        }
-      },
-      "PublicTenantSettingsResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "theme": {
-            "$ref": "#/components/schemas/ThemeConfigResponse"
-          },
-          "brand": {
-            "$ref": "#/components/schemas/PublicBrandResponse"
-          },
-          "content": {
-            "$ref": "#/components/schemas/ContentConfigResponse"
-          },
-          "featureFlags": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "boolean"
-            }
-          }
-        }
-      },
-      "PublicBrandResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "organizationName": {
-            "type": "string",
-            "nullable": true
-          },
-          "tagline": {
-            "type": "string",
-            "nullable": true
-          },
-          "socialLinks": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/SocialLink"
-            }
-          },
-          "termsUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "privacyUrl": {
-            "type": "string",
-            "nullable": true
           }
         }
       },

@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import type { UserInfo } from "@repo/infrastructure/auth/AuthenticationProvider";
-import { loggedInPath } from "@repo/infrastructure/auth/constants";
+import { adminPath, tenantPath } from "@repo/infrastructure/auth/constants";
 import { useUserInfo } from "@repo/infrastructure/auth/hooks";
 import { Badge } from "@repo/ui/components/Badge";
 import {
@@ -290,11 +290,18 @@ export default function TenantSelector({ onShowInvitationDialog, variant = "defa
       // Show the loader immediately
       setIsSwitching(true);
     },
-    onSuccess: () => {
-      // Stay on the same path, but default to loggedInPath if on root
-      // Don't set isSwitching to false here - let the redirect handle it
-      const targetPath = window.location.pathname === "/" ? loggedInPath : window.location.pathname;
-      window.location.href = targetPath;
+    onSuccess: (switchedTenant) => {
+      const newSlug = switchedTenant.tenantSlug ?? undefined;
+      const pathname = window.location.pathname;
+      const match = pathname.match(/^\/([^/]+)\/(admin|fundraiser|back-office)(\/.*)?$/);
+      if (match && newSlug) {
+        window.location.href = tenantPath(newSlug, match[2], match[3]) + window.location.search + window.location.hash;
+      } else if (pathname.match(/^\/admin(\/|$)/)) {
+        const rest = pathname.replace(/^\/admin/, "");
+        window.location.href = adminPath(newSlug, rest);
+      } else {
+        window.location.href = adminPath(newSlug);
+      }
     },
     onError: () => {
       // Hide the loader on error

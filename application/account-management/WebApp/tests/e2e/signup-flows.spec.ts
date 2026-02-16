@@ -7,7 +7,7 @@ import {
   expectValidationError,
   typeOneTimeCode
 } from "@shared/e2e/utils/test-assertions";
-import { getVerificationCode, testUser, uniqueEmail } from "@shared/e2e/utils/test-data";
+import { adminUrl, completeSignupFlow, getVerificationCode, testUser, uniqueEmail } from "@shared/e2e/utils/test-data";
 import { step } from "@shared/e2e/utils/test-step-wrapper";
 
 test.describe("@smoke", () => {
@@ -63,13 +63,26 @@ test.describe("@smoke", () => {
     })();
 
     // === SUCCESSFUL SIGNUP FLOW ===
-    await step("Complete signup with valid email & verify navigation to verification page")(async () => {
+    const testSlug = `test-${Date.now()}`;
+
+    await step("Complete signup with valid email & verify navigation to organization page")(async () => {
       await page.getByRole("textbox", { name: "Email" }).fill(user.email);
       await blurActiveElement(page);
       await expect(page.getByText("Europe")).toBeVisible();
       await page.getByRole("button", { name: "Create your account" }).click();
 
-      // Verify verification page state
+      await expect(page).toHaveURL("/signup/organization");
+      await expect(page.getByRole("heading", { name: "Tell us about your organization" })).toBeVisible();
+    })();
+
+    // === ORGANIZATION DETAILS ===
+    await step("Fill organization details & navigate to verification page")(async () => {
+      await page.getByRole("textbox", { name: "Organization name" }).fill("Test Organization");
+      await page.getByRole("textbox", { name: "Subdomain" }).clear();
+      await page.getByRole("textbox", { name: "Subdomain" }).fill(testSlug);
+      await page.getByRole("textbox", { name: "Country code" }).fill("ZAF");
+      await page.getByRole("button", { name: "Continue" }).click();
+
       await expect(page).toHaveURL("/signup/verify");
       await expect(page.locator('input[autocomplete="one-time-code"]').first()).toBeFocused();
       await expect(page.getByRole("button", { name: "Verify" })).toBeDisabled();
@@ -92,7 +105,7 @@ test.describe("@smoke", () => {
     await step("Click verify button & verify navigation to admin with profile dialog")(async () => {
       await page.getByRole("button", { name: "Verify" }).click(); // Auto-submit only happens when entering the first OTP
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(`/${testSlug}/admin`);
       await expect(page.getByRole("dialog", { name: "User profile" })).toBeVisible();
     })();
 
@@ -164,7 +177,7 @@ test.describe("@smoke", () => {
     await step("Navigate to signup page while authenticated & verify redirect to admin")(async () => {
       await page.goto("/signup");
 
-      await expect(page).toHaveURL("/admin");
+      await expect(page).toHaveURL(adminUrl(testSlug));
       await expect(page.getByRole("heading", { name: "Welcome home" })).toBeVisible();
     })();
 
@@ -175,7 +188,7 @@ test.describe("@smoke", () => {
       await page.getByRole("textbox", { name: "Account name" }).clear();
       await page.getByRole("button", { name: "Save changes" }).click();
 
-      await expectValidationError(testContext, "Name must be between 1 and 30 characters.");
+      await expectValidationError(testContext, "Name must be between 1 and 200 characters.");
     })();
 
     await step("Update account name & verify successful save")(async () => {
@@ -225,6 +238,23 @@ test.describe("@smoke", () => {
 test.describe("@comprehensive", () => {
   // Rate limiting for verification attempts is comprehensively tested in login-flows.spec.ts
 
+  test("should redirect legacy /admin paths to slug-based URLs preserving query and hash", async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const user = testUser();
+    const testContext = createTestContext(page);
+
+    const { slug } = await completeSignupFlow(page, expect, user, testContext, true);
+
+    await step("Navigate to legacy /admin/users with query and hash & verify slug-based redirect")(async () => {
+      await page.goto("/admin/users?sort=created#x");
+
+      await expect(page).toHaveURL(`${adminUrl(slug, "/users", { sort: "created" })}#x`);
+    })();
+
+    await context.close();
+  });
+
   test("should show detailed error message when too many signup attempts are made", async ({ page }) => {
     const context = createTestContext(page);
     const testEmail = uniqueEmail();
@@ -238,7 +268,7 @@ test.describe("@comprehensive", () => {
         await page.getByRole("textbox", { name: "Email" }).fill(testEmail);
         await page.getByRole("button", { name: "Create your account" }).click();
 
-        await expect(page).toHaveURL("/signup/verify");
+        await expect(page).toHaveURL("/signup/organization");
       }
     })();
 
@@ -275,6 +305,13 @@ test.describe("@slow", () => {
       await page.getByRole("textbox", { name: "Email" }).fill(user.email);
       await blurActiveElement(page);
       await page.getByRole("button", { name: "Create your account" }).click();
+
+      await expect(page).toHaveURL("/signup/organization");
+      await page.getByRole("textbox", { name: "Organization name" }).fill("Slow Test Org");
+      await page.getByRole("textbox", { name: "Subdomain" }).clear();
+      await page.getByRole("textbox", { name: "Subdomain" }).fill(`slow-test-${Date.now()}`);
+      await page.getByRole("textbox", { name: "Country code" }).fill("ZAF");
+      await page.getByRole("button", { name: "Continue" }).click();
 
       await expect(page).toHaveURL("/signup/verify");
       await expect(page.getByText("Can't find your code? Check your spam folder.").first()).toBeVisible();

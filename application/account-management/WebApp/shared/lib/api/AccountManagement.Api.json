@@ -313,6 +313,99 @@
         }
       }
     },
+    "/api/account-management/tenants/slug-available": {
+      "get": {
+        "operationId": "GetApiAccountManagementTenantsSlugAvailable",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlugAvailabilityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal-api/account-management/tenants/resolve": {
+      "get": {
+        "operationId": "GetInternalApiAccountManagementTenantsResolve",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "host",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedTenantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal-api/account-management/tenants/{id}/slug": {
+      "get": {
+        "operationId": "GetInternalApiAccountManagementTenantsSlug",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TenantId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantSlugResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/account-management/authentication/webauthn/credentials": {
       "get": {
         "tags": [
@@ -1846,6 +1939,46 @@
           "Tablet"
         ]
       },
+      "SlugAvailabilityResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "canonicalSlug": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ResolvedTenantResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenantId": {
+            "$ref": "#/components/schemas/TenantId"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "TenantSlugResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string"
+          }
+        }
+      },
       "WebAuthnCredentialResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -1999,8 +2132,50 @@
           },
           "preferredLocale": {
             "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "orgType": {
+            "$ref": "#/components/schemas/NpoType"
+          },
+          "country": {
+            "type": "string"
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         }
+      },
+      "NpoType": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Charity",
+          "Foundation",
+          "Ngo",
+          "Religious",
+          "Educational",
+          "CommunityBased",
+          "Other"
+        ],
+        "enum": [
+          "Charity",
+          "Foundation",
+          "Ngo",
+          "Religious",
+          "Educational",
+          "CommunityBased",
+          "Other"
+        ]
       },
       "SubscriptionResponse": {
         "type": "object",
@@ -2222,6 +2397,24 @@
           "name": {
             "type": "string"
           },
+          "slug": {
+            "type": "string"
+          },
+          "orgType": {
+            "$ref": "#/components/schemas/NpoType"
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
           "state": {
             "$ref": "#/components/schemas/TenantState"
           },
@@ -2251,6 +2444,21 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "orgType": {
+            "$ref": "#/components/schemas/NpoType"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -2274,6 +2482,10 @@
             "$ref": "#/components/schemas/TenantId"
           },
           "tenantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenantSlug": {
             "type": "string",
             "nullable": true
           },
