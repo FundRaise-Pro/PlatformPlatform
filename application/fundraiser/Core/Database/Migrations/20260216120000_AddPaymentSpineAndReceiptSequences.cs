@@ -60,6 +60,16 @@ public sealed class AddPaymentSpineAndReceiptSequences : Migration
             IF OBJECT_ID(N'[FundraisingEvents]', N'U') IS NOT NULL
                AND COL_LENGTH(N'[FundraisingEvents]', N'RaisedAmount') IS NOT NULL
             BEGIN
+                                DECLARE @RaisedAmountDefaultConstraint NVARCHAR(128);
+                                SELECT @RaisedAmountDefaultConstraint = dc.[name]
+                                FROM sys.default_constraints dc
+                                INNER JOIN sys.columns c ON c.default_object_id = dc.object_id
+                                WHERE dc.parent_object_id = OBJECT_ID(N'[FundraisingEvents]')
+                                    AND c.[name] = N'RaisedAmount';
+
+                                IF @RaisedAmountDefaultConstraint IS NOT NULL
+                                        EXEC(N'ALTER TABLE [FundraisingEvents] DROP CONSTRAINT [' + @RaisedAmountDefaultConstraint + ']');
+
                 ALTER TABLE [FundraisingEvents] DROP COLUMN [RaisedAmount];
             END;
 
