@@ -1,4 +1,5 @@
 using FluentValidation;
+using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.SharedKernel.Cqrs;
 using PlatformPlatform.SharedKernel.ExecutionContext;
@@ -18,6 +19,8 @@ public sealed record CreateEventCommand : ICommand, IRequest<Result<FundraisingE
     public string? Location { get; init; }
 
     public decimal TargetAmount { get; init; }
+
+    public CampaignId? CampaignId { get; init; }
 }
 
 public sealed class CreateEventValidator : AbstractValidator<CreateEventCommand>
@@ -41,7 +44,7 @@ public sealed class CreateEventHandler(
     {
         var fundraisingEvent = FundraisingEvent.Create(
             executionContext.TenantId!, command.Name, command.Description,
-            command.EventDate, command.Location, command.TargetAmount
+            command.EventDate, command.Location, command.TargetAmount, command.CampaignId
         );
 
         await eventRepository.AddAsync(fundraisingEvent, cancellationToken);

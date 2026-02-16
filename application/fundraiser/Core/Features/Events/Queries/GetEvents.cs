@@ -1,3 +1,5 @@
+using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
+using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.SharedKernel.Cqrs;
 
@@ -13,7 +15,9 @@ public sealed record EventSummaryResponse(
     string? Location,
     DateTime EventDate,
     decimal TargetAmount,
+    decimal RaisedAmount,
     EventStatus Status,
+    CampaignId? CampaignId,
     string? ImageUrl,
     DateTimeOffset CreatedAt
 );
@@ -29,40 +33,55 @@ public sealed record EventResponse(
     string? Location,
     DateTime EventDate,
     decimal TargetAmount,
+    decimal RaisedAmount,
     EventStatus Status,
+    CampaignId? CampaignId,
     string? ImageUrl,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ModifiedAt
 );
 
-public sealed class GetEventsHandler(IFundraisingEventRepository eventRepository)
-    : IRequestHandler<GetEventsQuery, Result<EventSummaryResponse[]>>
+public sealed class GetEventsHandler(
+    IFundraisingEventRepository eventRepository,
+    ITransactionRepository transactionRepository
+) : IRequestHandler<GetEventsQuery, Result<EventSummaryResponse[]>>
 {
     public async Task<Result<EventSummaryResponse[]>> Handle(GetEventsQuery query, CancellationToken cancellationToken)
     {
         var events = await eventRepository.GetAllAsync(cancellationToken);
 
+        var eventIds = events.Select(e => e.Id.ToString()).ToArray();
+        var raisedAmounts = await transactionRepository.GetRaisedAmountsForTargetsAsync(
+            FundraisingTargetType.Event, eventIds, cancellationToken);
+
         var response = events.Select(e => new EventSummaryResponse(
-            e.Id, e.Name, e.Location, e.EventDate, e.TargetAmount, e.Status, e.ImageUrl, e.CreatedAt
+            e.Id, e.Name, e.Location, e.EventDate, e.TargetAmount,
+            raisedAmounts.GetValueOrDefault(e.Id.ToString(), 0),
+            e.Status, e.CampaignId, e.ImageUrl, e.CreatedAt
         )).ToArray();
 
         return response;
     }
 }
 
-public sealed class GetEventHandler(IFundraisingEventRepository eventRepository)
-    : IRequestHandler<GetEventQuery, Result<EventResponse>>
+public sealed class GetEventHandler(
+    IFundraisingEventRepository eventRepository,
+    ITransactionRepository transactionRepository
+) : IRequestHandler<GetEventQuery, Result<EventResponse>>
 {
     public async Task<Result<EventResponse>> Handle(GetEventQuery query, CancellationToken cancellationToken)
     {
         var fundraisingEvent = await eventRepository.GetByIdAsync(query.Id, cancellationToken);
         if (fundraisingEvent is null) return Result<EventResponse>.NotFound($"Event with id '{query.Id}' not found.");
 
+        var raisedAmount = await transactionRepository.GetRaisedAmountAsync(
+            FundraisingTargetType.Event, fundraisingEvent.Id.ToString(), cancellationToken);
+
         return new EventResponse(
             fundraisingEvent.Id, fundraisingEvent.Name, fundraisingEvent.Description,
             fundraisingEvent.Location, fundraisingEvent.EventDate, fundraisingEvent.TargetAmount,
-            fundraisingEvent.Status, fundraisingEvent.ImageUrl,
-            fundraisingEvent.CreatedAt, fundraisingEvent.ModifiedAt
+            raisedAmount, fundraisingEvent.Status, fundraisingEvent.CampaignId,
+            fundraisingEvent.ImageUrl, fundraisingEvent.CreatedAt, fundraisingEvent.ModifiedAt
         );
     }
 }

@@ -77,6 +77,18 @@ public sealed class FundraisingEventCreated(FundraisingEventId eventId)
 public sealed class FundraisingEventUpdated(FundraisingEventId eventId)
     : TelemetryEvent(("event_id", eventId));
 
+public sealed class FundraisingEventStarted(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventCompleted(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventCancelled(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventDeleted(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
 // --- Forms ---
 public sealed class FormTemplateCloned(FormTemplateId templateId, FormVersionId formVersionId)
     : TelemetryEvent(("template_id", templateId), ("form_version_id", formVersionId));

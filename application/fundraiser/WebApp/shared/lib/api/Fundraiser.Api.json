@@ -1802,6 +1802,128 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "DeleteApiFundraiserEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FundraisingEventId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/events/{id}/start": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "PostApiFundraiserEventsStart",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FundraisingEventId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/events/{id}/complete": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "PostApiFundraiserEventsComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FundraisingEventId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/events/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "PostApiFundraiserEventsCancel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FundraisingEventId"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/fundraiser/forms/versions": {
@@ -5637,8 +5759,20 @@
             "type": "number",
             "format": "decimal"
           },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
           "status": {
             "$ref": "#/components/schemas/EventStatus"
+          },
+          "campaignId": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignId"
+              }
+            ]
           },
           "imageUrl": {
             "type": "string",
@@ -5675,8 +5809,20 @@
             "type": "number",
             "format": "decimal"
           },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
           "status": {
             "$ref": "#/components/schemas/EventStatus"
+          },
+          "campaignId": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignId"
+              }
+            ]
           },
           "imageUrl": {
             "type": "string",
@@ -5714,6 +5860,14 @@
           "targetAmount": {
             "type": "number",
             "format": "decimal"
+          },
+          "campaignId": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignId"
+              }
+            ]
           }
         }
       },
