@@ -1,5 +1,6 @@
 using PlatformPlatform.Fundraiser.Database;
 using PlatformPlatform.SharedKernel.Domain;
+using PlatformPlatform.SharedKernel.EntityFramework;
 using PlatformPlatform.SharedKernel.Persistence;
 
 namespace PlatformPlatform.Fundraiser.Features.Donations.Domain;
@@ -9,6 +10,7 @@ public interface ITransactionRepository : ICrudRepository<Transaction, Transacti
 {
     Task<Transaction[]> GetAllAsync(CancellationToken cancellationToken);
     Task<decimal> GetRaisedAmountAsync(FundraisingTargetType targetType, string targetId, CancellationToken cancellationToken);
+    Task<Transaction?> GetByMerchantReferenceUnfilteredAsync(string merchantReference, CancellationToken cancellationToken);
 }
 
 internal sealed class TransactionRepository(FundraiserDbContext dbContext)
@@ -24,6 +26,13 @@ internal sealed class TransactionRepository(FundraiserDbContext dbContext)
         return await DbSet
             .Where(t => t.TargetType == targetType && t.TargetId == targetId && t.Status == TransactionStatus.Success)
             .SumAsync(t => t.AmountNet ?? t.Amount, cancellationToken);
+    }
+
+    public async Task<Transaction?> GetByMerchantReferenceUnfilteredAsync(string merchantReference, CancellationToken cancellationToken)
+    {
+        return await DbSet
+            .IgnoreQueryFilters([QueryFilterNames.Tenant])
+            .FirstOrDefaultAsync(t => t.MerchantReference == merchantReference, cancellationToken);
     }
 }
 

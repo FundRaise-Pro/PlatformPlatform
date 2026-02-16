@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlatformPlatform.Fundraiser.Database;
 using PlatformPlatform.Fundraiser.Features.Certificates.Domain;
+using PlatformPlatform.Fundraiser.Features.Donations.Commands;
 using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.Subscriptions;
 using PlatformPlatform.Fundraiser.Integrations.AccountManagement;
@@ -73,6 +74,7 @@ public static class Configuration
             services.AddScoped<ITransactionTargetResolver, TransactionTargetResolver>();
             services.AddScoped<IMerchantReferenceGenerator, MerchantReferenceGenerator>();
             services.AddScoped<IReceiptNumberAllocator, ReceiptNumberAllocator>();
+            services.AddScoped<IPayFastItnHandler, PayFastItnHandler>();
 
             return services;
         }

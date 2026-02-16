@@ -54,5 +54,19 @@ public sealed class DonationEndpoints : IEndpoints
         group.MapDelete("/subscriptions/{id}", async Task<ApiResult> (SubscriptionId id, IMediator mediator)
             => await mediator.Send(new CancelSubscriptionCommand(id))
         );
+
+        routes.MapPost(RoutesPrefix + "/transactions/payfast-itn", async (HttpContext httpContext, IPayFastItnHandler handler, CancellationToken ct) =>
+        {
+            var form = await httpContext.Request.ReadFormAsync(ct);
+            var formFields = form.Select(f => new KeyValuePair<string, string>(f.Key, f.Value.ToString())).ToList();
+            var clientIp = httpContext.Connection.RemoteIpAddress?.ToString();
+            var forwarded = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(forwarded))
+                clientIp = forwarded.Split(',', StringSplitOptions.TrimEntries).First();
+
+            await handler.HandleAsync(clientIp, formFields, ct);
+
+            return Results.Ok();
+        }).AllowAnonymous().DisableAntiforgery().WithTags("Donations").ExcludeFromDescription();
     }
 }

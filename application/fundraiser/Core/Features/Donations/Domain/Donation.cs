@@ -114,6 +114,12 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
         Status = TransactionStatus.Failed;
     }
 
+    public void MarkCancelled()
+    {
+        LogStatusChange(TransactionStatus.Cancelled);
+        Status = TransactionStatus.Cancelled;
+    }
+
     public void Refund()
     {
         LogStatusChange(TransactionStatus.Refunded);
