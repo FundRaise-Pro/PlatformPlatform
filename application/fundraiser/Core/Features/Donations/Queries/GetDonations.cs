@@ -21,7 +21,8 @@ public sealed record TransactionResponse(
     TransactionId Id, string Name, string Description, TransactionType Type,
     TransactionStatus Status, PaymentProvider PaymentProvider, string? GatewayPaymentId,
     string? PayeeName, string? PayeeEmail, decimal Amount, decimal? AmountFee, decimal? AmountNet,
-    PaymentMethod? PaymentMethod, DateTime? CompletedAt, DateTimeOffset CreatedAt, DateTimeOffset? ModifiedAt,
+    PaymentMethod? PaymentMethod, FundraisingTargetType TargetType, string? TargetId,
+    string? MerchantReference, DateTime? CompletedAt, DateTimeOffset CreatedAt, DateTimeOffset? ModifiedAt,
     PaymentProcessingLogResponse[] ProcessingLogs
 );
 
@@ -73,6 +74,7 @@ public sealed class GetTransactionHandler(ITransactionRepository transactionRepo
         return new TransactionResponse(
             t.Id, t.Name, t.Description, t.Type, t.Status, t.PaymentProvider, t.GatewayPaymentId,
             t.PayeeName, t.PayeeEmail, t.Amount, t.AmountFee, t.AmountNet, t.PaymentMethod,
+            t.TargetType, t.TargetId, t.MerchantReference,
             t.CompletedAt, t.CreatedAt, t.ModifiedAt,
             t.ProcessingLogs.Select(p => new PaymentProcessingLogResponse(p.Id, p.PreviousStatus, p.NewStatus, p.CreatedAt)).ToArray()
         );

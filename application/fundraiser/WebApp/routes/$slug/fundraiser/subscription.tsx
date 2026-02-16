@@ -5,11 +5,15 @@ import { Badge } from "@repo/ui/components/Badge";
 import { Button } from "@repo/ui/components/Button";
 import { Card } from "@repo/ui/components/Card";
 import { Heading } from "@repo/ui/components/Heading";
+import { Separator } from "@repo/ui/components/Separator";
 import { Text } from "@repo/ui/components/Text";
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckIcon } from "lucide-react";
+import { toast } from "sonner";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
+import { api } from "@/shared/lib/api/client";
 
 export const Route = createFileRoute("/$slug/fundraiser/subscription")({
   component: SubscriptionPage
@@ -94,6 +98,10 @@ export default function SubscriptionPage() {
             <PlanCard key={plan.name} plan={plan} />
           ))}
         </div>
+
+        <Separator className="my-8" />
+
+        <DonorSubscriptions />
       </AppLayout>
     </>
   );
@@ -128,6 +136,87 @@ function PlanCard({ plan }: Readonly<{ plan: PlanInfo }>) {
           {plan.price === "Custom" ? <Trans>Contact us</Trans> : <Trans>Upgrade</Trans>}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function statusVariant(status: string) {
+  switch (status) {
+    case "Active":
+      return "success";
+    case "Cancelled":
+    case "Expired":
+      return "destructive";
+    case "Paused":
+      return "secondary";
+    default:
+      return "outline";
+  }
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(amount);
+}
+
+function DonorSubscriptions() {
+  const { data: subscriptions, isLoading } = api.useQuery("get", "/api/fundraiser/donations/subscriptions");
+  const queryClient = useQueryClient();
+
+  const cancelMutation = api.useMutation("delete", "/api/fundraiser/donations/subscriptions/{id}", {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["get", "/api/fundraiser/donations/subscriptions"] });
+      toast.success(t`Success`, { description: t`Subscription cancelled.` });
+    }
+  });
+
+  return (
+    <div>
+      <Heading level={3} className="mb-2 text-lg font-semibold">
+        <Trans>Donor subscriptions</Trans>
+      </Heading>
+      <Text className="mb-4 text-muted-foreground">
+        <Trans>Recurring donation subscriptions from supporters.</Trans>
+      </Text>
+
+      {isLoading ? (
+        <Text className="text-muted-foreground">
+          <Trans>Loading subscriptions...</Trans>
+        </Text>
+      ) : subscriptions && subscriptions.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {subscriptions.map((sub) => (
+            <Card key={String(sub.id)} className="flex flex-col gap-3 p-5">
+              <div className="flex items-center justify-between">
+                <Text className="font-medium">{sub.itemName}</Text>
+                <Badge variant={statusVariant(sub.status)}>{sub.status}</Badge>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="font-bold text-2xl">{formatCurrency(sub.recurringAmount)}</span>
+                <span className="text-muted-foreground text-sm">/{sub.frequency === 6 ? t`month` : sub.frequency === 4 ? t`quarter` : t`year`}</span>
+              </div>
+              <Text className="text-muted-foreground text-sm">
+                {sub.nextRunDate ? `${t`Next:`} ${new Date(sub.nextRunDate).toLocaleDateString()}` : t`No upcoming charge`}
+              </Text>
+              {sub.status === "Active" && (
+                <Button
+                  variant="secondary"
+                  className="mt-auto"
+                  onPress={() => cancelMutation.mutate({ params: { path: { id: String(sub.id) } } })}
+                  disabled={cancelMutation.isPending}
+                >
+                  {cancelMutation.isPending ? <Trans>Cancelling...</Trans> : <Trans>Cancel subscription</Trans>}
+                </Button>
+              )}
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-border py-8 text-center">
+          <Text className="text-muted-foreground">
+            <Trans>No active donor subscriptions.</Trans>
+          </Text>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   SideMenuSpacer
 } from "@repo/ui/components/SideMenu";
 import {
+  ArrowLeftRightIcon,
   BookOpenIcon,
   CalendarIcon,
   CreditCardIcon,
@@ -38,6 +39,7 @@ export function FundraiserSideMenu({ currentSystem = "fundraiser" }: Readonly<Fu
       </SideMenuSeparator>
       <MenuButton icon={HeartIcon} label={t`Campaigns`} href={tenantPath(slug, "fundraiser", "campaigns")} />
       <MenuButton icon={CreditCardIcon} label={t`Donations`} href={tenantPath(slug, "fundraiser", "donations")} />
+      <MenuButton icon={ArrowLeftRightIcon} label={t`Transactions`} href={tenantPath(slug, "fundraiser", "transactions")} />
       <MenuButton icon={CalendarIcon} label={t`Events`} href={tenantPath(slug, "fundraiser", "events")} />
       <MenuButton icon={QrCodeIcon} label={t`QR codes`} href={tenantPath(slug, "fundraiser", "qrcodes")} />
 
