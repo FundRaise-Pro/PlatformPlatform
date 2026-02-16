@@ -11,6 +11,18 @@
     "aspire": {
       "url": "http://localhost:9096/mcp",
       "type": "http"
+    },
+    "payfast": {
+      "command": "npx",
+      "args": ["-y", "payfast-mcp"],
+      "env": {
+        "PAYFAST_MERCHANT_ID": "your-merchant-id",
+        "PAYFAST_MERCHANT_KEY": "your-merchant-key",
+        "PAYFAST_PASSPHRASE": "your-passphrase",
+        "PAYFAST_ENVIRONMENT": "sandbox"
+      }
     }
+  
+
   }
 }

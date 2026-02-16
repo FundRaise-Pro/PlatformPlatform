@@ -202,7 +202,6 @@ public sealed record PublicEventResponse(
     DateTime EventDate,
     string? Location,
     decimal TargetAmount,
-    decimal RaisedAmount,
     string? ImageUrl,
     EventStatus Status
 );
@@ -216,7 +215,7 @@ public sealed class GetPublicEventsHandler(IFundraisingEventRepository eventRepo
 
         return events.Select(e => new PublicEventResponse(
             e.Slug, e.Name, e.Description, e.EventDate, e.Location,
-            e.TargetAmount, e.RaisedAmount, e.ImageUrl, e.Status
+            e.TargetAmount, e.ImageUrl, e.Status
         )).ToArray();
     }
 }

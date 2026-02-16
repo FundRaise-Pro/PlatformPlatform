@@ -8,6 +8,7 @@ namespace PlatformPlatform.Fundraiser.Features.Donations.Domain;
 public interface ITransactionRepository : ICrudRepository<Transaction, TransactionId>
 {
     Task<Transaction[]> GetAllAsync(CancellationToken cancellationToken);
+    Task<decimal> GetRaisedAmountAsync(FundraisingTargetType targetType, string targetId, CancellationToken cancellationToken);
 }
 
 internal sealed class TransactionRepository(FundraiserDbContext dbContext)
@@ -16,6 +17,13 @@ internal sealed class TransactionRepository(FundraiserDbContext dbContext)
     public async Task<Transaction[]> GetAllAsync(CancellationToken cancellationToken)
     {
         return await DbSet.OrderByDescending(t => t.CreatedAt).ToArrayAsync(cancellationToken);
+    }
+
+    public async Task<decimal> GetRaisedAmountAsync(FundraisingTargetType targetType, string targetId, CancellationToken cancellationToken)
+    {
+        return await DbSet
+            .Where(t => t.TargetType == targetType && t.TargetId == targetId && t.Status == TransactionStatus.Success)
+            .SumAsync(t => t.AmountNet ?? t.Amount, cancellationToken);
     }
 }
 

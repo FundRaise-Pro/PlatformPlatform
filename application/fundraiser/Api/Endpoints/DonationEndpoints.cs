@@ -30,6 +30,11 @@ public sealed class DonationEndpoints : IEndpoints
             => await mediator.Send(new GetTransactionQuery(id))
         ).Produces<TransactionResponse>();
 
+        group.MapGet("/raised-amount/{targetType}/{targetId}", async Task<ApiResult<TargetRaisedAmountResponse>> (
+            FundraisingTargetType targetType, string targetId, IMediator mediator)
+            => await mediator.Send(new GetTargetRaisedAmountQuery(targetType, targetId))
+        ).Produces<TargetRaisedAmountResponse>();
+
         group.MapPost("/transactions", async Task<ApiResult<TransactionId>> (CreateTransactionCommand command, IMediator mediator)
             => await mediator.Send(command)
         ).Produces<TransactionId>();

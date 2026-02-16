@@ -35,8 +35,6 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
 
     public decimal TargetAmount { get; private set; }
 
-    public decimal RaisedAmount { get; private set; }
-
     public EventStatus Status { get; private set; } = EventStatus.Planned;
 
     public string? ImageUrl { get; private set; }
@@ -64,11 +62,6 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
     public void SetTarget(decimal targetAmount)
     {
         TargetAmount = targetAmount;
-    }
-
-    public void RecordContribution(decimal amount)
-    {
-        RaisedAmount += amount;
     }
 
     public void Start()
