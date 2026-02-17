@@ -590,6 +590,9 @@ msgstr ""
 msgid "Goal amount (ZAR)"
 msgstr ""
 
+msgid "Here's your overview of what's happening."
+msgstr ""
+
 msgid "https://..."
 msgstr ""
 
@@ -867,9 +870,6 @@ msgid "Organization"
 msgstr ""
 
 msgid "Organization name"
-msgstr ""
-
-msgid "Overview of your fundraising platform."
 msgstr ""
 
 msgid "Pay now"
@@ -1242,6 +1242,13 @@ msgid "View transactions"
 msgstr ""
 
 msgid "Website preview"
+msgstr ""
+
+msgid "Welcome home"
+msgstr ""
+
+#. placeholder {0}: userInfo.firstName
+msgid "Welcome home, {0}"
 msgstr ""
 
 msgid "Write blog post"

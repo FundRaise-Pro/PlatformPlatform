@@ -3,7 +3,9 @@ using PlatformPlatform.Fundraiser.Features.Branches.Domain;
 using PlatformPlatform.Fundraiser.Features.Branches.Queries;
 using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.Fundraiser.Features.Campaigns.Queries;
+using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
+using PlatformPlatform.Fundraiser.Features.Stories.Domain;
 using PlatformPlatform.SharedKernel.Cqrs;
 
 namespace PlatformPlatform.Fundraiser.Features.Public.Queries;
@@ -220,6 +222,158 @@ public sealed class GetPublicEventsHandler(IFundraisingEventRepository eventRepo
     }
 }
 
+// --- Public Event by Slug ---
+
+[PublicAPI]
+public sealed record GetPublicEventBySlugQuery(string Slug) : IRequest<Result<PublicEventDetailResponse>>;
+
+[PublicAPI]
+public sealed record PublicEventDetailResponse(
+    string Id,
+    string Slug,
+    string Name,
+    string Description,
+    DateTime EventDate,
+    string? Location,
+    decimal TargetAmount,
+    decimal RaisedAmount,
+    string? ImageUrl,
+    EventStatus Status,
+    string? CampaignSlug
+);
+
+public sealed class GetPublicEventBySlugHandler(
+    IFundraisingEventRepository eventRepository,
+    ITransactionRepository transactionRepository,
+    ICampaignRepository campaignRepository
+) : IRequestHandler<GetPublicEventBySlugQuery, Result<PublicEventDetailResponse>>
+{
+    public async Task<Result<PublicEventDetailResponse>> Handle(GetPublicEventBySlugQuery query, CancellationToken cancellationToken)
+    {
+        var evt = await eventRepository.GetBySlugAsync(query.Slug, cancellationToken);
+        if (evt is null)
+            return Result<PublicEventDetailResponse>.NotFound($"Event '{query.Slug}' not found.");
+
+        var raisedAmount = await transactionRepository.GetRaisedAmountAsync(
+            FundraisingTargetType.Event, evt.Id.Value, cancellationToken);
+
+        string? campaignSlug = null;
+        if (evt.CampaignId is not null)
+        {
+            var campaign = await campaignRepository.GetByIdAsync(evt.CampaignId, cancellationToken);
+            campaignSlug = campaign?.Slug;
+        }
+
+        return new PublicEventDetailResponse(
+            evt.Id, evt.Slug, evt.Name, evt.Description, evt.EventDate, evt.Location,
+            evt.TargetAmount, raisedAmount, evt.ImageUrl, evt.Status, campaignSlug
+        );
+    }
+}
+
+// --- Public Stories by Campaign Slug ---
+
+[PublicAPI]
+public sealed record GetPublicStoriesByCampaignSlugQuery(string CampaignSlug) : IRequest<Result<PublicStorySummaryResponse[]>>;
+
+[PublicAPI]
+public sealed record PublicStorySummaryResponse(
+    string Id,
+    string Slug,
+    string Title,
+    string? Summary,
+    string? FeaturedImageUrl,
+    decimal GoalAmount,
+    decimal RaisedAmount,
+    FundraisingStatus FundraisingStatus
+);
+
+public sealed class GetPublicStoriesByCampaignSlugHandler(
+    ICampaignRepository campaignRepository,
+    IStoryRepository storyRepository,
+    ITransactionRepository transactionRepository
+) : IRequestHandler<GetPublicStoriesByCampaignSlugQuery, Result<PublicStorySummaryResponse[]>>
+{
+    public async Task<Result<PublicStorySummaryResponse[]>> Handle(GetPublicStoriesByCampaignSlugQuery query, CancellationToken cancellationToken)
+    {
+        var campaign = await campaignRepository.GetBySlugAsync(query.CampaignSlug, cancellationToken);
+        if (campaign is null || campaign.Status < CampaignStatus.Published || campaign.IsPrivate)
+            return Result<PublicStorySummaryResponse[]>.NotFound($"Campaign '{query.CampaignSlug}' not found.");
+
+        var stories = await storyRepository.GetByCampaignIdAsync(campaign.Id, cancellationToken);
+        var publishedStories = stories.Where(s => s.FundraisingStatus >= FundraisingStatus.Raising && !s.IsPrivate).ToArray();
+
+        if (publishedStories.Length == 0) return Array.Empty<PublicStorySummaryResponse>();
+
+        var targetIds = publishedStories.Select(s => s.Id.Value).ToArray();
+        var raisedAmounts = await transactionRepository.GetRaisedAmountsForTargetsAsync(
+            FundraisingTargetType.Story, targetIds, cancellationToken);
+
+        return publishedStories.Select(s => new PublicStorySummaryResponse(
+            s.Id, s.Slug, s.Title, s.Summary, s.FeaturedImageUrl, s.GoalAmount,
+            raisedAmounts.GetValueOrDefault(s.Id, 0), s.FundraisingStatus
+        )).ToArray();
+    }
+}
+
+// --- Public Story by Slug ---
+
+[PublicAPI]
+public sealed record GetPublicStoryBySlugQuery(string Slug) : IRequest<Result<PublicStoryDetailResponse>>;
+
+[PublicAPI]
+public sealed record PublicStoryDetailResponse(
+    string Id,
+    string Slug,
+    string Title,
+    string Content,
+    string? Summary,
+    string? FeaturedImageUrl,
+    decimal GoalAmount,
+    decimal RaisedAmount,
+    FundraisingStatus FundraisingStatus,
+    string? CampaignSlug,
+    PublicStoryImageResponse[] Images,
+    PublicStoryUpdateResponse[] Updates
+);
+
+[PublicAPI]
+public sealed record PublicStoryImageResponse(Guid Id, string BlobUrl, string MimeType, long FileSizeBytes);
+
+[PublicAPI]
+public sealed record PublicStoryUpdateResponse(Guid Id, string Title, string Content, DateTime CreatedAt);
+
+public sealed class GetPublicStoryBySlugHandler(
+    IStoryRepository storyRepository,
+    ITransactionRepository transactionRepository,
+    ICampaignRepository campaignRepository
+) : IRequestHandler<GetPublicStoryBySlugQuery, Result<PublicStoryDetailResponse>>
+{
+    public async Task<Result<PublicStoryDetailResponse>> Handle(GetPublicStoryBySlugQuery query, CancellationToken cancellationToken)
+    {
+        var story = await storyRepository.GetBySlugAsync(query.Slug, cancellationToken);
+        if (story is null || story.FundraisingStatus < FundraisingStatus.Raising || story.IsPrivate)
+            return Result<PublicStoryDetailResponse>.NotFound($"Story '{query.Slug}' not found.");
+
+        var raisedAmount = await transactionRepository.GetRaisedAmountAsync(
+            FundraisingTargetType.Story, story.Id.Value, cancellationToken);
+
+        string? campaignSlug = null;
+        if (story.CampaignId is not null)
+        {
+            var campaign = await campaignRepository.GetByIdAsync(story.CampaignId, cancellationToken);
+            campaignSlug = campaign?.Slug;
+        }
+
+        return new PublicStoryDetailResponse(
+            story.Id, story.Slug, story.Title, story.Content, story.Summary,
+            story.FeaturedImageUrl, story.GoalAmount, raisedAmount, story.FundraisingStatus, campaignSlug,
+            story.Images.Select(i => new PublicStoryImageResponse(i.Id, i.BlobUrl, i.MimeType, i.FileSizeBytes)).ToArray(),
+            story.Updates.Select(u => new PublicStoryUpdateResponse(u.Id, u.Title, u.Content, u.CreatedAt)).ToArray()
+        );
+    }
+}
+
 // --- Public Branches ---
 
 [PublicAPI]
@@ -241,3 +395,4 @@ public sealed class GetPublicBranchesHandler(IBranchRepository branchRepository)
         )).ToArray();
     }
 }
+

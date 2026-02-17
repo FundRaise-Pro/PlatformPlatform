@@ -66,6 +66,8 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
 
     public PaymentMethod? PaymentMethod { get; private set; }
 
+    public DonationChannel Channel { get; private set; } = DonationChannel.Web;
+
     public DateTime? CompletedAt { get; private set; }
 
     private readonly List<PaymentProcessingLog> _processingLogs = [];
@@ -74,14 +76,15 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
     public static Transaction Create(TransactionId id, TenantId tenantId, string name, string description,
         TransactionType type, decimal amount, FundraisingTargetType targetType, string targetId,
         string merchantReference, string? payeeName = null, string? payeeEmail = null,
-        PaymentProvider provider = PaymentProvider.PayFast)
+        PaymentProvider provider = PaymentProvider.PayFast, DonationChannel channel = DonationChannel.Web)
     {
         return new Transaction(id, tenantId, name, description, type, amount, targetType, targetId)
         {
             MerchantReference = merchantReference,
             PayeeName = payeeName,
             PayeeEmail = payeeEmail,
-            PaymentProvider = provider
+            PaymentProvider = provider,
+            Channel = channel
         };
     }
 
@@ -383,6 +386,11 @@ public enum PaymentProvider { PayFast, Stripe, PayPal }
 public enum SubscriptionStatus { Pending, Active, Cancelled, Completed, Failed, Suspended }
 
 public enum CancellationSource { User, PayFast, Stripe, PayPal, Admin }
+
+/// <summary>
+///     Tracks how a donation originated for full origin-of-funds traceability.
+/// </summary>
+public enum DonationChannel { Web, QrCode, EventKiosk, Api, Manual }
 
 // Value objects / child entities
 public sealed class PaymentProcessingLog

@@ -1,5 +1,6 @@
 using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
+using PlatformPlatform.Fundraiser.Features.Stories.Domain;
 
 namespace PlatformPlatform.Fundraiser.Features.Donations.Domain;
 
@@ -16,7 +17,8 @@ public interface ITransactionTargetResolver
 
 internal sealed class TransactionTargetResolver(
     ICampaignRepository campaignRepository,
-    IFundraisingEventRepository eventRepository
+    IFundraisingEventRepository eventRepository,
+    IStoryRepository storyRepository
 ) : ITransactionTargetResolver
 {
     public async Task<TargetInfo?> ResolveAsync(FundraisingTargetType targetType, string targetId, CancellationToken cancellationToken)
@@ -25,8 +27,7 @@ internal sealed class TransactionTargetResolver(
         {
             FundraisingTargetType.Campaign => await ResolveCampaign(targetId, cancellationToken),
             FundraisingTargetType.Event => await ResolveEvent(targetId, cancellationToken),
-            // Story will be added in Phase 3 when IStoryRepository is created
-            FundraisingTargetType.Story => null,
+            FundraisingTargetType.Story => await ResolveStory(targetId, cancellationToken),
             _ => null
         };
     }
@@ -36,7 +37,6 @@ internal sealed class TransactionTargetResolver(
         var campaign = await campaignRepository.GetByIdAsync(new CampaignId(targetId), cancellationToken);
         if (campaign is null) return null;
 
-        // Campaigns are containers — they don't have a TargetAmount, so we use 0
         return new TargetInfo(campaign.Id, FundraisingTargetType.Campaign, campaign.Title, 0);
     }
 
@@ -46,5 +46,13 @@ internal sealed class TransactionTargetResolver(
         if (evt is null) return null;
 
         return new TargetInfo(evt.Id, FundraisingTargetType.Event, evt.Name, evt.TargetAmount);
+    }
+
+    private async Task<TargetInfo?> ResolveStory(string targetId, CancellationToken cancellationToken)
+    {
+        var story = await storyRepository.GetByIdAsync(new StoryId(targetId), cancellationToken);
+        if (story is null) return null;
+
+        return new TargetInfo(story.Id, FundraisingTargetType.Story, story.Title, story.GoalAmount);
     }
 }

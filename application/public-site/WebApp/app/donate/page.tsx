@@ -26,12 +26,12 @@ export default async function DonatePage() {
   const campaigns = await getPublicCampaigns().catch(() => []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <main className="min-h-screen bg-linear-to-b from-white to-gray-50">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[var(--tenant-primary)] to-[var(--tenant-secondary)] text-white">
+      <section className="relative overflow-hidden bg-linear-to-br from-(--tenant-primary) to-(--tenant-secondary) text-white">
         <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <Heart className="h-12 w-12 mx-auto mb-4 text-white/80" />
+            <Heart className="size-12 mx-auto mb-4 text-white/80" />
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">{content.donationLabel}</h1>
             <p className="text-lg md:text-xl text-white/80 leading-relaxed">
               Your {content.donationLabel.toLowerCase()} to {orgName} helps us support more{" "}
@@ -61,7 +61,7 @@ export default async function DonatePage() {
             <Button asChild={true}>
               <Link href="/contact">
                 Contact Us
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           </CardContent>
@@ -71,7 +71,7 @@ export default async function DonatePage() {
         {campaigns.length > 0 && (
           <section>
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-[var(--tenant-primary)]" />
+              <Megaphone className="size-5 text-(--tenant-primary)" />
               Active {content.campaignLabel}s
             </h2>
             <div className="grid gap-6 md:grid-cols-2">

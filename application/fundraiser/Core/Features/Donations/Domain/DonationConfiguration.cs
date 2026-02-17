@@ -21,6 +21,7 @@ public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transact
         builder.Property(t => t.Type).HasMaxLength(50);
         builder.Property(t => t.PaymentProvider).HasMaxLength(50);
         builder.Property(t => t.PaymentMethod).HasMaxLength(50);
+        builder.Property(t => t.Channel).HasMaxLength(50);
         builder.Property(t => t.Amount).HasColumnType("decimal(18,2)");
         builder.Property(t => t.AmountFee).HasColumnType("decimal(18,2)");
         builder.Property(t => t.AmountNet).HasColumnType("decimal(18,2)");

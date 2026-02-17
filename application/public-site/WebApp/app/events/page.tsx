@@ -1,5 +1,6 @@
 import { Calendar, Clock, MapPin } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getPublicEvents } from "@/actions/events.server";
 import { getTenantSettings } from "@/actions/settings.server";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +32,7 @@ export default async function EventsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <main className="min-h-screen bg-linear-to-b from-white to-gray-50">
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-12 text-center">
@@ -61,13 +62,14 @@ export default async function EventsPage() {
         {!error && events.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
-              <Card key={event.slug} className="h-full hover:shadow-lg transition-shadow">
+              <Link key={event.slug} href={`/events/${event.slug}`}>
+                <Card className="h-full cursor-pointer hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="line-clamp-2">{event.name}</CardTitle>
                   <CardDescription className="space-y-2">
                     {event.eventDate && (
                       <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                        <Calendar className="size-3" />
                         {new Date(event.eventDate).toLocaleDateString(undefined, {
                           weekday: "long",
                           year: "numeric",
@@ -78,7 +80,7 @@ export default async function EventsPage() {
                     )}
                     {event.eventDate && (
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                        <Clock className="size-3" />
                         {new Date(event.eventDate).toLocaleTimeString(undefined, {
                           hour: "2-digit",
                           minute: "2-digit"
@@ -87,7 +89,7 @@ export default async function EventsPage() {
                     )}
                     {event.location && (
                       <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
+                        <MapPin className="size-3" />
                         {event.location}
                       </span>
                     )}
@@ -99,6 +101,7 @@ export default async function EventsPage() {
                   </CardContent>
                 )}
               </Card>
+              </Link>
             ))}
           </div>
         )}

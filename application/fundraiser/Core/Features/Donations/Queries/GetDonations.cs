@@ -10,7 +10,7 @@ public sealed record GetTransactionsQuery : IRequest<Result<TransactionSummaryRe
 [PublicAPI]
 public sealed record TransactionSummaryResponse(
     TransactionId Id, string Name, TransactionType Type, TransactionStatus Status,
-    decimal Amount, string? PayeeName, DateTime? CompletedAt, DateTimeOffset CreatedAt
+    decimal Amount, string? PayeeName, DonationChannel Channel, DateTime? CompletedAt, DateTimeOffset CreatedAt
 );
 
 [PublicAPI]
@@ -21,7 +21,7 @@ public sealed record TransactionResponse(
     TransactionId Id, string Name, string Description, TransactionType Type,
     TransactionStatus Status, PaymentProvider PaymentProvider, string? GatewayPaymentId,
     string? PayeeName, string? PayeeEmail, decimal Amount, decimal? AmountFee, decimal? AmountNet,
-    PaymentMethod? PaymentMethod, FundraisingTargetType TargetType, string? TargetId,
+    PaymentMethod? PaymentMethod, DonationChannel Channel, FundraisingTargetType TargetType, string? TargetId,
     string? MerchantReference, DateTime? CompletedAt, DateTimeOffset CreatedAt, DateTimeOffset? ModifiedAt,
     PaymentProcessingLogResponse[] ProcessingLogs
 );
@@ -58,7 +58,7 @@ public sealed class GetTransactionsHandler(ITransactionRepository transactionRep
         var transactions = await transactionRepository.GetAllAsync(cancellationToken);
 
         return transactions.Select(t => new TransactionSummaryResponse(
-            t.Id, t.Name, t.Type, t.Status, t.Amount, t.PayeeName, t.CompletedAt, t.CreatedAt
+            t.Id, t.Name, t.Type, t.Status, t.Amount, t.PayeeName, t.Channel, t.CompletedAt, t.CreatedAt
         )).ToArray();
     }
 }
@@ -73,7 +73,7 @@ public sealed class GetTransactionHandler(ITransactionRepository transactionRepo
 
         return new TransactionResponse(
             t.Id, t.Name, t.Description, t.Type, t.Status, t.PaymentProvider, t.GatewayPaymentId,
-            t.PayeeName, t.PayeeEmail, t.Amount, t.AmountFee, t.AmountNet, t.PaymentMethod,
+            t.PayeeName, t.PayeeEmail, t.Amount, t.AmountFee, t.AmountNet, t.PaymentMethod, t.Channel,
             t.TargetType, t.TargetId, t.MerchantReference,
             t.CompletedAt, t.CreatedAt, t.ModifiedAt,
             t.ProcessingLogs.Select(p => new PaymentProcessingLogResponse(p.Id, p.PreviousStatus, p.NewStatus, p.CreatedAt)).ToArray()
