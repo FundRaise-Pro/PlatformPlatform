@@ -29,5 +29,21 @@ public sealed class EventEndpoints : IEndpoints
         group.MapPut("/{id}", async Task<ApiResult> (FundraisingEventId id, UpdateEventCommand command, IMediator mediator)
             => await mediator.Send(command with { Id = id })
         );
+
+        group.MapPost("/{id}/start", async Task<ApiResult> (FundraisingEventId id, IMediator mediator)
+            => await mediator.Send(new StartEventCommand(id))
+        );
+
+        group.MapPost("/{id}/complete", async Task<ApiResult> (FundraisingEventId id, IMediator mediator)
+            => await mediator.Send(new CompleteEventCommand(id))
+        );
+
+        group.MapPost("/{id}/cancel", async Task<ApiResult> (FundraisingEventId id, IMediator mediator)
+            => await mediator.Send(new CancelEventCommand(id))
+        );
+
+        group.MapDelete("/{id}", async Task<ApiResult> (FundraisingEventId id, IMediator mediator)
+            => await mediator.Send(new DeleteEventCommand(id))
+        );
     }
 }

@@ -15,7 +15,19 @@ export interface PublicEvent {
   status: string;
 }
 
-// NOTE: Backend uses `name` (not `title`) and `eventDate` (not `startDate`).
+export interface PublicEventDetail {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  eventDate: string;
+  location: string | null;
+  targetAmount: number;
+  raisedAmount: number;
+  imageUrl: string | null;
+  status: string;
+  campaignSlug: string | null;
+}
 
 export async function getPublicEvents(): Promise<PublicEvent[]> {
   const response = await fetch(apiUrl("/api/fundraiser/public/events"), {
@@ -24,4 +36,13 @@ export async function getPublicEvents(): Promise<PublicEvent[]> {
     next: { revalidate: 60 }
   });
   return handleResponse<PublicEvent[]>(response);
+}
+
+export async function getPublicEventBySlug(slug: string): Promise<PublicEventDetail> {
+  const response = await fetch(apiUrl(`/api/fundraiser/public/events/${slug}`), {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    next: { revalidate: 60 }
+  });
+  return handleResponse<PublicEventDetail>(response);
 }

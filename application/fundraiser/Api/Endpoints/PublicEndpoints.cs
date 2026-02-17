@@ -1,4 +1,5 @@
 using PlatformPlatform.Fundraiser.Features.Branches.Queries;
+using PlatformPlatform.Fundraiser.Features.Donations.Commands;
 using PlatformPlatform.Fundraiser.Features.Public.Queries;
 using PlatformPlatform.Fundraiser.Features.TenantSettings.Queries;
 using PlatformPlatform.SharedKernel.ApiResults;
@@ -29,6 +30,14 @@ public sealed class PublicEndpoints : IEndpoints
             => await mediator.Send(new GetPublicCampaignBySlugQuery(slug))
         ).Produces<PublicCampaignResponse>();
 
+        group.MapGet("/campaigns/{campaignSlug}/stories", async Task<ApiResult<PublicStorySummaryResponse[]>> (string campaignSlug, IMediator mediator)
+            => await mediator.Send(new GetPublicStoriesByCampaignSlugQuery(campaignSlug))
+        ).Produces<PublicStorySummaryResponse[]>();
+
+        group.MapGet("/stories/{slug}", async Task<ApiResult<PublicStoryDetailResponse>> (string slug, IMediator mediator)
+            => await mediator.Send(new GetPublicStoryBySlugQuery(slug))
+        ).Produces<PublicStoryDetailResponse>();
+
         group.MapGet("/blog/categories", async Task<ApiResult<PublicBlogCategoryResponse[]>> (IMediator mediator)
             => await mediator.Send(new GetPublicBlogCategoriesQuery())
         ).Produces<PublicBlogCategoryResponse[]>();
@@ -45,8 +54,17 @@ public sealed class PublicEndpoints : IEndpoints
             => await mediator.Send(new GetPublicEventsQuery())
         ).Produces<PublicEventResponse[]>();
 
+        group.MapGet("/events/{slug}", async Task<ApiResult<PublicEventDetailResponse>> (string slug, IMediator mediator)
+            => await mediator.Send(new GetPublicEventBySlugQuery(slug))
+        ).Produces<PublicEventDetailResponse>();
+
         group.MapGet("/branches", async Task<ApiResult<BranchResponse[]>> (IMediator mediator)
             => await mediator.Send(new GetPublicBranchesQuery())
         ).Produces<BranchResponse[]>();
+
+        group.MapPost("/donate", async Task<ApiResult<CreatePublicTransactionResponse>> (CreatePublicTransactionCommand command, IMediator mediator)
+            => await mediator.Send(command)
+        ).Produces<CreatePublicTransactionResponse>();
     }
 }
+

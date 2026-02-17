@@ -7,7 +7,7 @@ import { Card } from "@repo/ui/components/Card";
 import { Heading } from "@repo/ui/components/Heading";
 import { Text } from "@repo/ui/components/Text";
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpenIcon, CalendarIcon, CreditCardIcon, FileTextIcon, HeartIcon, QrCodeIcon } from "lucide-react";
+import { BookHeartIcon, BookOpenIcon, CalendarIcon, CreditCardIcon, FileTextIcon, HeartIcon, QrCodeIcon } from "lucide-react";
 import { FundraiserSideMenu } from "@/shared/components/FundraiserSideMenu";
 import { TopMenu } from "@/shared/components/topMenu";
 import { api } from "@/shared/lib/api/client";
@@ -41,23 +41,27 @@ function StatCard({
 }
 
 export default function Dashboard() {
-  const slug = useUserInfo()?.tenantSlug;
+  const userInfo = useUserInfo();
+  const slug = userInfo?.tenantSlug;
   const { data: campaigns } = api.useQuery("get", "/api/fundraiser/campaigns");
   const { data: donations } = api.useQuery("get", "/api/fundraiser/donations");
+  const { data: stories } = api.useQuery("get", "/api/fundraiser/stories");
   const { data: blogPosts } = api.useQuery("get", "/api/fundraiser/blogs");
   const { data: events } = api.useQuery("get", "/api/fundraiser/events");
 
   const campaignCount = campaigns?.length ?? 0;
   const donationCount = donations?.length ?? 0;
+  const storyCount = stories?.length ?? 0;
   const blogPostCount = blogPosts?.length ?? 0;
   const eventCount = events?.length ?? 0;
 
   return (
     <>
       <FundraiserSideMenu />
-      <AppLayout topMenu={<TopMenu />} title={t`Dashboard`} subtitle={t`Overview of your fundraising platform.`}>
+      <AppLayout topMenu={<TopMenu />} title={userInfo?.firstName ? t`Welcome home, ${userInfo.firstName}` : t`Welcome home`} subtitle={t`Here's your overview of what's happening.`}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard icon={HeartIcon} label={t`Campaigns`} value={campaignCount} />
+          <StatCard icon={BookHeartIcon} label={t`Stories`} value={storyCount} />
           <StatCard icon={CreditCardIcon} label={t`Donations`} value={donationCount} />
           <StatCard icon={BookOpenIcon} label={t`Blog posts`} value={blogPostCount} />
           <StatCard icon={CalendarIcon} label={t`Events`} value={eventCount} />
@@ -74,6 +78,11 @@ export default function Dashboard() {
               href={tenantPath(slug, "fundraiser", "campaigns")}
               label={t`Create campaign`}
               icon={HeartIcon}
+            />
+            <QuickActionCard
+              href={tenantPath(slug, "fundraiser", "stories")}
+              label={t`Create story`}
+              icon={BookHeartIcon}
             />
             <QuickActionCard
               href={tenantPath(slug, "fundraiser", "blogs")}

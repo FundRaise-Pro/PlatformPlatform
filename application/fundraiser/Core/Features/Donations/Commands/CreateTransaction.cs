@@ -24,6 +24,8 @@ public sealed record CreateTransactionCommand : ICommand, IRequest<Result<Transa
     public string? PayeeName { get; init; }
 
     public string? PayeeEmail { get; init; }
+
+    public DonationChannel Channel { get; init; } = DonationChannel.Web;
 }
 
 public sealed class CreateTransactionValidator : AbstractValidator<CreateTransactionCommand>
@@ -37,6 +39,7 @@ public sealed class CreateTransactionValidator : AbstractValidator<CreateTransac
         RuleFor(x => x.TargetType).IsInEnum();
         RuleFor(x => x.PayeeName).MaximumLength(200);
         RuleFor(x => x.PayeeEmail).MaximumLength(200).EmailAddress().When(x => !string.IsNullOrEmpty(x.PayeeEmail));
+        RuleFor(x => x.Channel).IsInEnum();
 
         // Amount limits: min R1, max R1,000,000 for donations; min R50 for subscriptions
         RuleFor(x => x.Amount)
@@ -73,7 +76,8 @@ public sealed class CreateTransactionHandler(
         var transaction = Transaction.Create(
             transactionId, tenantId, command.Name, command.Description,
             command.Type, roundedAmount, command.TargetType, command.TargetId,
-            merchantReference, command.PayeeName, command.PayeeEmail
+            merchantReference, command.PayeeName, command.PayeeEmail,
+            channel: command.Channel
         );
 
         await transactionRepository.AddAsync(transaction, cancellationToken);
@@ -82,3 +86,4 @@ public sealed class CreateTransactionHandler(
         return transaction.Id;
     }
 }
+

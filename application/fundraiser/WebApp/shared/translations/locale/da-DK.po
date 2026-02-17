@@ -13,6 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: applications.length
+msgid "{0} applications"
+msgstr ""
+
+#. placeholder {0}: batches.length
+msgid "{0} batches"
+msgstr ""
+
 #. placeholder {0}: branches.length
 msgid "{0} branches"
 msgstr ""
@@ -23,6 +31,11 @@ msgstr ""
 
 #. placeholder {0}: events.length
 msgid "{0} events"
+msgstr ""
+
+#. placeholder {0}: section.fields.length
+#. placeholder {1}: section.flags.length
+msgid "{0} fields, {1} flags"
 msgstr ""
 
 #. placeholder {0}: formVersions.length
@@ -45,10 +58,27 @@ msgstr ""
 msgid "{0} services"
 msgstr ""
 
+#. placeholder {0}: stories.length
+msgid "{0} stories"
+msgstr ""
+
+#. placeholder {0}: templates.length
+msgid "{0} templates"
+msgstr ""
+
+msgid "A brief summary (optional)"
+msgstr ""
+
 msgid "Accent color"
 msgstr ""
 
 msgid "Account"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Activate"
 msgstr ""
 
 msgid "Active"
@@ -60,7 +90,28 @@ msgstr ""
 msgid "Add your first branch or location."
 msgstr ""
 
+msgid "Address"
+msgstr ""
+
+msgid "Amount"
+msgstr ""
+
+msgid "Amount (ZAR)"
+msgstr ""
+
 msgid "Anonymous"
+msgstr ""
+
+msgid "Application"
+msgstr ""
+
+msgid "Application created successfully."
+msgstr ""
+
+msgid "Application not found."
+msgstr ""
+
+msgid "Application submitted"
 msgstr ""
 
 msgid "Applications"
@@ -69,10 +120,45 @@ msgstr ""
 msgid "Applications will appear here once beneficiaries submit forms."
 msgstr ""
 
+msgid "Approve"
+msgstr ""
+
 msgid "Available plans"
 msgstr ""
 
+msgid "Awaiting review"
+msgstr ""
+
+msgid "Back to dashboard"
+msgstr ""
+
+#. placeholder {0}: batch.taxYear
+#. placeholder {1}: batch.taxYear + 1
+msgid "Batch — {0}/{1}"
+msgstr ""
+
+msgid "Batch not found."
+msgstr ""
+
+msgid "Batches"
+msgstr ""
+
 msgid "Blog"
+msgstr ""
+
+msgid "Blog category"
+msgstr ""
+
+msgid "Blog post"
+msgstr ""
+
+msgid "Blog post created successfully."
+msgstr ""
+
+msgid "Blog post not found."
+msgstr ""
+
+msgid "Blog post published"
 msgstr ""
 
 msgid "Blog posts"
@@ -90,10 +176,82 @@ msgstr ""
 msgid "Campaign"
 msgstr ""
 
+msgid "Campaign created successfully."
+msgstr ""
+
+msgid "Campaign deleted"
+msgstr ""
+
+msgid "Campaign ID"
+msgstr ""
+
+msgid "Campaign not found."
+msgstr ""
+
+msgid "Campaign published"
+msgstr ""
+
+msgid "Campaign title"
+msgstr ""
+
+msgid "Campaign to apply for"
+msgstr ""
+
 msgid "Campaigns"
 msgstr ""
 
+msgid "Cancel"
+msgstr ""
+
+msgid "Cancel subscription"
+msgstr ""
+
+msgid "Cancelling..."
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
+msgid "Category ID"
+msgstr ""
+
+msgid "Certificate Batch"
+msgstr ""
+
+msgid "Certificate template"
+msgstr ""
+
+msgid "Certificate Template"
+msgstr ""
+
+msgid "Certificate template created successfully."
+msgstr ""
+
+msgid "certificates"
+msgstr ""
+
+msgid "Certificates"
+msgstr ""
+
+msgid "Certificates generated successfully."
+msgstr ""
+
+msgid "Checking payment status..."
+msgstr ""
+
+msgid "Clinic, Event, Campaign, or DonationPage"
+msgstr ""
+
 msgid "Coming soon"
+msgstr ""
+
+msgid "Complete"
+msgstr ""
+
+msgid "Complete fundraising"
+msgstr ""
+
+msgid "Completed"
 msgstr ""
 
 msgid "Configure payment gateway for receiving donations."
@@ -111,7 +269,22 @@ msgstr ""
 msgid "Content"
 msgstr ""
 
+msgid "Could not generate certificates. Check your subscription plan."
+msgstr ""
+
+msgid "Create a certificate template with your organisation details."
+msgstr ""
+
+msgid "Create a new online donation and redirect to the payment gateway."
+msgstr ""
+
 msgid "Create and manage blog content for your organization."
+msgstr ""
+
+msgid "Create and track QR codes for campaigns and events."
+msgstr ""
+
+msgid "Create application"
 msgstr ""
 
 msgid "Create application forms for beneficiaries to fill out."
@@ -120,16 +293,49 @@ msgstr ""
 msgid "Create campaign"
 msgstr ""
 
+msgid "Create certificate template"
+msgstr ""
+
 msgid "Create event"
+msgstr ""
+
+msgid "Create form"
 msgstr ""
 
 msgid "Create fundraising events to engage your community."
 msgstr ""
 
+msgid "Create post"
+msgstr ""
+
+msgid "Create QR code"
+msgstr ""
+
+msgid "Create QR codes to drive engagement for your campaigns."
+msgstr ""
+
+msgid "Create story"
+msgstr ""
+
+msgid "Create template"
+msgstr ""
+
 msgid "Create your first fundraising campaign to get started."
 msgstr ""
 
+msgid "Create your first impact story to start fundraising for a beneficiary."
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Creating..."
+msgstr ""
+
 msgid "Current plan"
+msgstr ""
+
+msgid "Currently active"
 msgstr ""
 
 msgid "Customize colors, fonts, and visual appearance."
@@ -144,6 +350,33 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
+msgid "Deactivate"
+msgstr ""
+
+msgid "Deactivated"
+msgstr ""
+
+msgid "default"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Describe this campaign..."
+msgstr ""
+
+msgid "Describe this event..."
+msgstr ""
+
+msgid "Describe this form version (optional)"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
 msgid "Design and manage application forms."
 msgstr ""
 
@@ -153,16 +386,46 @@ msgstr ""
 msgid "Domain"
 msgstr ""
 
+msgid "Donate"
+msgstr ""
+
+msgid "Donation ID"
+msgstr ""
+
+msgid "Donation recorded successfully."
+msgstr ""
+
 msgid "Donations"
 msgstr ""
 
-msgid "Donations will appear here once campaigns start receiving contributions."
+msgid "Donations will appear here once supporters contribute to your campaigns."
 msgstr ""
 
 msgid "Donor"
 msgstr ""
 
+msgid "Donor email"
+msgstr ""
+
+msgid "Donor name"
+msgstr ""
+
+msgid "Donor subscriptions"
+msgstr ""
+
+msgid "e.g. Director, Treasurer"
+msgstr ""
+
+msgid "e.g. Standard Section 18A"
+msgstr ""
+
 msgid "E.g., +1 (555) 123-4567"
+msgstr ""
+
+msgid "E.g., Campaign donation"
+msgstr ""
+
+msgid "E.g., EFT donation"
 msgstr ""
 
 msgid "E.g., Every child deserves a future"
@@ -192,10 +455,52 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
+msgid "Escalation required"
+msgstr ""
+
+msgid "Event"
+msgstr ""
+
+msgid "Event cancelled"
+msgstr ""
+
+msgid "Event completed"
+msgstr ""
+
+msgid "Event created successfully."
+msgstr ""
+
+msgid "Event date"
+msgstr ""
+
+msgid "Event Date"
+msgstr ""
+
+msgid "Event deleted"
+msgstr ""
+
+msgid "Event location (optional)"
+msgstr ""
+
+msgid "Event name"
+msgstr ""
+
+msgid "Event not found."
+msgstr ""
+
+msgid "Event started"
+msgstr ""
+
 msgid "Events"
 msgstr ""
 
 msgid "Favicon URL"
+msgstr ""
+
+msgid "Featured image URL"
+msgstr ""
+
+msgid "Fee"
 msgstr ""
 
 msgid "Font family"
@@ -204,7 +509,25 @@ msgstr ""
 msgid "Font URL"
 msgstr ""
 
+msgid "Form data"
+msgstr ""
+
 msgid "Form name"
+msgstr ""
+
+msgid "Form version"
+msgstr ""
+
+msgid "Form version activated"
+msgstr ""
+
+msgid "Form version created successfully."
+msgstr ""
+
+msgid "Form version ID"
+msgstr ""
+
+msgid "Form version not found."
 msgstr ""
 
 msgid "Forms"
@@ -213,13 +536,31 @@ msgstr ""
 msgid "Free"
 msgstr ""
 
+msgid "Fulfilment"
+msgstr ""
+
+msgid "Full address"
+msgstr ""
+
 msgid "FundRaise OS"
 msgstr ""
 
 msgid "Fundraising"
 msgstr ""
 
+msgid "Fundraising completed"
+msgstr ""
+
+msgid "Gateway ID"
+msgstr ""
+
+msgid "Generate and manage Section 18A tax certificates for donors."
+msgstr ""
+
 msgid "Generate and track QR codes for campaigns and events."
+msgstr ""
+
+msgid "Generate certificates"
 msgstr ""
 
 msgid "Generate QR code"
@@ -228,7 +569,46 @@ msgstr ""
 msgid "Generate QR codes to track campaign engagement."
 msgstr ""
 
+msgid "Generate tax certificates"
+msgstr ""
+
+msgid "Generate your first batch of Section 18A tax certificates."
+msgstr ""
+
+msgid "Generated by"
+msgstr ""
+
+msgid "Generating..."
+msgstr ""
+
+msgid "Generation failed"
+msgstr ""
+
+msgid "Goal"
+msgstr ""
+
+msgid "Goal amount (ZAR)"
+msgstr ""
+
+msgid "Here's your overview of what's happening."
+msgstr ""
+
+msgid "https://..."
+msgstr ""
+
+msgid "https://... (optional)"
+msgstr ""
+
+msgid "Images"
+msgstr ""
+
 msgid "Inactive"
+msgstr ""
+
+msgid "Initiate payment"
+msgstr ""
+
+msgid "Internal notes"
 msgstr ""
 
 msgid "Invite team members to help manage your organization."
@@ -237,10 +617,25 @@ msgstr ""
 msgid "Invite user"
 msgstr ""
 
+msgid "Link to a campaign (optional)"
+msgstr ""
+
+msgid "Link to a form version (optional)"
+msgstr ""
+
+msgid "Linked Events"
+msgstr ""
+
+msgid "Linked Stories"
+msgstr ""
+
 msgid "Live preview"
 msgstr ""
 
 msgid "Loading applications..."
+msgstr ""
+
+msgid "Loading batches..."
 msgstr ""
 
 msgid "Loading blog posts..."
@@ -264,10 +659,34 @@ msgstr ""
 msgid "Loading QR codes..."
 msgstr ""
 
+msgid "Loading stories..."
+msgstr ""
+
+msgid "Loading subscriptions..."
+msgstr ""
+
+msgid "Loading templates..."
+msgstr ""
+
+msgid "Loading transactions..."
+msgstr ""
+
 msgid "Loading users..."
 msgstr ""
 
 msgid "Loading..."
+msgstr ""
+
+msgid "Location"
+msgstr ""
+
+msgid "Logo"
+msgstr ""
+
+msgid "Logo URL"
+msgstr ""
+
+msgid "Manage impact stories from your beneficiaries."
 msgstr ""
 
 msgid "Manage users and their roles within your organization."
@@ -282,16 +701,70 @@ msgstr ""
 msgid "Manage your plan and billing."
 msgstr ""
 
+msgid "Mark fulfilled"
+msgstr ""
+
+msgid "Mark in progress"
+msgstr ""
+
+msgid "Marked in progress"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Meta description"
+msgstr ""
+
+msgid "Meta title"
+msgstr ""
+
+msgid "Method"
+msgstr ""
+
+msgid "Modified"
+msgstr ""
+
+msgid "month"
+msgstr ""
+
 msgid "More information"
 msgstr ""
 
 msgid "Name"
 msgstr ""
 
+msgid "Name of authorised signatory"
+msgstr ""
+
+msgid "Named"
+msgstr ""
+
+msgid "Net"
+msgstr ""
+
+msgid "New application"
+msgstr ""
+
+msgid "New blog post"
+msgstr ""
+
 msgid "New form"
 msgstr ""
 
+msgid "New form version"
+msgstr ""
+
+msgid "New payment"
+msgstr ""
+
 msgid "New post"
+msgstr ""
+
+msgid "Next:"
+msgstr ""
+
+msgid "No active donor subscriptions."
 msgstr ""
 
 msgid "No applications yet"
@@ -304,6 +777,12 @@ msgid "No branches yet"
 msgstr ""
 
 msgid "No campaigns yet"
+msgstr ""
+
+msgid "No certificate batches yet"
+msgstr ""
+
+msgid "No certificates in this batch."
 msgstr ""
 
 msgid "No donations yet"
@@ -321,16 +800,70 @@ msgstr ""
 msgid "No scans yet"
 msgstr ""
 
+msgid "No stories yet"
+msgstr ""
+
 msgid "No team members yet"
+msgstr ""
+
+msgid "No templates yet"
+msgstr ""
+
+msgid "No transaction reference found."
+msgstr ""
+
+msgid "No transactions yet"
+msgstr ""
+
+msgid "No upcoming charge"
 msgstr ""
 
 msgid "Not configured"
 msgstr ""
 
+msgid "Notes"
+msgstr ""
+
+msgid "NPO registration number"
+msgstr ""
+
+msgid "Offline donation"
+msgstr ""
+
 msgid "One-time"
 msgstr ""
 
+msgid "Online donation"
+msgstr ""
+
 msgid "Open menu"
+msgstr ""
+
+msgid "Optional"
+msgstr ""
+
+msgid "Optional description"
+msgstr ""
+
+msgid "Optional message from donor"
+msgstr ""
+
+msgid "Organisation"
+msgstr ""
+
+msgid "Organisation address"
+msgstr ""
+
+msgid "Organisation Details"
+msgstr ""
+
+msgid "Organisation logo"
+msgstr ""
+
+msgid "Organisation name"
+msgstr ""
+
+msgid "Organisation Name"
 msgstr ""
 
 msgid "Organization"
@@ -339,16 +872,32 @@ msgstr ""
 msgid "Organization name"
 msgstr ""
 
-msgid "Overview of your fundraising platform."
+msgid "Pay now"
+msgstr ""
+
+#. placeholder {0}: tx.status === "Failed" ? "failed" : "cancelled"
+msgid "Payment {0}"
 msgstr ""
 
 msgid "Payment configuration"
 msgstr ""
 
+msgid "Payment details"
+msgstr ""
+
 msgid "Payment provider"
 msgstr ""
 
-msgid "Pending"
+msgid "Payment result"
+msgstr ""
+
+msgid "Payment successful"
+msgstr ""
+
+msgid "PBO number"
+msgstr ""
+
+msgid "PBO Number"
 msgstr ""
 
 msgid "Phone number"
@@ -360,25 +909,109 @@ msgstr ""
 msgid "Plan event"
 msgstr ""
 
+msgid "Post title"
+msgstr ""
+
 msgid "Primary color"
+msgstr ""
+
+msgid "Priority"
 msgstr ""
 
 msgid "Privacy URL"
 msgstr ""
 
+msgid "Processing payment"
+msgstr ""
+
+msgid "Processing..."
+msgstr ""
+
+msgid "Progress"
+msgstr ""
+
+msgid "Provider"
+msgstr ""
+
+msgid "Public Benefit Organisation number"
+msgstr ""
+
+msgid "Publish"
+msgstr ""
+
 msgid "Published"
+msgstr ""
+
+msgid "QR code"
+msgstr ""
+
+msgid "QR code created successfully."
+msgstr ""
+
+msgid "QR code deactivated"
+msgstr ""
+
+msgid "QR code name"
+msgstr ""
+
+msgid "QR code not found."
 msgstr ""
 
 msgid "QR codes"
 msgstr ""
 
+msgid "QR Codes"
+msgstr ""
+
+msgid "quarter"
+msgstr ""
+
 msgid "Quick actions"
+msgstr ""
+
+msgid "Raised"
+msgstr ""
+
+msgid "Receipt"
+msgstr ""
+
+msgid "Recent scans"
+msgstr ""
+
+msgid "Record donation"
+msgstr ""
+
+msgid "Record offline donation"
+msgstr ""
+
+msgid "Recording..."
 msgstr ""
 
 msgid "Recurring"
 msgstr ""
 
+msgid "Recurring donation subscriptions from supporters."
+msgstr ""
+
+msgid "Redirect URL"
+msgstr ""
+
+msgid "Redirecting to payment..."
+msgstr ""
+
+msgid "Registration number"
+msgstr ""
+
+msgid "Registration Number"
+msgstr ""
+
 msgid "Review and manage beneficiary applications."
+msgstr ""
+
+msgid "Reviewed"
+msgstr ""
+
+msgid "Reviews"
 msgstr ""
 
 msgid "Roles"
@@ -393,13 +1026,50 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
+msgid "Scans"
+msgstr ""
+
+#. placeholder {0}: review.priorityScore
+msgid "Score: {0}/10"
+msgstr ""
+
 msgid "Secondary color"
+msgstr ""
+
+msgid "Sections"
 msgstr ""
 
 msgid "See real-time changes as you edit your theme colors."
 msgstr ""
 
+msgid "Select a template..."
+msgstr ""
+
+msgid "SEO"
+msgstr ""
+
+msgid "SEO description (optional)"
+msgstr ""
+
+msgid "SEO title (optional)"
+msgstr ""
+
 msgid "Settings"
+msgstr ""
+
+msgid "Signatory"
+msgstr ""
+
+msgid "Signatory name"
+msgstr ""
+
+msgid "Signatory title"
+msgstr ""
+
+msgid "Slug"
+msgstr ""
+
+msgid "Start"
 msgstr ""
 
 msgid "Start writing blog posts to engage your audience."
@@ -408,16 +1078,58 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
+msgid "Stories"
+msgstr ""
+
+msgid "Story"
+msgstr ""
+
+msgid "Story approved"
+msgstr ""
+
+msgid "Story created successfully."
+msgstr ""
+
+msgid "Story deleted"
+msgstr ""
+
+msgid "Story fulfilled"
+msgstr ""
+
+msgid "Story not found."
+msgstr ""
+
+msgid "Story published"
+msgstr ""
+
+msgid "Story title"
+msgstr ""
+
 msgid "Subdomain"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Submit for screening"
 msgstr ""
 
 msgid "Submitted"
 msgstr ""
 
+msgid "Submitted for screening"
+msgstr ""
+
 msgid "Subscription"
 msgstr ""
 
+msgid "Subscription cancelled."
+msgstr ""
+
 msgid "Success"
+msgstr ""
+
+msgid "Summary"
 msgstr ""
 
 msgid "Support email"
@@ -426,10 +1138,44 @@ msgstr ""
 msgid "Tagline"
 msgstr ""
 
+msgid "Tags"
+msgstr ""
+
+msgid "Target"
+msgstr ""
+
+msgid "Target amount (ZAR)"
+msgstr ""
+
+msgid "Tax Certificates"
+msgstr ""
+
+msgid "Tax Year"
+msgstr ""
+
+msgid "Tax Year (start year)"
+msgstr ""
+
 msgid "Team members"
 msgstr ""
 
+msgid "Tell the beneficiary's story..."
+msgstr ""
+
+msgid "Template name"
+msgstr ""
+
+msgid "Template not found."
+msgstr ""
+
+msgid "Templates"
+msgstr ""
+
 msgid "Terms URL"
+msgstr ""
+
+#. placeholder {0}: formatCurrency(tx.amount)
+msgid "Thank you for your donation of {0}."
 msgstr ""
 
 msgid "Theme"
@@ -438,16 +1184,43 @@ msgstr ""
 msgid "Theme updated successfully."
 msgstr ""
 
+msgid "This will generate Section 18A tax certificates for all eligible donors in the selected tax year. This is a premium feature."
+msgstr ""
+
+msgid "Timeline"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
 msgid "Toggle sidebar"
+msgstr ""
+
+msgid "Total scans"
 msgstr ""
 
 msgid "Transaction"
 msgstr ""
 
+msgid "Transaction not found."
+msgstr ""
+
+msgid "Transactions"
+msgstr ""
+
+msgid "Transactions will appear here once payments are processed."
+msgstr ""
+
 msgid "Type"
 msgstr ""
 
+msgid "Updates"
+msgstr ""
+
 msgid "Upgrade"
+msgstr ""
+
+msgid "url-friendly-slug"
 msgstr ""
 
 msgid "Users"
@@ -456,11 +1229,51 @@ msgstr ""
 msgid "Version"
 msgstr ""
 
-msgid "View and manage donations and transactions."
+msgid "Version number"
+msgstr ""
+
+msgid "View and record donations from your supporters."
+msgstr ""
+
+msgid "View and track all payment transactions."
+msgstr ""
+
+msgid "View transactions"
 msgstr ""
 
 msgid "Website preview"
 msgstr ""
 
+msgid "Welcome home"
+msgstr ""
+
+#. placeholder {0}: userInfo.firstName
+msgid "Welcome home, {0}"
+msgstr ""
+
 msgid "Write blog post"
+msgstr ""
+
+msgid "Write your blog post..."
+msgstr ""
+
+msgid "year"
+msgstr ""
+
+msgid "You are being redirected to the payment gateway..."
+msgstr ""
+
+msgid "Your email"
+msgstr ""
+
+msgid "Your name"
+msgstr ""
+
+msgid "Your NPO name"
+msgstr ""
+
+msgid "Your payment could not be completed. No charge was made."
+msgstr ""
+
+msgid "Your payment is being processed. This page will update automatically."
 msgstr ""

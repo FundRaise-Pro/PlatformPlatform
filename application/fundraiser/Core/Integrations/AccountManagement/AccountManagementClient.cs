@@ -54,6 +54,7 @@ public sealed record SubscriptionInfo(
     int MaxBranches,
     bool CustomDomain,
     bool CustomCss,
+    bool CertificatesEnabled,
     int StorageMb,
     int ApiCallsPerMonth
 );

@@ -1,37 +1,44 @@
 import { Trans } from "@lingui/react/macro";
 import { tenantPath } from "@repo/infrastructure/auth/constants";
 import { useUserInfo } from "@repo/infrastructure/auth/hooks";
-import { Breadcrumb, Breadcrumbs } from "@repo/ui/components/Breadcrumbs";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "@repo/ui/components/Breadcrumb";
 import { Link } from "@repo/ui/components/Link";
-import { ChevronRightIcon } from "lucide-react";
+import { lazy, Suspense } from "react";
+
+const FederatedTopMenu = lazy(() => import("account-management/FederatedTopMenu"));
 
 type TopMenuProps = {
-  breadcrumbs?: { label: string; href?: string }[];
+  breadcrumbs?: { label: string }[];
 };
 
 export function TopMenu({ breadcrumbs }: Readonly<TopMenuProps>) {
   const slug = useUserInfo()?.tenantSlug;
   return (
-    <div className="flex items-center gap-2">
-      <Breadcrumbs>
+    <Suspense fallback={null}>
+      <FederatedTopMenu>
         <Breadcrumb>
-          <Link href={tenantPath(slug, "fundraiser")} variant="ghost">
-            <Trans>FundRaise OS</Trans>
-          </Link>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<Link href={tenantPath(slug, "fundraiser")} variant="secondary" underline={false} />}>
+                <Trans>FundRaise OS</Trans>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {breadcrumbs?.map((breadcrumb) => (
+              <BreadcrumbItem key={breadcrumb.label}>
+                <BreadcrumbSeparator />
+                <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+              </BreadcrumbItem>
+            ))}
+          </BreadcrumbList>
         </Breadcrumb>
-        {breadcrumbs?.map((crumb) => (
-          <Breadcrumb key={crumb.label}>
-            <ChevronRightIcon className="mx-1 h-4 w-4 text-muted-foreground" />
-            {crumb.href ? (
-              <Link href={crumb.href} variant="ghost">
-                {crumb.label}
-              </Link>
-            ) : (
-              <span className="text-foreground text-sm">{crumb.label}</span>
-            )}
-          </Breadcrumb>
-        ))}
-      </Breadcrumbs>
-    </div>
+      </FederatedTopMenu>
+    </Suspense>
   );
 }

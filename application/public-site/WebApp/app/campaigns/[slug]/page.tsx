@@ -4,9 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicCampaignBySlug } from "@/actions/campaigns.server";
 import { getTenantSettings } from "@/actions/settings.server";
+import { getPublicStoriesByCampaignSlug } from "@/actions/stories.server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 export const dynamic = "force-dynamic";
 
@@ -45,8 +47,21 @@ export default async function CampaignDetailPage({ params }: Props) {
 
   if (!campaign) notFound();
 
+  let stories: Awaited<ReturnType<typeof getPublicStoriesByCampaignSlug>> = [];
+  try {
+    stories = await getPublicStoriesByCampaignSlug(slug);
+  } catch {
+    // Stories may not be available; gracefully degrade
+  }
+
+  const currencyFormatter = new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    minimumFractionDigits: 0
+  });
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <main className="min-h-screen bg-linear-to-b from-white to-gray-50">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Back Link */}
         <Link
@@ -76,7 +91,7 @@ export default async function CampaignDetailPage({ params }: Props) {
 
         {/* Summary */}
         {campaign.summary && (
-          <p className="text-lg text-muted-foreground mb-8 border-l-4 border-[var(--tenant-primary)] pl-4 italic">
+          <p className="text-lg text-muted-foreground mb-8 border-l-4 border-(--tenant-primary) pl-4 italic">
             {campaign.summary}
           </p>
         )}
@@ -95,13 +110,62 @@ export default async function CampaignDetailPage({ params }: Props) {
           </div>
         )}
 
+        {/* Stories Section */}
+        {stories.length > 0 && (
+          <div className="mb-8">
+            <h2 className="mb-4">Stories</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {stories.map((story) => {
+                const storyProgress = story.goalAmount > 0
+                  ? Math.min(100, (story.raisedAmount / story.goalAmount) * 100)
+                  : 0;
+                return (
+                  <Link key={story.id} href={`/stories/${story.slug}`}>
+                    <Card className="h-full cursor-pointer transition-shadow hover:shadow-lg">
+                      {story.featuredImageUrl && (
+                        <div className="overflow-hidden rounded-t-xl">
+                          <img
+                            src={story.featuredImageUrl}
+                            alt={story.title}
+                            className="h-48 w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      <CardHeader>
+                        <CardTitle className="line-clamp-2">{story.title}</CardTitle>
+                        {story.summary && (
+                          <CardDescription className="line-clamp-2">{story.summary}</CardDescription>
+                        )}
+                      </CardHeader>
+                      {story.goalAmount > 0 && (
+                        <CardContent>
+                          <div className="mb-1 flex justify-between text-sm">
+                            <span className="font-medium">
+                              {currencyFormatter.format(story.raisedAmount)}
+                            </span>
+                            <span className="text-muted-foreground">
+                              of {currencyFormatter.format(story.goalAmount)}
+                            </span>
+                          </div>
+                          <Progress value={storyProgress} className="h-2" />
+                        </CardContent>
+                      )}
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* External Funding Link */}
         {campaign.externalFundingUrl && (
           <Card className="mb-8">
             <CardContent className="pt-6 text-center">
               <Button size="lg" asChild={true}>
                 <a href={campaign.externalFundingUrl} target="_blank" rel="noopener noreferrer">
-                  <Heart className="mr-2 h-4 w-4" />
+                  <Heart className="mr-2 size-4" />
                   {content.donationLabel} to this {content.campaignLabel}
                 </a>
               </Button>
@@ -112,8 +176,8 @@ export default async function CampaignDetailPage({ params }: Props) {
         {/* CTA */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Button size="lg" asChild={true}>
-            <Link href="/donate">
-              <Heart className="mr-2 h-4 w-4" />
+            <Link href={`/donate?targetType=Campaign&targetId=${campaign.slug}&targetName=${encodeURIComponent(campaign.title)}`}>
+              <Heart className="mr-2 size-4" />
               {content.donationLabel}
             </Link>
           </Button>

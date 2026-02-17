@@ -10,6 +10,9 @@ import {
   SideMenuSpacer
 } from "@repo/ui/components/SideMenu";
 import {
+  ArrowLeftRightIcon,
+  AwardIcon,
+  BookHeartIcon,
   BookOpenIcon,
   CalendarIcon,
   CreditCardIcon,
@@ -37,9 +40,12 @@ export function FundraiserSideMenu({ currentSystem = "fundraiser" }: Readonly<Fu
         <Trans>Fundraising</Trans>
       </SideMenuSeparator>
       <MenuButton icon={HeartIcon} label={t`Campaigns`} href={tenantPath(slug, "fundraiser", "campaigns")} />
+      <MenuButton icon={BookHeartIcon} label={t`Stories`} href={tenantPath(slug, "fundraiser", "stories")} />
       <MenuButton icon={CreditCardIcon} label={t`Donations`} href={tenantPath(slug, "fundraiser", "donations")} />
+      <MenuButton icon={ArrowLeftRightIcon} label={t`Transactions`} href={tenantPath(slug, "fundraiser", "transactions")} />
       <MenuButton icon={CalendarIcon} label={t`Events`} href={tenantPath(slug, "fundraiser", "events")} />
-      <MenuButton icon={QrCodeIcon} label={t`QR codes`} href={tenantPath(slug, "fundraiser", "qrcodes")} />
+      <MenuButton icon={QrCodeIcon} label={t`QR codes`} href={tenantPath(slug, "fundraiser", "qr-codes")} />
+      <MenuButton icon={AwardIcon} label={t`Certificates`} href={tenantPath(slug, "fundraiser", "certificates")} />
 
       <SideMenuSeparator>
         <Trans>Content</Trans>

@@ -2,11 +2,13 @@ using PlatformPlatform.Fundraiser.Features.Applications.Domain;
 using PlatformPlatform.Fundraiser.Features.Blogs.Domain;
 using PlatformPlatform.Fundraiser.Features.Branches.Domain;
 using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
+using PlatformPlatform.Fundraiser.Features.Certificates.Domain;
 using PlatformPlatform.Fundraiser.Features.Donations.Domain;
 using PlatformPlatform.Fundraiser.Features.EndUsers.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.Fundraiser.Features.Forms.Domain;
 using PlatformPlatform.Fundraiser.Features.QRCodes.Domain;
+using PlatformPlatform.Fundraiser.Features.Stories.Domain;
 using PlatformPlatform.Fundraiser.Features.TenantSettings.Domain;
 using PlatformPlatform.Fundraiser.Features.Users.Domain;
 using PlatformPlatform.SharedKernel.Telemetry;
@@ -31,6 +33,31 @@ public sealed class CampaignPublished(CampaignId campaignId)
 public sealed class CampaignDeleted(CampaignId campaignId)
     : TelemetryEvent(("campaign_id", campaignId));
 
+// --- Stories ---
+public sealed class StoryCreated(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryUpdated(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryPublished(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryDeleted(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StorySubmittedForScreening(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryApproved(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryFundraisingCompleted(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
+public sealed class StoryFulfilled(StoryId storyId)
+    : TelemetryEvent(("story_id", storyId));
+
 // --- Blogs ---
 public sealed class BlogCategoryCreated(BlogCategoryId categoryId)
     : TelemetryEvent(("category_id", categoryId));
@@ -49,6 +76,18 @@ public sealed class FundraisingEventCreated(FundraisingEventId eventId)
     : TelemetryEvent(("event_id", eventId));
 
 public sealed class FundraisingEventUpdated(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventStarted(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventCompleted(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventCancelled(FundraisingEventId eventId)
+    : TelemetryEvent(("event_id", eventId));
+
+public sealed class FundraisingEventDeleted(FundraisingEventId eventId)
     : TelemetryEvent(("event_id", eventId));
 
 // --- Forms ---
@@ -169,3 +208,14 @@ public sealed class TenantSettingsInitialized(TenantSettingsId tenantSettingsId)
 
 public sealed class ThemeConfigUpdated(TenantSettingsId tenantSettingsId)
     : TelemetryEvent(("tenant_settings_id", tenantSettingsId));
+
+// --- Certificates ---
+
+public sealed class CertificateTemplateCreated(CertificateTemplateId templateId)
+    : TelemetryEvent(("template_id", templateId));
+
+public sealed class CertificateTemplateUpdated(CertificateTemplateId templateId)
+    : TelemetryEvent(("template_id", templateId));
+
+public sealed class CertificateBatchGenerated(CertificateIssuanceBatchId batchId, int totalCertificates)
+    : TelemetryEvent(("batch_id", batchId), ("total_certificates", totalCertificates));

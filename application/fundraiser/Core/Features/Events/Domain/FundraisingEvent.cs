@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.SharedKernel.Domain;
 using PlatformPlatform.SharedKernel.StronglyTypedIds;
 
@@ -39,14 +40,17 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
 
     public string? ImageUrl { get; private set; }
 
+    public CampaignId? CampaignId { get; private set; }
+
     public static FundraisingEvent Create(TenantId tenantId, string name, string description, DateTime eventDate,
-        string? location = null, decimal targetAmount = 0)
+        string? location = null, decimal targetAmount = 0, CampaignId? campaignId = null)
     {
         return new FundraisingEvent(FundraisingEventId.NewId(), tenantId, name, description, eventDate)
         {
             Slug = GenerateSlug(name),
             Location = location,
-            TargetAmount = targetAmount
+            TargetAmount = targetAmount,
+            CampaignId = campaignId
         };
     }
 
@@ -82,6 +86,11 @@ public sealed class FundraisingEvent : AggregateRoot<FundraisingEventId>, ITenan
     public void SetImage(string imageUrl)
     {
         ImageUrl = imageUrl;
+    }
+
+    public void LinkToCampaign(CampaignId? campaignId)
+    {
+        CampaignId = campaignId;
     }
 
     private static string GenerateSlug(string name)

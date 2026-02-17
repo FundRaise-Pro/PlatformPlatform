@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.SharedKernel.Domain;
 using PlatformPlatform.SharedKernel.EntityFramework;
@@ -21,6 +22,9 @@ public sealed class FundraisingEventConfiguration : IEntityTypeConfiguration<Fun
         builder.Property(e => e.Status).HasMaxLength(50);
         builder.Property(e => e.ImageUrl).HasMaxLength(500);
 
+        builder.MapStronglyTypedNullableId<FundraisingEvent, CampaignId, string>(e => e.CampaignId);
+
         builder.HasIndex(e => new { e.TenantId, e.Slug });
+        builder.HasIndex(e => new { e.TenantId, e.CampaignId });
     }
 }

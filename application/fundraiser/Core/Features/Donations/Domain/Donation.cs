@@ -66,6 +66,8 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
 
     public PaymentMethod? PaymentMethod { get; private set; }
 
+    public DonationChannel Channel { get; private set; } = DonationChannel.Web;
+
     public DateTime? CompletedAt { get; private set; }
 
     private readonly List<PaymentProcessingLog> _processingLogs = [];
@@ -74,14 +76,15 @@ public sealed class Transaction : AggregateRoot<TransactionId>, ITenantScopedEnt
     public static Transaction Create(TransactionId id, TenantId tenantId, string name, string description,
         TransactionType type, decimal amount, FundraisingTargetType targetType, string targetId,
         string merchantReference, string? payeeName = null, string? payeeEmail = null,
-        PaymentProvider provider = PaymentProvider.PayFast)
+        PaymentProvider provider = PaymentProvider.PayFast, DonationChannel channel = DonationChannel.Web)
     {
         return new Transaction(id, tenantId, name, description, type, amount, targetType, targetId)
         {
             MerchantReference = merchantReference,
             PayeeName = payeeName,
             PayeeEmail = payeeEmail,
-            PaymentProvider = provider
+            PaymentProvider = provider,
+            Channel = channel
         };
     }
 
@@ -183,6 +186,15 @@ public sealed class DonorProfile : AggregateRoot<DonorProfileId>, ITenantScopedE
 
     public TenantId TenantId { get; private init; }
 
+    // Identity (required for Section 18A certificates)
+    public string? FirstName { get; private set; }
+
+    public string? LastName { get; private set; }
+
+    public string? Email { get; private set; }
+
+    public string? PhoneNumber { get; private set; }
+
     public string? TaxIdNumber { get; private set; }
 
     public string? CompanyRegistration { get; private set; }
@@ -218,6 +230,27 @@ public sealed class DonorProfile : AggregateRoot<DonorProfileId>, ITenantScopedE
         };
     }
 
+    public void UpdateProfile(
+        string? firstName,
+        string? lastName,
+        string? email,
+        string? phoneNumber,
+        string? taxIdNumber,
+        string? companyRegistration,
+        string? companyName,
+        bool isCompany
+    )
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        TaxIdNumber = taxIdNumber;
+        CompanyRegistration = companyRegistration;
+        CompanyName = companyName;
+        IsCompany = isCompany;
+    }
+
     public void UpdateAddress(string? streetAddress, string? suburb, string? city, string? province, string? postalCode)
     {
         StreetAddress = streetAddress;
@@ -225,6 +258,29 @@ public sealed class DonorProfile : AggregateRoot<DonorProfileId>, ITenantScopedE
         City = city;
         Province = province;
         PostalCode = postalCode;
+    }
+
+    /// <summary>
+    ///     Checks if this donor profile has all required fields for Section 18A tax certificate issuance.
+    /// </summary>
+    public bool IsCertificateEligible()
+    {
+        if (IsCompany)
+            return !string.IsNullOrWhiteSpace(CompanyName)
+                && !string.IsNullOrWhiteSpace(CompanyRegistration)
+                && HasValidAddress();
+
+        return !string.IsNullOrWhiteSpace(FirstName)
+            && !string.IsNullOrWhiteSpace(LastName)
+            && !string.IsNullOrWhiteSpace(TaxIdNumber)
+            && HasValidAddress();
+    }
+
+    private bool HasValidAddress()
+    {
+        return !string.IsNullOrWhiteSpace(StreetAddress)
+            && !string.IsNullOrWhiteSpace(City)
+            && !string.IsNullOrWhiteSpace(PostalCode);
     }
 }
 
@@ -330,6 +386,11 @@ public enum PaymentProvider { PayFast, Stripe, PayPal }
 public enum SubscriptionStatus { Pending, Active, Cancelled, Completed, Failed, Suspended }
 
 public enum CancellationSource { User, PayFast, Stripe, PayPal, Admin }
+
+/// <summary>
+///     Tracks how a donation originated for full origin-of-funds traceability.
+/// </summary>
+public enum DonationChannel { Web, QrCode, EventKiosk, Api, Manual }
 
 // Value objects / child entities
 public sealed class PaymentProcessingLog

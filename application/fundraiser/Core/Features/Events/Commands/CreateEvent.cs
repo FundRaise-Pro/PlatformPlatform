@@ -1,4 +1,5 @@
 using FluentValidation;
+using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.Fundraiser.Features.Events.Domain;
 using PlatformPlatform.SharedKernel.Cqrs;
 using PlatformPlatform.SharedKernel.ExecutionContext;
@@ -18,6 +19,8 @@ public sealed record CreateEventCommand : ICommand, IRequest<Result<FundraisingE
     public string? Location { get; init; }
 
     public decimal TargetAmount { get; init; }
+
+    public string? CampaignId { get; init; }
 }
 
 public sealed class CreateEventValidator : AbstractValidator<CreateEventCommand>
@@ -28,6 +31,9 @@ public sealed class CreateEventValidator : AbstractValidator<CreateEventCommand>
         RuleFor(x => x.Description).NotEmpty();
         RuleFor(x => x.EventDate).GreaterThan(DateTime.UtcNow).WithMessage("Event date must be in the future.");
         RuleFor(x => x.TargetAmount).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.CampaignId)
+            .Must(id => string.IsNullOrWhiteSpace(id) || CampaignId.TryParse(id, out _))
+            .WithMessage("Campaign ID is invalid.");
     }
 }
 
@@ -39,9 +45,15 @@ public sealed class CreateEventHandler(
 {
     public async Task<Result<FundraisingEventId>> Handle(CreateEventCommand command, CancellationToken cancellationToken)
     {
+        CampaignId? campaignId = null;
+        if (!string.IsNullOrWhiteSpace(command.CampaignId) && !CampaignId.TryParse(command.CampaignId, out campaignId))
+        {
+            return Result<FundraisingEventId>.BadRequest("Campaign ID is invalid.");
+        }
+
         var fundraisingEvent = FundraisingEvent.Create(
             executionContext.TenantId!, command.Name, command.Description,
-            command.EventDate, command.Location, command.TargetAmount
+            command.EventDate, command.Location, command.TargetAmount, campaignId
         );
 
         await eventRepository.AddAsync(fundraisingEvent, cancellationToken);

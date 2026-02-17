@@ -43,6 +43,10 @@ public sealed class DonationEndpoints : IEndpoints
             => await mediator.Send(command with { Id = id })
         );
 
+        group.MapPost("/transactions/{id}/initiate-payment", async Task<ApiResult<InitiatePaymentResponse>> (TransactionId id, InitiatePaymentCommand command, IMediator mediator)
+            => await mediator.Send(command with { TransactionId = id })
+        ).Produces<InitiatePaymentResponse>();
+
         group.MapGet("/subscriptions", async Task<ApiResult<SubscriptionSummaryResponse[]>> (IMediator mediator)
             => await mediator.Send(new GetSubscriptionsQuery())
         ).Produces<SubscriptionSummaryResponse[]>();

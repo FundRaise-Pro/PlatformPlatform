@@ -21,6 +21,7 @@ public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transact
         builder.Property(t => t.Type).HasMaxLength(50);
         builder.Property(t => t.PaymentProvider).HasMaxLength(50);
         builder.Property(t => t.PaymentMethod).HasMaxLength(50);
+        builder.Property(t => t.Channel).HasMaxLength(50);
         builder.Property(t => t.Amount).HasColumnType("decimal(18,2)");
         builder.Property(t => t.AmountFee).HasColumnType("decimal(18,2)");
         builder.Property(t => t.AmountNet).HasColumnType("decimal(18,2)");
@@ -71,6 +72,10 @@ public sealed class DonorProfileConfiguration : IEntityTypeConfiguration<DonorPr
         builder.MapStronglyTypedUuid<DonorProfile, DonorProfileId>(p => p.Id);
         builder.MapStronglyTypedLongId<DonorProfile, TenantId>(p => p.TenantId);
 
+        builder.Property(p => p.FirstName).HasMaxLength(150);
+        builder.Property(p => p.LastName).HasMaxLength(150);
+        builder.Property(p => p.Email).HasMaxLength(320);
+        builder.Property(p => p.PhoneNumber).HasMaxLength(30);
         builder.Property(p => p.TaxIdNumber).HasMaxLength(50);
         builder.Property(p => p.CompanyRegistration).HasMaxLength(100);
         builder.Property(p => p.CompanyName).HasMaxLength(200);

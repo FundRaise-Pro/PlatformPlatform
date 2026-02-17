@@ -1,4 +1,5 @@
 using PlatformPlatform.Fundraiser.Database;
+using PlatformPlatform.Fundraiser.Features.Campaigns.Domain;
 using PlatformPlatform.SharedKernel.Domain;
 using PlatformPlatform.SharedKernel.Persistence;
 
@@ -9,6 +10,7 @@ public interface IFundraisingEventRepository : ICrudRepository<FundraisingEvent,
     Task<FundraisingEvent[]> GetAllAsync(CancellationToken cancellationToken);
     Task<FundraisingEvent[]> GetUpcomingAsync(CancellationToken cancellationToken);
     Task<FundraisingEvent?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+    Task<FundraisingEvent[]> GetByCampaignIdAsync(CampaignId campaignId, CancellationToken cancellationToken);
 }
 
 internal sealed class FundraisingEventRepository(FundraiserDbContext dbContext)
@@ -30,5 +32,13 @@ internal sealed class FundraisingEventRepository(FundraiserDbContext dbContext)
     public async Task<FundraisingEvent?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
     {
         return await DbSet.FirstOrDefaultAsync(e => e.Slug == slug, cancellationToken);
+    }
+
+    public async Task<FundraisingEvent[]> GetByCampaignIdAsync(CampaignId campaignId, CancellationToken cancellationToken)
+    {
+        return await DbSet
+            .Where(e => e.CampaignId == campaignId)
+            .OrderByDescending(e => e.EventDate)
+            .ToArrayAsync(cancellationToken);
     }
 }
