@@ -176,7 +176,7 @@ export default async function CampaignDetailPage({ params }: Props) {
         {/* CTA */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Button size="lg" asChild={true}>
-            <Link href={`/donate?targetType=Campaign&targetId=${campaign.slug}&targetName=${encodeURIComponent(campaign.title)}`}>
+            <Link href={`/donate?targetType=Campaign&targetId=${campaign.id}&targetName=${encodeURIComponent(campaign.title)}`}>
               <Heart className="mr-2 size-4" />
               {content.donationLabel}
             </Link>

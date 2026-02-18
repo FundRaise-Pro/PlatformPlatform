@@ -4,6 +4,7 @@ import { handleResponse } from "@/lib/api/utils";
 import { apiUrl } from "@/lib/http";
 
 export interface PublicCampaignSummary {
+  id: string;
   slug: string;
   title: string;
   summary: string | null;
@@ -15,6 +16,7 @@ export interface PublicCampaignSummary {
 }
 
 export interface PublicCampaign {
+  id: string;
   slug: string;
   title: string;
   content: string;

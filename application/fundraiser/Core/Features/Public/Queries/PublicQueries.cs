@@ -17,6 +17,7 @@ public sealed record GetPublicCampaignsQuery : IRequest<Result<PublicCampaignSum
 
 [PublicAPI]
 public sealed record PublicCampaignSummaryResponse(
+    string Id,
     string Slug,
     string Title,
     string? Summary,
@@ -35,7 +36,7 @@ public sealed class GetPublicCampaignsHandler(ICampaignRepository campaignReposi
         var campaigns = await campaignRepository.GetPublishedAsync(cancellationToken);
 
         return campaigns.Select(c => new PublicCampaignSummaryResponse(
-            c.Slug, c.Title, c.Summary, c.FeaturedImageUrl, c.Status, c.PublishedAt,
+            c.Id, c.Slug, c.Title, c.Summary, c.FeaturedImageUrl, c.Status, c.PublishedAt,
             c.Images.Select(i => new CampaignImageResponse(i.Id, i.BlobUrl, i.MimeType, i.FileSizeBytes)).ToArray(),
             c.Tags.Select(t => t.Tag).ToArray()
         )).ToArray();
@@ -49,6 +50,7 @@ public sealed record GetPublicCampaignBySlugQuery(string Slug) : IRequest<Result
 
 [PublicAPI]
 public sealed record PublicCampaignResponse(
+    string Id,
     string Slug,
     string Title,
     string Content,
@@ -71,7 +73,7 @@ public sealed class GetPublicCampaignBySlugHandler(ICampaignRepository campaignR
             return Result<PublicCampaignResponse>.NotFound($"Campaign '{query.Slug}' not found.");
 
         return new PublicCampaignResponse(
-            campaign.Slug, campaign.Title, campaign.Content, campaign.Summary,
+            campaign.Id, campaign.Slug, campaign.Title, campaign.Content, campaign.Summary,
             campaign.FeaturedImageUrl, campaign.ExternalFundingUrl, campaign.Status, campaign.PublishedAt,
             campaign.Images.Select(i => new CampaignImageResponse(i.Id, i.BlobUrl, i.MimeType, i.FileSizeBytes)).ToArray(),
             campaign.Tags.Select(t => t.Tag).ToArray()

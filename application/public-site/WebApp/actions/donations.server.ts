@@ -19,7 +19,7 @@ export interface CreatePublicTransactionRequest {
 
 export interface CreatePublicTransactionResponse {
   transactionId: string;
-  redirectUrl: string;
+  actionUrl: string;
   formFields: Record<string, string>;
 }
 
