@@ -1,5 +1,6 @@
 import { ReactNode, useMemo, useState } from "react";
 import {
+  CircleHelp,
   Globe,
   LayoutTemplate,
   Layers,
@@ -20,11 +21,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { readImageFile } from "@/lib/fileUploads";
 import { INITIAL_CONFIG } from "@/lib/defaultConfig";
 import { useHashRoute } from "@/hooks/useHashRoute";
-import { Donation, FundraiserConfig, Partner } from "@/types";
+import { ApplyPathId, Donation, FundraiserConfig, Partner } from "@/types";
 import { IMAGE_FILE_ACCEPT } from "@/lib/constants";
 
 const INITIAL_NEW_PARTNER: Partial<Partner> = {
@@ -43,7 +44,7 @@ export default function App() {
     ...INITIAL_NEW_PARTNER,
     tierId: INITIAL_CONFIG.partnerTiers[0]?.id,
   });
-  const { route, setCrmTab, setPublicPage, setView } = useHashRoute();
+  const { route, setApplyPath, setCrmTab, setPublicPage, setView } = useHashRoute();
 
   const updateConfig = (updates: Partial<FundraiserConfig>) => setConfig((current) => ({ ...current, ...updates }));
 
@@ -96,6 +97,26 @@ export default function App() {
     });
   };
 
+  const handleApplySubmission = (categoryId: ApplyPathId, values: Record<string, string>) => {
+    const submission = {
+      id: `apply-${Date.now()}`,
+      submittedAt: new Date().toISOString(),
+      status: "new" as const,
+      values,
+    };
+
+    setConfig((current) => ({
+      ...current,
+      applicationForms: {
+        ...current.applicationForms,
+        [categoryId]: {
+          ...current.applicationForms[categoryId],
+          submissions: [submission, ...current.applicationForms[categoryId].submissions],
+        },
+      },
+    }));
+  };
+
   const uploadNewPartnerLogo = async (file?: File) => {
     const image = await readImageFile(file);
     if (!image) {
@@ -114,10 +135,82 @@ export default function App() {
     [config],
   );
 
+  const crmTabGuide = route.crmTab === "donors"
+    ? {
+        title: "Supporter relationship center",
+        instruction: "Track supporter history, certificates, and giving activity with simple filters and search.",
+        websiteNote:
+          "Donor and amount trends influence campaign confidence messaging shown in the website builder preview.",
+      }
+    : {
+        title: "Partner relationship center",
+        instruction: "Track partner tier position, contribution value, and mention readiness with simple search and sorting.",
+        websiteNote:
+          "Partner tier and mention data controls how partner credibility sections render in builder and public preview.",
+      };
+
+  const donorColumns = useMemo<DataTableColumn<FundraiserConfig["donations"][number]>[]>(
+    () => [
+      { key: "donorName", header: "Supporter", accessor: (row) => row.donorName, sortable: true },
+      { key: "amount", header: "Amount", accessor: (row) => row.amount, sortable: true, cell: (row) => `$${row.amount.toLocaleString()}` },
+      {
+        key: "date",
+        header: "Date",
+        accessor: (row) => row.date,
+        sortable: true,
+        cell: (row) => new Date(row.date).toLocaleDateString(),
+      },
+      {
+        key: "certificateGenerated",
+        header: "Certificate",
+        accessor: (row) => (row.certificateGenerated ? "Issued" : "Pending"),
+        sortable: true,
+        cell: (row) => (
+          <Badge className={row.certificateGenerated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+            {row.certificateGenerated ? "Issued" : "Pending"}
+          </Badge>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const partnerColumns = useMemo<
+    DataTableColumn<
+      Partner & {
+        tierName: string;
+        mentions: number;
+      }
+    >[]
+  >(
+    () => [
+      { key: "name", header: "Partner", accessor: (row) => row.name, sortable: true },
+      { key: "email", header: "Email", accessor: (row) => row.email, sortable: true },
+      { key: "tierName", header: "Tier", accessor: (row) => row.tierName, sortable: true },
+      {
+        key: "totalContributed",
+        header: "Total contributed",
+        accessor: (row) => row.totalContributed,
+        sortable: true,
+        cell: (row) => `$${row.totalContributed.toLocaleString()}`,
+      },
+      { key: "mentions", header: "Mentions", accessor: (row) => row.mentions, sortable: true },
+    ],
+    [],
+  );
+
   if (route.view === "public") {
     return (
       <div className="relative h-screen w-full overflow-hidden">
-        <Preview config={config} activePage={route.publicPage} onNavigate={setPublicPage} onDonate={handleDonate} />
+        <Preview
+          config={config}
+          activePage={route.publicPage}
+          applyPath={route.applyPath}
+          onNavigate={setPublicPage}
+          onApplyPathChange={setApplyPath}
+          onDonate={handleDonate}
+          onSubmitApplication={handleApplySubmission}
+        />
         <Button
           type="button"
           className="fixed bottom-8 right-8 rounded-full px-6 py-6 shadow-float"
@@ -180,7 +273,15 @@ export default function App() {
               <div className="min-h-0 flex-1 p-4">
                 {showPreviewPanel ? (
                   <div className="h-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/70 shadow-soft">
-                    <Preview config={config} activePage={route.publicPage} onNavigate={setPublicPage} onDonate={handleDonate} />
+                    <Preview
+                      config={config}
+                      activePage={route.publicPage}
+                      applyPath={route.applyPath}
+                      onNavigate={setPublicPage}
+                      onApplyPathChange={setApplyPath}
+                      onDonate={handleDonate}
+                      onSubmitApplication={handleApplySubmission}
+                    />
                   </div>
                 ) : (
                   <Card className="h-full border-white/80 bg-white/85">
@@ -201,8 +302,13 @@ export default function App() {
             <header className="border-b border-white/70 bg-white/80 px-8 py-6 backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Relationship Management</p>
-                  <h2 className="font-display text-4xl text-slate-900">Impact Relations</h2>
+                  <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                    <CircleHelp className="size-4" />
+                    Relationship Management
+                  </p>
+                  <h2 className="font-display text-4xl text-slate-900">{crmTabGuide.title}</h2>
+                  <p className="mt-1 max-w-3xl text-sm text-slate-600">{crmTabGuide.instruction}</p>
+                  <p className="mt-1 text-sm text-emerald-700">Website note: {crmTabGuide.websiteNote}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Button variant={route.crmTab === "donors" ? "secondary" : "outline"} className="rounded-full" onClick={() => setCrmTab("donors")}>
@@ -222,7 +328,11 @@ export default function App() {
                 <MetricCard title="Partners onboarded" value={crmMetrics.activePartners.toString()} />
               </section>
 
-              {route.crmTab === "donors" ? <DonorTable config={config} /> : <PartnerTable config={config} onAdd={() => setIsPartnerModalOpen(true)} />}
+              {route.crmTab === "donors" ? (
+                <DonorTable config={config} columns={donorColumns} />
+              ) : (
+                <PartnerTable config={config} columns={partnerColumns} onAdd={() => setIsPartnerModalOpen(true)} />
+              )}
             </div>
           </div>
         ) : null}
@@ -357,50 +467,47 @@ function MetricCard({ title, value }: MetricCardProps) {
 
 interface TableProps {
   config: FundraiserConfig;
+  columns: DataTableColumn<FundraiserConfig["donations"][number]>[];
 }
 
-function DonorTable({ config }: TableProps) {
+function DonorTable({ config, columns }: TableProps) {
   return (
-    <Card className="glass-surface">
-      <CardHeader>
-        <CardTitle className="font-display text-2xl">Supporter ledger</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Supporter</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Certificate</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {config.donations
-              .filter((donation) => donation.donorName !== "Anonymous")
-              .map((donation) => (
-                <TableRow key={donation.id}>
-                  <TableCell className="font-medium">{donation.donorName}</TableCell>
-                  <TableCell>${donation.amount.toLocaleString()}</TableCell>
-                  <TableCell>{new Date(donation.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{donation.certificateGenerated ? "Issued" : "Pending"}</TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <DataTable
+      title="Supporter ledger"
+      description="Search and sort supporters while tracking certificate readiness."
+      data={config.donations.filter((donation) => donation.donorName !== "Anonymous")}
+      columns={columns}
+      defaultSortKey="date"
+      defaultSortDirection="desc"
+      searchPlaceholder="Search supporters..."
+    />
   );
 }
 
 interface PartnerTableProps {
   config: FundraiserConfig;
+  columns: DataTableColumn<
+    Partner & {
+      tierName: string;
+      mentions: number;
+    }
+  >[];
   onAdd: () => void;
 }
 
-function PartnerTable({ config, onAdd }: PartnerTableProps) {
+function PartnerTable({ config, columns, onAdd }: PartnerTableProps) {
+  const partnerRows = config.partners.map((partner) => {
+    const tier = config.partnerTiers.find((entry) => entry.id === partner.tierId);
+    const mentions = config.partnerMentions.filter((mention) => mention.partnerId === partner.id).length;
+    return {
+      ...partner,
+      tierName: tier?.name ?? "No tier",
+      mentions,
+    };
+  });
+
   return (
-    <Card className="glass-surface">
+    <Card className="glass-surface space-y-4">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -431,41 +538,14 @@ function PartnerTable({ config, onAdd }: PartnerTableProps) {
           ))}
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Partner</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Tier</TableHead>
-              <TableHead>Total Contributed</TableHead>
-              <TableHead>Mentions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {config.partners.map((partner) => {
-              const tier = config.partnerTiers.find((entry) => entry.id === partner.tierId);
-              const mentions = config.partnerMentions.filter((mention) => mention.partnerId === partner.id).length;
-              return (
-                <TableRow key={partner.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="size-9 overflow-hidden rounded-lg border border-slate-200 bg-white p-1">
-                        <img src={partner.logo} alt={partner.name} className="h-full w-full object-contain" />
-                      </div>
-                      <span className="font-medium">{partner.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{partner.email}</TableCell>
-                  <TableCell>
-                    <Badge className="rounded-full bg-slate-100 text-slate-700">{tier?.name ?? "No tier"}</Badge>
-                  </TableCell>
-                  <TableCell>${partner.totalContributed.toLocaleString()}</TableCell>
-                  <TableCell>{mentions}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <DataTable
+          title="Partner accounts"
+          description="Tier and mention readiness mapped to public website partner pages."
+          data={partnerRows}
+          columns={columns}
+          defaultSortKey="name"
+          searchPlaceholder="Search partners..."
+        />
       </CardContent>
     </Card>
   );

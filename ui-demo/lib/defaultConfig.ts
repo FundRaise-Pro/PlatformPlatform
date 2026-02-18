@@ -176,6 +176,149 @@ export const INITIAL_CONFIG: FundraiserConfig = {
       description: "Requesting sensor installation for clubhouse",
     },
   ],
+  applicationForms: {
+    volunteer: {
+      id: "volunteer",
+      title: "Volunteer with our field team",
+      description: "Share your skills and availability so we can match you with nearby initiatives.",
+      submitLabel: "Submit volunteer form",
+      fields: [
+        {
+          id: "volunteer-full-name",
+          label: "Full name",
+          type: "text",
+          placeholder: "Enter your full name",
+          required: true,
+        },
+        {
+          id: "volunteer-email",
+          label: "Email address",
+          type: "email",
+          placeholder: "name@example.com",
+          required: true,
+        },
+        {
+          id: "volunteer-skills",
+          label: "Primary skills",
+          type: "textarea",
+          placeholder: "Tell us how you would like to help",
+          required: true,
+        },
+      ],
+      submissions: [
+        {
+          id: "volunteer-sub-1",
+          submittedAt: "2025-02-10T08:00:00Z",
+          status: "reviewing",
+          values: {
+            "volunteer-full-name": "Lerato Adams",
+            "volunteer-email": "lerato@example.org",
+            "volunteer-skills": "Weekend event check-in and supporter outreach",
+          },
+        },
+      ],
+    },
+    help: {
+      id: "help",
+      title: "Apply for support",
+      description: "Tell us what support is needed so our team can review and respond quickly.",
+      submitLabel: "Send support request",
+      fields: [
+        {
+          id: "help-full-name",
+          label: "Contact person",
+          type: "text",
+          placeholder: "Name of the contact person",
+          required: true,
+        },
+        {
+          id: "help-phone",
+          label: "Phone number",
+          type: "phone",
+          placeholder: "Best number to reach you",
+          required: true,
+        },
+        {
+          id: "help-support-type",
+          label: "Support needed",
+          type: "select",
+          placeholder: "Select support type",
+          required: true,
+          options: ["Water access", "Community equipment", "Education program", "Emergency support"],
+        },
+        {
+          id: "help-details",
+          label: "Tell us more",
+          type: "textarea",
+          placeholder: "Share your request details",
+          required: true,
+        },
+      ],
+      submissions: [
+        {
+          id: "help-sub-1",
+          submittedAt: "2025-02-12T10:30:00Z",
+          status: "new",
+          values: {
+            "help-full-name": "Mpho Ndlovu",
+            "help-phone": "+27 82 123 4567",
+            "help-support-type": "Water access",
+            "help-details": "Requesting support for leak detection at community center",
+          },
+        },
+      ],
+    },
+    sponsor: {
+      id: "sponsor",
+      title: "Partner or sponsor this mission",
+      description: "Share your organization details and preferred tier to begin sponsorship planning.",
+      submitLabel: "Send partner request",
+      fields: [
+        {
+          id: "sponsor-organization",
+          label: "Organization name",
+          type: "text",
+          placeholder: "Enter organization name",
+          required: true,
+        },
+        {
+          id: "sponsor-email",
+          label: "Business email",
+          type: "email",
+          placeholder: "team@organization.com",
+          required: true,
+        },
+        {
+          id: "sponsor-tier",
+          label: "Preferred tier",
+          type: "select",
+          placeholder: "Choose a tier",
+          required: true,
+          options: ["Community Partner", "Growth Partner", "Anchor Partner"],
+        },
+        {
+          id: "sponsor-notes",
+          label: "Partnership goals",
+          type: "textarea",
+          placeholder: "What outcomes are you targeting?",
+          required: false,
+        },
+      ],
+      submissions: [
+        {
+          id: "sponsor-sub-1",
+          submittedAt: "2025-02-14T14:45:00Z",
+          status: "approved",
+          values: {
+            "sponsor-organization": "Blue River Holdings",
+            "sponsor-email": "impact@blueriver.com",
+            "sponsor-tier": "Growth Partner",
+            "sponsor-notes": "Interested in long-term district-level support.",
+          },
+        },
+      ],
+    },
+  },
   donations: [
     {
       id: "tx-101",
@@ -312,6 +455,24 @@ export const INITIAL_CONFIG: FundraiserConfig = {
           image:
             "https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=900&auto=format&fit=crop",
           ctaLabel: "Meet current partners",
+        },
+      ],
+    },
+    apply: {
+      navigationLabel: "Apply",
+      heading: "Apply to volunteer, request support, or sponsor this mission",
+      subheading: "Choose the application path that fits your goal and submit in minutes.",
+      heroImage:
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop",
+      isVisible: true,
+      sections: [
+        {
+          id: "apply-sec-1",
+          title: "Three paths, one simple process",
+          description: "Volunteer, request help, or start a sponsorship conversation through dedicated application flows.",
+          image:
+            "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=900&auto=format&fit=crop",
+          ctaLabel: "Start application",
         },
       ],
     },

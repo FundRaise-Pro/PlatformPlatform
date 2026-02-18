@@ -6,25 +6,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PublicPageId, FundraiserConfig, DonationTier } from "@/types";
+import { ApplyPathId, PublicPageId, FundraiserConfig, DonationTier } from "@/types";
 import { PreviewNavigation } from "@/components/preview/PreviewNavigation";
 import { LandingPage } from "@/components/preview/pages/LandingPage";
 import { StoriesPage } from "@/components/preview/pages/StoriesPage";
 import { EventsPage } from "@/components/preview/pages/EventsPage";
 import { BlogPage } from "@/components/preview/pages/BlogPage";
 import { PartnersPage } from "@/components/preview/pages/PartnersPage";
+import { ApplyPage } from "@/components/preview/pages/ApplyPage";
 import { SuccessPage } from "@/components/preview/pages/SuccessPage";
 
 interface PreviewProps {
   config: FundraiserConfig;
   activePage: PublicPageId;
+  applyPath: ApplyPathId;
   onNavigate: (page: PublicPageId) => void;
+  onApplyPathChange: (path: ApplyPathId) => void;
   onDonate?: (amount: number, name: string, tierId?: string) => void;
+  onSubmitApplication?: (categoryId: ApplyPathId, values: Record<string, string>) => void;
 }
 
 const DEFAULT_TIER = "custom";
 
-export default function Preview({ config, activePage, onNavigate, onDonate }: PreviewProps) {
+export default function Preview({
+  config,
+  activePage,
+  applyPath,
+  onNavigate,
+  onApplyPathChange,
+  onDonate,
+  onSubmitApplication,
+}: PreviewProps) {
   const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
   const [selectedTierId, setSelectedTierId] = useState<string>(DEFAULT_TIER);
   const [customAmount, setCustomAmount] = useState("25");
@@ -76,6 +88,17 @@ export default function Preview({ config, activePage, onNavigate, onDonate }: Pr
 
     if (activePage === "partners") {
       return <PartnersPage config={config} />;
+    }
+
+    if (activePage === "apply") {
+      return (
+        <ApplyPage
+          config={config}
+          activePath={applyPath}
+          onPathChange={onApplyPathChange}
+          onSubmitApplication={onSubmitApplication}
+        />
+      );
     }
 
     return <LandingPage config={config} onStartDonate={() => setIsDonateDialogOpen(true)} onNavigateStories={() => onNavigate("stories")} />;

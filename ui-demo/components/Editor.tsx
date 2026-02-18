@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { EventCalendar } from "@/components/EventCalendar";
 import { FundraiserConfig, NarrativeSection, PublicPageId } from "@/types";
 
 interface EditorProps {
@@ -354,6 +355,25 @@ export default function Editor({ config, onChange }: EditorProps) {
                 </div>
               </CardContent>
             </Card>
+
+            {activePage === "events" ? (
+              <EventCalendar
+                events={config.events}
+                title="Event calendar sync"
+                description="Highlighted dates come from dashboard events and match public preview scheduling."
+              />
+            ) : null}
+
+            {activePage === "apply" ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display text-xl">Application forms</CardTitle>
+                  <CardDescription>
+                    Volunteer, help, and sponsor form fields are managed in Dashboard under Applications.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ) : null}
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">

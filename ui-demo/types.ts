@@ -3,7 +3,8 @@ export type AppViewId = "dashboard" | "editor" | "crm" | "public";
 
 export type CrmTabId = "donors" | "partners";
 
-export type PublicPageId = "landing" | "stories" | "events" | "blog" | "partners";
+export type PublicPageId = "landing" | "stories" | "events" | "blog" | "partners" | "apply";
+export type ApplyPathId = "volunteer" | "help" | "sponsor";
 
 export interface DonationTier {
   id: string;
@@ -94,6 +95,33 @@ export interface Application {
   description: string;
 }
 
+export type ApplicationFieldType = "text" | "email" | "phone" | "textarea" | "select";
+
+export interface ApplicationFormField {
+  id: string;
+  label: string;
+  type: ApplicationFieldType;
+  placeholder: string;
+  required: boolean;
+  options?: string[];
+}
+
+export interface ApplicationFormSubmission {
+  id: string;
+  submittedAt: string;
+  status: "new" | "reviewing" | "approved" | "declined";
+  values: Record<string, string>;
+}
+
+export interface ApplicationFormCategory {
+  id: ApplyPathId;
+  title: string;
+  description: string;
+  submitLabel: string;
+  fields: ApplicationFormField[];
+  submissions: ApplicationFormSubmission[];
+}
+
 export interface Branch {
   id: string;
   name: string;
@@ -138,6 +166,7 @@ export interface FundraiserConfig {
   events: FundraiserEvent[];
   blogPosts: BlogPost[];
   applications: Application[];
+  applicationForms: Record<ApplyPathId, ApplicationFormCategory>;
   branches: Branch[];
   pageCustomizations: Record<PublicPageId, PageCustomization>;
   subscriptionPlan: "Starter" | "Pro" | "Enterprise";

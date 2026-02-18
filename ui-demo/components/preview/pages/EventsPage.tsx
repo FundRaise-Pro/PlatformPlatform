@@ -1,6 +1,7 @@
 import { Calendar, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EventCalendar } from "@/components/EventCalendar";
 import { FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
 import { PageSections } from "@/components/preview/PageSections";
@@ -16,6 +17,11 @@ export function EventsPage({ config }: EventsPageProps) {
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
       <PageHero customization={customization} campaignLabel="Community events" />
       <PageSections sections={customization.sections} />
+      <EventCalendar
+        events={config.events}
+        title="Event calendar"
+        description="Dates with events are highlighted so supporters can plan participation early."
+      />
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {config.events.map((event) => (
           <Card key={event.id} className="border-white/90 bg-white/90 shadow-soft">
