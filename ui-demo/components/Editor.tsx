@@ -1,165 +1,575 @@
-
-import React, { useState } from 'react';
-import { FundraiserConfig, Terminology } from '../types';
-import { Settings2, Type, Palette, LayoutTemplate, Image as ImageIcon, Globe, MousePointer2 } from 'lucide-react';
+import { useMemo, useState } from "react";
+import {
+  BadgeCheck,
+  ImagePlus,
+  LayoutTemplate,
+  Plus,
+  Settings2,
+  Sparkles,
+  Trash2,
+  Type,
+  Users,
+} from "lucide-react";
+import { IMAGE_FILE_ACCEPT, PUBLIC_PAGE_ORDER } from "@/lib/constants";
+import { readImageFile } from "@/lib/fileUploads";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { FundraiserConfig, NarrativeSection, PublicPageId } from "@/types";
 
 interface EditorProps {
   config: FundraiserConfig;
   onChange: (config: FundraiserConfig) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({ config, onChange }) => {
-  const [activeTab, setActiveTab] = useState<'hero' | 'design' | 'terminology' | 'navigation'>('hero');
+const EMPTY_MENTION = {
+  partnerId: "",
+  quote: "",
+  context: "",
+};
+
+export default function Editor({ config, onChange }: EditorProps) {
+  const [activePage, setActivePage] = useState<PublicPageId>("landing");
+  const [newMention, setNewMention] = useState(EMPTY_MENTION);
+
+  const pageCustomization = config.pageCustomizations[activePage];
 
   const updateConfig = (updates: Partial<FundraiserConfig>) => {
     onChange({ ...config, ...updates });
   };
 
-  const updateTerminology = (key: keyof Terminology, value: string) => {
+  const updatePageCustomization = (page: PublicPageId, updates: Partial<FundraiserConfig["pageCustomizations"][PublicPageId]>) => {
     updateConfig({
-      terminology: { ...config.terminology, [key]: value }
+      pageCustomizations: {
+        ...config.pageCustomizations,
+        [page]: {
+          ...config.pageCustomizations[page],
+          ...updates,
+        },
+      },
     });
   };
 
+  const updatePageSection = (page: PublicPageId, sectionId: string, updates: Partial<NarrativeSection>) => {
+    updatePageCustomization(page, {
+      sections: config.pageCustomizations[page].sections.map((section) =>
+        section.id === sectionId ? { ...section, ...updates } : section,
+      ),
+    });
+  };
+
+  const addPageSection = (page: PublicPageId) => {
+    const nextIndex = config.pageCustomizations[page].sections.length + 1;
+    const section: NarrativeSection = {
+      id: `${page}-section-${Date.now()}`,
+      title: `New ${config.pageCustomizations[page].navigationLabel} section`,
+      description: "Add context for this section.",
+      image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=900&auto=format&fit=crop",
+      ctaLabel: "Learn more",
+    };
+
+    updatePageCustomization(page, {
+      sections: [...config.pageCustomizations[page].sections, section],
+      heading: config.pageCustomizations[page].heading || `Page ${nextIndex}`,
+    });
+  };
+
+  const removePageSection = (page: PublicPageId, sectionId: string) => {
+    updatePageCustomization(page, {
+      sections: config.pageCustomizations[page].sections.filter((section) => section.id !== sectionId),
+    });
+  };
+
+  const uploadPageHero = async (page: PublicPageId, file?: File) => {
+    const image = await readImageFile(file);
+    if (!image) {
+      return;
+    }
+
+    updatePageCustomization(page, { heroImage: image });
+  };
+
+  const uploadSectionImage = async (page: PublicPageId, sectionId: string, file?: File) => {
+    const image = await readImageFile(file);
+    if (!image) {
+      return;
+    }
+
+    updatePageSection(page, sectionId, { image });
+  };
+
+  const updateTierBenefitString = (tierId: string, nextValue: string) => {
+    updateConfig({
+      partnerTiers: config.partnerTiers.map((tier) =>
+        tier.id === tierId
+          ? {
+              ...tier,
+              benefits: nextValue
+                .split(",")
+                .map((value) => value.trim())
+                .filter(Boolean),
+            }
+          : tier,
+      ),
+    });
+  };
+
+  const addPartnerMention = () => {
+    if (!newMention.partnerId || !newMention.quote.trim()) {
+      return;
+    }
+
+    updateConfig({
+      partnerMentions: [
+        ...config.partnerMentions,
+        {
+          id: `mention-${Date.now()}`,
+          partnerId: newMention.partnerId,
+          quote: newMention.quote.trim(),
+          context: newMention.context.trim() || "Partner mention",
+          highlighted: false,
+        },
+      ],
+    });
+
+    setNewMention(EMPTY_MENTION);
+  };
+
+  const partnerLookup = useMemo(
+    () =>
+      config.partners.reduce<Record<string, string>>((accumulator, partner) => {
+        accumulator[partner.id] = partner.name;
+        return accumulator;
+      }, {}),
+    [config.partners],
+  );
+
   return (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200 w-80 lg:w-96 shadow-xl z-20">
-      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-        <h2 className="font-bold text-slate-800 flex items-center gap-2 uppercase tracking-tighter">
-          <Settings2 size={18} className="text-indigo-600" /> UI Customizer
-        </h2>
-        <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full uppercase">Visual Editor</span>
+    <div className="flex h-full w-[27rem] shrink-0 flex-col border-r border-white/70 bg-white/85 backdrop-blur-xl xl:w-[30rem]">
+      <div className="border-b border-slate-200/60 px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Website Builder</p>
+            <h2 className="font-display text-2xl text-slate-900">Narrative Editor</h2>
+          </div>
+          <Sparkles className="size-6 text-emerald-600" />
+        </div>
       </div>
 
-      <div className="flex border-b border-slate-100 overflow-x-auto no-scrollbar scroll-smooth">
-        {[
-          { id: 'hero', label: 'Hero', icon: <ImageIcon size={12}/> },
-          { id: 'terminology', label: 'Labels', icon: <Type size={12}/> },
-          { id: 'design', label: 'Visuals', icon: <Palette size={12}/> },
-          { id: 'navigation', label: 'Layout', icon: <LayoutTemplate size={12}/> }
-        ].map((tab) => (
-          <button 
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 py-3 px-2 text-[9px] font-black uppercase tracking-widest transition whitespace-nowrap flex flex-col items-center gap-1 ${activeTab === tab.id ? 'border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50/20' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue="pages" className="flex min-h-0 flex-1 flex-col">
+        <TabsList className="mx-5 mt-4 grid grid-cols-3 rounded-xl">
+          <TabsTrigger value="general" className="gap-1">
+            <Settings2 className="size-4" />
+            General
+          </TabsTrigger>
+          <TabsTrigger value="pages" className="gap-1">
+            <LayoutTemplate className="size-4" />
+            Pages
+          </TabsTrigger>
+          <TabsTrigger value="partners" className="gap-1">
+            <Users className="size-4" />
+            Partners
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
-        {activeTab === 'hero' && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Campaign Title</label>
-              <input 
-                type="text" 
-                value={config.title} 
-                onChange={(e) => updateConfig({ title: e.target.value })} 
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none" 
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Subtitle Narrative</label>
-              <textarea 
-                rows={3} 
-                value={config.subtitle} 
-                onChange={(e) => updateConfig({ subtitle: e.target.value })} 
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs leading-relaxed resize-none focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Background Asset (URL)</label>
-              <input 
-                type="text" 
-                value={config.heroImage} 
-                onChange={(e) => updateConfig({ heroImage: e.target.value })} 
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono focus:ring-2 focus:ring-indigo-500 outline-none" 
-              />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'terminology' && (
-          <div className="space-y-6">
-            <p className="text-[10px] font-bold text-slate-400 italic mb-4">Customize the vocabulary used across the donor experience.</p>
-            {[
-              { key: 'donation', label: 'CTA Label (e.g. Donate)' },
-              { key: 'donor', label: 'Member Type (e.g. Supporter)' },
-              { key: 'campaign', label: 'Project Term (e.g. Mission)' },
-              { key: 'goal', label: 'Target Term (e.g. Milestone)' },
-            ].map((item) => (
-              <div key={item.key}>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{item.label}</label>
-                <input 
-                  type="text" 
-                  value={config.terminology[item.key as keyof Terminology]} 
-                  onChange={(e) => updateTerminology(item.key as keyof Terminology, e.target.value)} 
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none" 
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'design' && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Brand Accent Color</label>
-              <div className="grid grid-cols-5 gap-3">
-                {['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#141414', '#7c3aed', '#059669', '#dc2626'].map(color => (
-                  <button 
-                    key={color} 
-                    onClick={() => updateConfig({ primaryColor: color })} 
-                    style={{ backgroundColor: color }} 
-                    className={`aspect-square rounded-xl border-2 transition-all ${config.primaryColor === color ? 'border-slate-800 scale-110 shadow-lg ring-2 ring-slate-100' : 'border-transparent'}`} 
+        <ScrollArea className="min-h-0 flex-1">
+          <TabsContent value="general" className="space-y-4 px-5 pb-6 pt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Campaign narrative baseline</CardTitle>
+                <CardDescription>These settings provide global consistency across every public page.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tenantName">Organization Name</Label>
+                  <Input
+                    id="tenantName"
+                    value={config.tenantName}
+                    onChange={(event) => updateConfig({ tenantName: event.target.value })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="campaignTitle">Campaign Title</Label>
+                  <Input id="campaignTitle" value={config.title} onChange={(event) => updateConfig({ title: event.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="campaignSubtitle">Campaign Subtitle</Label>
+                  <Textarea
+                    id="campaignSubtitle"
+                    value={config.subtitle}
+                    onChange={(event) => updateConfig({ subtitle: event.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="campaignStory">Narrative Body</Label>
+                  <Textarea
+                    id="campaignStory"
+                    value={config.story}
+                    onChange={(event) => updateConfig({ story: event.target.value })}
+                    rows={5}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="primaryColor">Brand Accent</Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      id="primaryColor"
+                      type="color"
+                      className="h-10 w-14 p-1"
+                      value={config.primaryColor}
+                      onChange={(event) => updateConfig({ primaryColor: event.target.value })}
+                    />
+                    <Input value={config.primaryColor} onChange={(event) => updateConfig({ primaryColor: event.target.value })} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Terminology</CardTitle>
+                <CardDescription>Use language that fits each tenant while keeping workflow consistency.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Label className="inline-flex items-center gap-2 text-sm">
+                  <Type className="size-4 text-slate-500" />
+                  Public labels
+                </Label>
+                <div className="space-y-2">
+                  <Input
+                    value={config.terminology.donation}
+                    onChange={(event) =>
+                      updateConfig({ terminology: { ...config.terminology, donation: event.target.value } })
+                    }
+                    placeholder="Donation label"
+                  />
+                  <Input
+                    value={config.terminology.donor}
+                    onChange={(event) => updateConfig({ terminology: { ...config.terminology, donor: event.target.value } })}
+                    placeholder="Donor label"
+                  />
+                  <Input
+                    value={config.terminology.campaign}
+                    onChange={(event) =>
+                      updateConfig({ terminology: { ...config.terminology, campaign: event.target.value } })
+                    }
+                    placeholder="Campaign label"
+                  />
+                  <Input
+                    value={config.terminology.goal}
+                    onChange={(event) => updateConfig({ terminology: { ...config.terminology, goal: event.target.value } })}
+                    placeholder="Goal label"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pages" className="space-y-4 px-5 pb-6 pt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Page customization studio</CardTitle>
+                <CardDescription>
+                  Every public page has independent controls for navigation naming, hero visuals, and custom sections.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Page target</Label>
+                  <Select value={activePage} onValueChange={(value) => setActivePage(value as PublicPageId)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose page" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PUBLIC_PAGE_ORDER.map((pageId) => (
+                        <SelectItem key={pageId} value={pageId}>
+                          {config.pageCustomizations[pageId].navigationLabel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="navigationLabel">Navigation Label</Label>
+                  <Input
+                    id="navigationLabel"
+                    value={pageCustomization.navigationLabel}
+                    onChange={(event) => updatePageCustomization(activePage, { navigationLabel: event.target.value })}
+                  />
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Show in navigation</p>
+                    <p className="text-xs text-slate-500">Page can remain editable while hidden.</p>
+                  </div>
+                  <Switch
+                    checked={pageCustomization.isVisible}
+                    onCheckedChange={(checked) => updatePageCustomization(activePage, { isVisible: checked })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pageHeading">Page Heading</Label>
+                  <Input
+                    id="pageHeading"
+                    value={pageCustomization.heading}
+                    onChange={(event) => updatePageCustomization(activePage, { heading: event.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pageSubheading">Page Subheading</Label>
+                  <Textarea
+                    id="pageSubheading"
+                    value={pageCustomization.subheading}
+                    rows={3}
+                    onChange={(event) => updatePageCustomization(activePage, { subheading: event.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="heroImage">Hero Image URL</Label>
+                  <Input
+                    id="heroImage"
+                    value={pageCustomization.heroImage}
+                    onChange={(event) => updatePageCustomization(activePage, { heroImage: event.target.value })}
+                  />
+                  <Button type="button" variant="outline" className="w-full rounded-full" asChild>
+                    <label className="cursor-pointer">
+                      <ImagePlus className="size-4" />
+                      Upload hero image
+                      <input
+                        type="file"
+                        accept={IMAGE_FILE_ACCEPT}
+                        className="hidden"
+                        onChange={(event) => uploadPageHero(activePage, event.target.files?.[0])}
+                      />
+                    </label>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="font-display text-xl">Custom Sections</CardTitle>
+                  <CardDescription>Add context blocks for this page.</CardDescription>
+                </div>
+                <Button type="button" size="sm" className="rounded-full" onClick={() => addPageSection(activePage)}>
+                  <Plus className="size-4" />
+                  Add
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {pageCustomization.sections.map((section) => (
+                  <Card key={section.id} className="border-dashed border-slate-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                      <CardTitle className="text-base">Section block</CardTitle>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removePageSection(activePage, section.id)}
+                        className="rounded-full text-slate-500 hover:text-destructive"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <Input
+                        value={section.title}
+                        onChange={(event) => updatePageSection(activePage, section.id, { title: event.target.value })}
+                        placeholder="Section title"
+                      />
+                      <Textarea
+                        rows={2}
+                        value={section.description}
+                        onChange={(event) => updatePageSection(activePage, section.id, { description: event.target.value })}
+                        placeholder="Section description"
+                      />
+                      <Input
+                        value={section.ctaLabel}
+                        onChange={(event) => updatePageSection(activePage, section.id, { ctaLabel: event.target.value })}
+                        placeholder="CTA label"
+                      />
+                      <Input
+                        value={section.image}
+                        onChange={(event) => updatePageSection(activePage, section.id, { image: event.target.value })}
+                        placeholder="Image URL"
+                      />
+                      <Button type="button" variant="outline" className="w-full rounded-full" asChild>
+                        <label className="cursor-pointer">
+                          <ImagePlus className="size-4" />
+                          Upload section image
+                          <input
+                            type="file"
+                            accept={IMAGE_FILE_ACCEPT}
+                            className="hidden"
+                            onChange={(event) => uploadSectionImage(activePage, section.id, event.target.files?.[0])}
+                          />
+                        </label>
+                      </Button>
+                    </CardContent>
+                  </Card>
                 ))}
-              </div>
-            </div>
-            <div className="pt-6 border-t border-slate-100">
-               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Site Font Family</label>
-               <select className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none">
-                  <option>Inter (Modern Sans)</option>
-                  <option>Playfair Display (Elegant Serif)</option>
-                  <option>Roboto Mono (Technical)</option>
-               </select>
-            </div>
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {activeTab === 'navigation' && (
-          <div className="space-y-6">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Section Visibility</label>
-            {[
-              { label: 'Impact Stories', icon: <Globe size={14}/> },
-              { id: 'partners', label: 'Partner Logos', icon: <MousePointer2 size={14}/> },
-              { id: 'media', label: 'Media Hub', icon: <Settings2 size={14}/> },
-              { id: 'events', label: 'Field Events', icon: <LayoutTemplate size={14}/> }
-            ].map((section) => (
-              <div key={section.label} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition">
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-400">{section.icon}</span>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">{section.label}</span>
-                </div>
-                <div className="w-10 h-5 bg-indigo-600 rounded-full flex items-center justify-end px-1 cursor-pointer">
-                  <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          <TabsContent value="partners" className="space-y-4 px-5 pb-6 pt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Tier clarity controls</CardTitle>
+                <CardDescription>Define commitments and benefits so sponsors immediately understand value.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {config.partnerTiers.map((tier) => (
+                  <Card key={tier.id} className="border-dashed border-slate-300">
+                    <CardContent className="space-y-2 p-4">
+                      <div className="flex items-center justify-between">
+                        <Label>{tier.name}</Label>
+                        <BadgeCheck className="size-4 text-emerald-600" />
+                      </div>
+                      <Input
+                        value={tier.name}
+                        onChange={(event) =>
+                          updateConfig({
+                            partnerTiers: config.partnerTiers.map((entry) =>
+                              entry.id === tier.id ? { ...entry, name: event.target.value } : entry,
+                            ),
+                          })
+                        }
+                        placeholder="Tier name"
+                      />
+                      <Input
+                        type="number"
+                        value={tier.minCommitment}
+                        onChange={(event) =>
+                          updateConfig({
+                            partnerTiers: config.partnerTiers.map((entry) =>
+                              entry.id === tier.id ? { ...entry, minCommitment: Number(event.target.value || 0) } : entry,
+                            ),
+                          })
+                        }
+                        placeholder="Minimum commitment"
+                      />
+                      <Textarea
+                        rows={2}
+                        value={tier.benefits.join(", ")}
+                        onChange={(event) => updateTierBenefitString(tier.id, event.target.value)}
+                        placeholder="Benefits separated by commas"
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
 
-      <div className="p-5 bg-slate-50 border-t border-slate-200">
-        <p className="text-[9px] text-slate-400 font-bold text-center mb-4 italic uppercase">Visual changes apply instantly to preview</p>
-        <button className="w-full bg-slate-900 text-white font-black py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-xl hover:bg-black active:scale-95 uppercase tracking-widest text-[11px]">
-          Publish UI Updates
-        </button>
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Partner mentions</CardTitle>
+                <CardDescription>Mentions appear in the public partners page to strengthen credibility.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 rounded-xl border border-slate-200 p-3">
+                  <Label>Add mention</Label>
+                  <Select value={newMention.partnerId} onValueChange={(value) => setNewMention({ ...newMention, partnerId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose partner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {config.partners.map((partner) => (
+                        <SelectItem key={partner.id} value={partner.id}>
+                          {partner.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    value={newMention.context}
+                    onChange={(event) => setNewMention({ ...newMention, context: event.target.value })}
+                    placeholder="Mention context"
+                  />
+                  <Textarea
+                    rows={2}
+                    value={newMention.quote}
+                    onChange={(event) => setNewMention({ ...newMention, quote: event.target.value })}
+                    placeholder="Quote"
+                  />
+                  <Button type="button" className="w-full rounded-full" onClick={addPartnerMention}>
+                    <Plus className="size-4" />
+                    Add mention
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  {config.partnerMentions.map((mention) => (
+                    <Card key={mention.id}>
+                      <CardContent className="space-y-2 p-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-slate-900">{partnerLookup[mention.partnerId] ?? "Unknown partner"}</p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-full text-slate-500 hover:text-destructive"
+                            onClick={() =>
+                              updateConfig({
+                                partnerMentions: config.partnerMentions.filter((entry) => entry.id !== mention.id),
+                              })
+                            }
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs uppercase tracking-[0.15em] text-slate-500">{mention.context}</p>
+                        <Textarea
+                          rows={2}
+                          value={mention.quote}
+                          onChange={(event) =>
+                            updateConfig({
+                              partnerMentions: config.partnerMentions.map((entry) =>
+                                entry.id === mention.id ? { ...entry, quote: event.target.value } : entry,
+                              ),
+                            })
+                          }
+                        />
+                        <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                          <p className="text-sm text-slate-700">Feature as highlighted mention</p>
+                          <Switch
+                            checked={mention.highlighted}
+                            onCheckedChange={(checked) =>
+                              updateConfig({
+                                partnerMentions: config.partnerMentions.map((entry) =>
+                                  entry.id === mention.id ? { ...entry, highlighted: checked } : entry,
+                                ),
+                              })
+                            }
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </ScrollArea>
+      </Tabs>
+
+      <div className="border-t border-slate-200/60 px-5 py-4">
+        <Button className="w-full rounded-full bg-slate-900 text-white hover:bg-slate-800">
+          Publish preview updates
+        </Button>
       </div>
     </div>
   );
-};
-
-export default Editor;
+}

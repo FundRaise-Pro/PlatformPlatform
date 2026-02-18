@@ -1,402 +1,472 @@
+import { ReactNode, useMemo, useState } from "react";
+import {
+  Globe,
+  LayoutTemplate,
+  Layers,
+  PieChart,
+  Plus,
+  Upload,
+  UserCircle2,
+} from "lucide-react";
+import Dashboard from "@/components/Dashboard";
+import Editor from "@/components/Editor";
+import Preview from "@/components/Preview";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { readImageFile } from "@/lib/fileUploads";
+import { INITIAL_CONFIG } from "@/lib/defaultConfig";
+import { useHashRoute } from "@/hooks/useHashRoute";
+import { Donation, FundraiserConfig, Partner } from "@/types";
+import { IMAGE_FILE_ACCEPT } from "@/lib/constants";
 
-import React, { useState } from 'react';
-import { FundraiserConfig, Donation, BeneficiaryStory, FundraiserEvent, BlogPost, Application, Branch, Partner, PartnerTier } from './types';
-import Editor from './components/Editor';
-import Preview from './components/Preview';
-import Dashboard from './components/Dashboard';
-import { Layout, Eye, PieChart, Settings, Share2, Rocket, UserCircle, Download, Globe, Layers, Building2, Users, Award, Mail, Briefcase, Plus, Search, X, Camera } from 'lucide-react';
-
-const INITIAL_CONFIG: FundraiserConfig = {
-  id: 'tenant-001',
-  tenantName: 'Thrive Africa',
-  title: 'Urban Water Resilience 2024',
-  subtitle: 'Deploying smart grid water sensors across high-density housing projects.',
-  story: 'Water scarcity is not just a seasonal crisis; it is a systemic challenge. By integrating IoT sensors into existing municipal pipes, we can identify leaks in seconds rather than months. \n\nThis project aims to deploy 500 sensors across the Guguletu district, saving an estimated 1.2 million liters per year. Your contribution directly funds the hardware and local installer training.',
-  goal: 45000,
-  raised: 28450,
-  primaryColor: '#6366f1',
-  heroImage: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&q=80&w=1200&h=675',
-  active: true,
-  terminology: {
-    donation: 'Gift',
-    donor: 'Sponsor',
-    campaign: 'Mission',
-    goal: 'Target'
-  },
-  subscriptionPlan: 'Pro',
-  branches: [
-    { id: 'b1', name: 'Cape Town HQ', location: 'Waterfront, CP' },
-    { id: 'b2', name: 'Joburg Hub', location: 'Sandton, JHB' }
-  ],
-  partnerTiers: [
-    { id: 'pt-1', name: 'Bronze Partner', minCommitment: 5000, benefits: ['Logo on website', 'Annual impact report'], color: '#cd7f32' },
-    { id: 'pt-2', name: 'Silver Partner', minCommitment: 15000, benefits: ['Logo on website', 'Quarterly field visits'], color: '#c0c0c0' },
-    { id: 'pt-3', name: 'Gold Partner', minCommitment: 50000, benefits: ['Premium logo placement', 'Event keynote invite'], color: '#ffd700' }
-  ],
-  partners: [
-    { id: 'p-1', name: 'EcoFlow Solutions', contactPerson: 'Alice Rivers', email: 'alice@ecoflow.com', logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/EcoFlow_Logo.svg', tierId: 'pt-2', status: 'active', totalContributed: 18500, joinedDate: '2023-01-15' },
-    { id: 'p-2', name: 'Urban Grid Corp', contactPerson: 'Mark Sandton', email: 'mark@urbangrid.co.za', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Grid_Logo.svg', tierId: 'pt-1', status: 'active', totalContributed: 6000, joinedDate: '2024-02-10' }
-  ],
-  beneficiaryStories: [
-    { id: 's1', name: 'The Mthembu Family', bio: 'Living with intermittent supply for 3 years, the sensor program restored consistent access for their household.', goal: 1200, raised: 1100, image: 'https://picsum.photos/seed/mthembu/600/600' },
-    { id: 's2', name: 'Guguletu Primary', bio: 'Protecting school facilities from major plumbing leaks through advanced real-time detection.', goal: 2500, raised: 800, image: 'https://picsum.photos/seed/creche/600/600' },
-    { id: 's3', name: 'Sizwe’s Micro-Garden', bio: 'Utilizing saved greywater for sustainable urban farming in the heart of the community.', goal: 3000, raised: 2100, image: 'https://picsum.photos/seed/garden/600/600' }
-  ],
-  events: [
-    { id: 'e1', title: 'Water Walk Gala 2024', date: '2024-11-12T18:00:00Z', venue: 'V&A Convention Centre', linkedCampaignId: 'tenant-001' },
-    { id: 'e2', title: 'Community Hackathon', date: '2024-12-05T09:00:00Z', venue: 'Innovation Hub Guguletu', linkedCampaignId: 'tenant-001' },
-    { id: 'e3', title: 'Impact Stakeholder Dinner', date: '2025-01-15T19:30:00Z', venue: 'The Silo Hotel', linkedCampaignId: 'tenant-001' }
-  ],
-  blogPosts: [
-    { id: 'b1', title: 'Scaling Smart Sensors in Q4', excerpt: 'How ultrasonic waves are helping us find water leaks without digging.', content: 'Technical deep dive into the IoT stack...', date: 'Oct 28, 2024', author: 'Dr. Sarah Jones', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=400&h=300&fit=crop' },
-    { id: 'b2', title: 'First 100 Households Secured', excerpt: 'Milestone reached: Our initial pilot project is now fully operational.', content: 'Detailed report on deployment...', date: 'Oct 15, 2024', author: 'Team Lead', image: 'https://images.unsplash.com/photo-1544333346-64e4fe1fefe0?q=80&w=400&h=300&fit=crop' },
-    { id: 'b3', title: 'Why Data Matters for Water', excerpt: 'Transparent metrics are changing how we fund infrastructure.', content: 'An editorial on transparency...', date: 'Oct 05, 2024', author: 'Thrive Editor', image: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?q=80&w=400&h=300&fit=crop' }
-  ],
-  applications: [
-    { id: 'a1', name: 'Khayelitsha Youth Club', status: 'approved', date: '2024-10-20', description: 'Requesting sensor installation for clubhouse' }
-  ],
-  donations: [
-    { id: 'tx-101', donorName: 'Sarah Miller', amount: 50, date: '2024-03-20', channel: 'direct', certificateGenerated: true },
-    { id: 'tx-102', donorName: 'David Chen', amount: 100, date: '2024-03-21', channel: 'social', certificateGenerated: true },
-    { id: 'tx-103', donorName: 'Mark Johnson', amount: 25, date: '2024-03-22', channel: 'qrCode', certificateGenerated: true },
-    { id: 'tx-104', donorName: 'Emily Watson', amount: 500, date: '2024-03-23', channel: 'direct', certificateGenerated: true },
-  ],
-  tiers: [
-    { id: '1', amount: 10, label: 'The Drop', description: 'Sensor maintenance for one week.' },
-    { id: '2', amount: 50, label: 'The Stream', description: 'One residential sensor kit.' },
-    { id: '3', amount: 250, label: 'The River', description: 'Technician apprenticeship for a month.' },
-    { id: '4', amount: 1000, label: 'The Ocean', description: 'Solar-power backup for a district hub.' },
-  ]
+const INITIAL_NEW_PARTNER: Partial<Partner> = {
+  name: "",
+  contactPerson: "",
+  email: "",
+  logo: "https://images.unsplash.com/photo-1599305090598-fe179d501c27?q=80&w=200&h=200&auto=format&fit=crop",
+  status: "active",
 };
 
-const App: React.FC = () => {
+export default function App() {
   const [config, setConfig] = useState<FundraiserConfig>(INITIAL_CONFIG);
-  const [view, setView] = useState<'editor' | 'dashboard' | 'donor' | 'public'>('dashboard');
-  const [showPreview, setShowPreview] = useState(true);
-  const [crmSubTab, setCrmSubTab] = useState<'donors' | 'partners'>('donors');
+  const [showPreviewPanel, setShowPreviewPanel] = useState(true);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const [newPartner, setNewPartner] = useState<Partial<Partner>>({
-    name: '',
-    contactPerson: '',
-    email: '',
-    logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?q=80&w=200&h=200&auto=format&fit=crop',
-    tierId: INITIAL_CONFIG.partnerTiers[0].id,
-    status: 'active'
+    ...INITIAL_NEW_PARTNER,
+    tierId: INITIAL_CONFIG.partnerTiers[0]?.id,
   });
+  const { route, setCrmTab, setPublicPage, setView } = useHashRoute();
+
+  const updateConfig = (updates: Partial<FundraiserConfig>) => setConfig((current) => ({ ...current, ...updates }));
 
   const handleDonate = (amount: number, name: string, tierId?: string) => {
-    const newDonation: Donation = {
-      id: `tx-${Math.random().toString(36).substr(2, 6)}`,
+    const donation: Donation = {
+      id: `tx-${Math.random().toString(36).slice(2, 8)}`,
       donorName: name,
       amount,
       date: new Date().toISOString(),
       tierId,
-      channel: 'direct',
-      certificateGenerated: true
+      channel: "direct",
+      certificateGenerated: true,
     };
 
-    setConfig(prev => ({
-      ...prev,
-      raised: prev.raised + amount,
-      donations: [...prev.donations, newDonation]
+    setConfig((current) => ({
+      ...current,
+      raised: current.raised + amount,
+      donations: [...current.donations, donation],
     }));
   };
 
-  const updateConfig = (updates: Partial<FundraiserConfig>) => {
-    setConfig(prev => ({ ...prev, ...updates }));
-  };
-
   const handleOnboardPartner = () => {
-    if (!newPartner.name || !newPartner.email) return;
+    if (!newPartner.name || !newPartner.email || !newPartner.tierId) {
+      return;
+    }
 
     const partner: Partner = {
-      id: `p-${Math.random().toString(36).substr(2, 6)}`,
-      name: newPartner.name || '',
-      contactPerson: newPartner.contactPerson || '',
-      email: newPartner.email || '',
-      logo: newPartner.logo || '',
-      tierId: newPartner.tierId || config.partnerTiers[0].id,
-      status: 'active',
+      id: `partner-${Date.now()}`,
+      name: newPartner.name,
+      contactPerson: newPartner.contactPerson ?? "",
+      email: newPartner.email,
+      logo:
+        newPartner.logo ??
+        "https://images.unsplash.com/photo-1599305090598-fe179d501c27?q=80&w=200&h=200&auto=format&fit=crop",
+      tierId: newPartner.tierId,
+      status: "active",
       totalContributed: 0,
       joinedDate: new Date().toISOString(),
     };
 
-    setConfig(prev => ({
-      ...prev,
-      partners: [...prev.partners, partner]
+    setConfig((current) => ({
+      ...current,
+      partners: [...current.partners, partner],
     }));
 
     setIsPartnerModalOpen(false);
     setNewPartner({
-      name: '',
-      contactPerson: '',
-      email: '',
-      logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?q=80&w=200&h=200&auto=format&fit=crop',
-      tierId: config.partnerTiers[0].id,
-      status: 'active'
+      ...INITIAL_NEW_PARTNER,
+      tierId: config.partnerTiers[0]?.id,
     });
   };
 
-  if (view === 'public') {
+  const uploadNewPartnerLogo = async (file?: File) => {
+    const image = await readImageFile(file);
+    if (!image) {
+      return;
+    }
+
+    setNewPartner((current) => ({ ...current, logo: image }));
+  };
+
+  const crmMetrics = useMemo(
+    () => ({
+      totalGiving: config.raised,
+      activeContributors: config.donations.filter((donation) => donation.donorName !== "Anonymous").length,
+      activePartners: config.partners.length,
+    }),
+    [config],
+  );
+
+  if (route.view === "public") {
     return (
-      <div className="h-screen w-full relative">
-        <Preview config={config} onDonate={handleDonate} />
-        <button 
-          onClick={() => setView('dashboard')}
-          className="fixed bottom-10 right-10 bg-slate-900 text-white px-10 py-5 rounded-full font-black text-xs shadow-2xl hover:scale-105 transition flex items-center gap-3 z-[9999] uppercase tracking-widest ring-4 ring-white/10"
+      <div className="relative h-screen w-full overflow-hidden">
+        <Preview config={config} activePage={route.publicPage} onNavigate={setPublicPage} onDonate={handleDonate} />
+        <Button
+          type="button"
+          className="fixed bottom-8 right-8 rounded-full px-6 py-6 shadow-float"
+          onClick={() => setView("dashboard")}
         >
-          <Layers size={18} /> Admin Dashboard
-        </button>
+          <Layers className="size-5" />
+          Back to Admin
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 overflow-hidden font-sans selection:bg-indigo-100">
-      <aside className="w-24 bg-slate-900 flex flex-col items-center py-10 gap-10 z-50 shadow-2xl shrink-0">
-        <div className="text-white mb-6">
-          <Rocket className="text-indigo-400" size={42} strokeWidth={3} />
+    <div className="flex h-screen overflow-hidden bg-ambient-grid [background-size:1.5rem_1.5rem]">
+      <aside className="flex w-24 shrink-0 flex-col items-center gap-6 border-r border-white/70 bg-white/80 py-6 backdrop-blur-xl">
+        <div className="inline-flex size-14 items-center justify-center rounded-3xl bg-emerald-700 text-white shadow-soft">
+          <Layers className="size-7" />
         </div>
-        
-        <nav className="flex flex-col gap-8">
-          <NavItem active={view === 'dashboard'} onClick={() => setView('dashboard')} icon={<PieChart size={28} />} label="Command" />
-          <NavItem active={view === 'editor'} onClick={() => setView('editor')} icon={<Layout size={28} />} label="Builder" />
-          <NavItem active={view === 'donor'} onClick={() => setView('donor')} icon={<UserCircle size={28} />} label="CRM" />
+
+        <nav className="flex flex-1 flex-col items-center gap-2">
+          <SideNavButton icon={<PieChart className="size-5" />} label="Dashboard" isActive={route.view === "dashboard"} onClick={() => setView("dashboard")} />
+          <SideNavButton icon={<LayoutTemplate className="size-5" />} label="Builder" isActive={route.view === "editor"} onClick={() => setView("editor")} />
+          <SideNavButton icon={<UserCircle2 className="size-5" />} label="CRM" isActive={route.view === "crm"} onClick={() => setView("crm")} />
         </nav>
 
-        <div className="mt-auto flex flex-col gap-8">
-          <button onClick={() => setView('public')} className="p-4 text-emerald-400 hover:bg-emerald-500/10 rounded-2xl transition-all" title="Public Preview">
-            <Globe size={28} />
-          </button>
-          <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 overflow-hidden cursor-pointer shadow-2xl">
-            <img src="https://picsum.photos/100/100?seed=saasadmin" alt="Admin" />
+        <div className="space-y-2">
+          <SideNavButton icon={<Globe className="size-5" />} label="Public site" isActive={false} onClick={() => setView("public")} />
+          <div className="mx-auto size-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <img src="https://picsum.photos/100/100?seed=saasadmin" alt="Admin profile" className="h-full w-full object-cover" />
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 flex overflow-hidden relative">
-        {view === 'editor' && (
-          <>
+      <main className="min-w-0 flex-1">
+        {route.view === "dashboard" ? (
+          <Dashboard config={config} onUpdate={updateConfig} />
+        ) : null}
+
+        {route.view === "editor" ? (
+          <div className="flex h-full">
             <Editor config={config} onChange={setConfig} />
-            <div className="flex-1 flex flex-col bg-slate-100/30">
-              <div className="h-16 bg-white border-b border-slate-200 px-10 flex items-center justify-between shadow-sm shrink-0">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 rounded-full text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-100">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" /> Live Preview
-                  </div>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="flex items-center justify-between border-b border-white/70 bg-white/75 px-6 py-4 backdrop-blur-xl">
+                <div className="flex items-center gap-3">
+                  <Badge className="rounded-full bg-emerald-50 text-emerald-700">Live Preview</Badge>
+                  <p className="text-sm text-slate-600">Location-based navigation remains active in preview mode.</p>
                 </div>
-                <button onClick={() => setShowPreview(!showPreview)} className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-sm bg-slate-900 text-white">
-                  <Eye size={16} className="inline mr-2" /> {showPreview ? 'Live View' : 'Blueprint'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <Label htmlFor="preview-switch" className="text-sm text-slate-700">
+                    Preview panel
+                  </Label>
+                  <Switch
+                    id="preview-switch"
+                    checked={showPreviewPanel}
+                    onCheckedChange={setShowPreviewPanel}
+                    aria-label="Toggle preview panel"
+                  />
+                </div>
               </div>
-              <div className="flex-1 relative overflow-hidden bg-slate-100">
-                {showPreview ? (
-                  <div className="h-full transform scale-[0.96] origin-top p-6">
-                    <div className="h-full rounded-[3.5rem] overflow-hidden shadow-2xl ring-1 ring-slate-200">
-                      <Preview config={config} onDonate={handleDonate} />
-                    </div>
+              <div className="min-h-0 flex-1 p-4">
+                {showPreviewPanel ? (
+                  <div className="h-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/70 shadow-soft">
+                    <Preview config={config} activePage={route.publicPage} onNavigate={setPublicPage} onDonate={handleDonate} />
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-12 animate-in fade-in zoom-in duration-700">
-                    <div className="w-32 h-32 bg-white rounded-[3rem] mb-10 flex items-center justify-center text-slate-200 shadow-2xl ring-1 ring-slate-100 rotate-12">
-                      <Eye size={64} />
-                    </div>
-                    <h3 className="text-3xl font-black text-slate-900 mb-4">No-Code Builder</h3>
-                    <p className="text-slate-400 max-w-md text-xl font-medium">Provisioning your fundraiser environment. All changes persist in real-time.</p>
-                  </div>
+                  <Card className="h-full border-white/80 bg-white/85">
+                    <CardContent className="flex h-full items-center justify-center">
+                      <p className="text-center text-sm text-slate-500">
+                        Preview is hidden. Toggle it back on to validate per-page customizations in real time.
+                      </p>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </div>
-          </>
-        )}
-
-        {view === 'dashboard' && <Dashboard config={config} onUpdate={updateConfig} />}
-        
-        {view === 'donor' && (
-          <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden relative">
-             <header className="bg-white border-b border-slate-200 px-12 py-8 flex justify-between items-end shrink-0">
-                <div>
-                  <span className="inline-block px-4 py-1 bg-indigo-50 rounded-full text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4 italic">CRM Management</span>
-                  <h2 className="text-5xl font-black text-slate-900 tracking-tighter">Impact Relations</h2>
-                </div>
-                <div className="flex gap-4">
-                   <button onClick={() => setCrmSubTab('donors')} className={`px-8 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest transition ${crmSubTab === 'donors' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <Users size={16} className="inline mr-2" /> Supporters
-                   </button>
-                   <button onClick={() => setCrmSubTab('partners')} className={`px-8 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest transition ${crmSubTab === 'partners' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <Building2 size={16} className="inline mr-2" /> Partners
-                   </button>
-                </div>
-             </header>
-
-             <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-                <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-500">
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                      <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
-                         <span className="block text-5xl font-black text-slate-900 mb-2 tracking-tighter">${config.raised.toLocaleString()}</span>
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aggregate Giving</span>
-                      </div>
-                      <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
-                         <span className="block text-5xl font-black text-slate-900 mb-2 tracking-tighter">{crmSubTab === 'donors' ? config.donations.length : config.partners.length}</span>
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active {crmSubTab === 'donors' ? 'Contributors' : 'Accounts'}</span>
-                      </div>
-                      <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
-                         <span className="block text-5xl font-black text-emerald-500 mb-2 tracking-tighter">100%</span>
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">S18A Compliant</span>
-                      </div>
-                   </div>
-
-                   {crmSubTab === 'donors' ? (
-                     <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden">
-                        <div className="p-10 border-b border-slate-50 flex justify-between items-center">
-                           <h3 className="text-xl font-black text-slate-900 uppercase">Constituent Database</h3>
-                           <div className="relative">
-                              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                              <input type="text" placeholder="Filter people..." className="pl-12 pr-6 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none" />
-                           </div>
-                        </div>
-                        <table className="w-full text-left">
-                           <thead>
-                              <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                 <th className="px-10 py-6">Supporter</th>
-                                 <th className="px-10 py-6">Value</th>
-                                 <th className="px-10 py-6">Last Active</th>
-                                 <th className="px-10 py-6 text-right">Certificate</th>
-                              </tr>
-                           </thead>
-                           <tbody className="divide-y divide-slate-100">
-                              {config.donations.filter(d => d.donorName !== 'Anonymous').map(d => (
-                                <tr key={d.id} className="hover:bg-slate-50 transition">
-                                   <td className="px-10 py-6">
-                                      <div className="flex items-center gap-4">
-                                         <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg">{d.donorName[0]}</div>
-                                         <div className="font-black text-slate-900">{d.donorName}</div>
-                                      </div>
-                                   </td>
-                                   <td className="px-10 py-6 font-black text-slate-900">${d.amount}</td>
-                                   <td className="px-10 py-6 text-slate-500 text-sm font-medium">{new Date(d.date).toLocaleDateString()}</td>
-                                   <td className="px-10 py-6 text-right">
-                                      <button className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest">
-                                         <Download size={12} /> Issued
-                                      </button>
-                                   </td>
-                                </tr>
-                              ))}
-                           </tbody>
-                        </table>
-                     </div>
-                   ) : (
-                     <div className="space-y-12">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                           {config.partnerTiers.map(tier => (
-                             <div key={tier.id} className="bg-white p-8 rounded-[3rem] border-t-8 shadow-xl" style={{ borderTopColor: tier.color }}>
-                                <Award size={32} style={{ color: tier.color }} className="mb-4" />
-                                <h4 className="text-xl font-black text-slate-900 mb-1">{tier.name}</h4>
-                                <p className="text-2xl font-black text-slate-900 tracking-tighter mb-6">${tier.minCommitment.toLocaleString()}+</p>
-                                <div className="space-y-2">
-                                   {tier.benefits.map((b, i) => (
-                                     <div key={i} className="text-[10px] font-bold text-slate-400 flex items-center gap-2">
-                                        <div className="w-1 h-1 rounded-full bg-slate-200" /> {b}
-                                     </div>
-                                   ))}
-                                </div>
-                             </div>
-                           ))}
-                        </div>
-
-                        <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden">
-                           <div className="p-10 border-b border-slate-50 flex justify-between items-center">
-                              <h3 className="text-xl font-black text-slate-900 uppercase">Strategic Accounts</h3>
-                              <button 
-                                onClick={() => setIsPartnerModalOpen(true)}
-                                className="flex items-center gap-2 px-6 py-2 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-black transition"
-                              >
-                                 <Plus size={16} /> Onboard Partner
-                              </button>
-                           </div>
-                           <table className="w-full text-left">
-                              <thead>
-                                 <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <th className="px-10 py-6">Partner Account</th>
-                                    <th className="px-10 py-6">Tier Status</th>
-                                    <th className="px-10 py-6">Life Value</th>
-                                    <th className="px-10 py-6 text-right">Engagement</th>
-                                 </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100">
-                                 {config.partners.map(p => (
-                                   <tr key={p.id} className="hover:bg-slate-50 transition">
-                                      <td className="px-10 py-6">
-                                         <div className="flex items-center gap-4">
-                                            <img src={p.logo} className="w-12 h-12 object-contain rounded-xl bg-slate-50 p-2" alt={p.name} />
-                                            <div>
-                                               <div className="font-black text-slate-900">{p.name}</div>
-                                               <div className="text-[10px] text-slate-400 font-bold uppercase">{p.email}</div>
-                                            </div>
-                                         </div>
-                                      </td>
-                                      <td className="px-10 py-6">
-                                         <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest" style={{ color: config.partnerTiers.find(t => t.id === p.tierId)?.color, backgroundColor: config.partnerTiers.find(t => t.id === p.tierId)?.color + '15' }}>
-                                            {config.partnerTiers.find(t => t.id === p.tierId)?.name}
-                                         </span>
-                                      </td>
-                                      <td className="px-10 py-6 font-black text-slate-900">${p.totalContributed.toLocaleString()}</td>
-                                      <td className="px-10 py-6 text-right">
-                                         <button className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 transition shadow-sm">
-                                            <Briefcase size={18} />
-                                         </button>
-                                      </td>
-                                   </tr>
-                                 ))}
-                              </tbody>
-                           </table>
-                        </div>
-                     </div>
-                   )}
-                </div>
-             </div>
-
-             {isPartnerModalOpen && (
-               <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-                 <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsPartnerModalOpen(false)} />
-                 <div className="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
-                   <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                     <h3 className="text-2xl font-black text-slate-900 uppercase">Onboarding</h3>
-                     <button onClick={() => setIsPartnerModalOpen(false)} className="p-2 text-slate-300 hover:text-slate-900 transition"><X size={24} /></button>
-                   </div>
-                   <div className="p-10 space-y-8">
-                     <div className="flex gap-10">
-                        <div className="shrink-0 space-y-4">
-                           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Brand Mark</label>
-                           <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 relative group overflow-hidden cursor-pointer">
-                              <img src={newPartner.logo} className="w-full h-full object-contain p-4 group-hover:opacity-20 transition" alt="Logo" />
-                              <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition"><Camera size={24} /></div>
-                           </div>
-                        </div>
-                        <div className="flex-1 space-y-6">
-                           <input type="text" placeholder="Company Name" value={newPartner.name} onChange={(e) => setNewPartner({...newPartner, name: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-slate-900" />
-                           <input type="email" placeholder="Email" value={newPartner.email} onChange={(e) => setNewPartner({...newPartner, email: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-slate-900" />
-                        </div>
-                     </div>
-                     <button onClick={handleOnboardPartner} className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-indigo-600 transition shadow-2xl disabled:opacity-50" disabled={!newPartner.name || !newPartner.email}>Provision Account</button>
-                   </div>
-                 </div>
-               </div>
-             )}
           </div>
-        )}
+        ) : null}
+
+        {route.view === "crm" ? (
+          <div className="flex h-full flex-col">
+            <header className="border-b border-white/70 bg-white/80 px-8 py-6 backdrop-blur-xl">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Relationship Management</p>
+                  <h2 className="font-display text-4xl text-slate-900">Impact Relations</h2>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button variant={route.crmTab === "donors" ? "secondary" : "outline"} className="rounded-full" onClick={() => setCrmTab("donors")}>
+                    Supporters
+                  </Button>
+                  <Button variant={route.crmTab === "partners" ? "secondary" : "outline"} className="rounded-full" onClick={() => setCrmTab("partners")}>
+                    Partners
+                  </Button>
+                </div>
+              </div>
+            </header>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
+              <section className="mb-6 grid gap-4 md:grid-cols-3">
+                <MetricCard title="Aggregate giving" value={`$${crmMetrics.totalGiving.toLocaleString()}`} />
+                <MetricCard title="Active contributors" value={crmMetrics.activeContributors.toString()} />
+                <MetricCard title="Partners onboarded" value={crmMetrics.activePartners.toString()} />
+              </section>
+
+              {route.crmTab === "donors" ? <DonorTable config={config} /> : <PartnerTable config={config} onAdd={() => setIsPartnerModalOpen(true)} />}
+            </div>
+          </div>
+        ) : null}
       </main>
+
+      <Dialog open={isPartnerModalOpen} onOpenChange={setIsPartnerModalOpen}>
+        <DialogContent className="rounded-3xl sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-3xl">Onboard Partner</DialogTitle>
+            <DialogDescription>Attach partner details, logo, and tier so mentions can be surfaced in preview pages.</DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4">
+            <div className="grid grid-cols-[6rem_1fr] items-center gap-3">
+              <div className="size-20 overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-2">
+                <img src={newPartner.logo} alt="Partner logo preview" className="h-full w-full object-contain" />
+              </div>
+              <Button variant="outline" className="justify-start rounded-full" asChild>
+                <label className="cursor-pointer">
+                  <Upload className="size-4" />
+                  Upload logo
+                  <input
+                    type="file"
+                    accept={IMAGE_FILE_ACCEPT}
+                    className="hidden"
+                    onChange={(event) => uploadNewPartnerLogo(event.target.files?.[0])}
+                  />
+                </label>
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="partnerName">Partner name</Label>
+              <Input
+                id="partnerName"
+                value={newPartner.name}
+                onChange={(event) => setNewPartner((current) => ({ ...current, name: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="partnerEmail">Partner email</Label>
+              <Input
+                id="partnerEmail"
+                value={newPartner.email}
+                onChange={(event) => setNewPartner((current) => ({ ...current, email: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="partnerContact">Contact person</Label>
+              <Input
+                id="partnerContact"
+                value={newPartner.contactPerson}
+                onChange={(event) => setNewPartner((current) => ({ ...current, contactPerson: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tier assignment</Label>
+              <Select
+                value={newPartner.tierId}
+                onValueChange={(value) => setNewPartner((current) => ({ ...current, tierId: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {config.partnerTiers.map((tier) => (
+                    <SelectItem key={tier.id} value={tier.id}>
+                      {tier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" className="rounded-full" onClick={() => setIsPartnerModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="rounded-full" onClick={handleOnboardPartner} disabled={!newPartner.name || !newPartner.email || !newPartner.tierId}>
+              <Plus className="size-4" />
+              Add partner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
+}
 
-const NavItem = ({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) => (
-  <button onClick={onClick} className={`p-5 rounded-3xl transition-all relative group ${active ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/50' : 'text-slate-500 hover:text-white hover:bg-slate-800'}`}>
-    {icon}
-    <span className="absolute left-full ml-4 px-3 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50 pointer-events-none translate-x-2 group-hover:translate-x-0">
-      {label}
-    </span>
-  </button>
-);
+interface SideNavButtonProps {
+  icon: ReactNode;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
 
-export default App;
+function SideNavButton({ icon, label, isActive, onClick }: SideNavButtonProps) {
+  return (
+    <Button
+      type="button"
+      variant={isActive ? "secondary" : "ghost"}
+      size="icon"
+      className="group relative size-12 rounded-2xl"
+      onClick={onClick}
+    >
+      {icon}
+      <span className="pointer-events-none absolute left-full ml-2 hidden rounded-lg bg-slate-900 px-2 py-1 text-xs text-white group-hover:block">
+        {label}
+      </span>
+    </Button>
+  );
+}
+
+interface MetricCardProps {
+  title: string;
+  value: string;
+}
+
+function MetricCard({ title, value }: MetricCardProps) {
+  return (
+    <Card className="glass-surface">
+      <CardHeader className="pb-2">
+        <CardDescription>{title}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="font-display text-4xl font-semibold text-slate-900">{value}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface TableProps {
+  config: FundraiserConfig;
+}
+
+function DonorTable({ config }: TableProps) {
+  return (
+    <Card className="glass-surface">
+      <CardHeader>
+        <CardTitle className="font-display text-2xl">Supporter ledger</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Supporter</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Certificate</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {config.donations
+              .filter((donation) => donation.donorName !== "Anonymous")
+              .map((donation) => (
+                <TableRow key={donation.id}>
+                  <TableCell className="font-medium">{donation.donorName}</TableCell>
+                  <TableCell>${donation.amount.toLocaleString()}</TableCell>
+                  <TableCell>{new Date(donation.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{donation.certificateGenerated ? "Issued" : "Pending"}</TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface PartnerTableProps {
+  config: FundraiserConfig;
+  onAdd: () => void;
+}
+
+function PartnerTable({ config, onAdd }: PartnerTableProps) {
+  return (
+    <Card className="glass-surface">
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <CardTitle className="font-display text-2xl">Partner accounts</CardTitle>
+            <CardDescription>Tier assignment and public mention readiness.</CardDescription>
+          </div>
+          <Button className="rounded-full" onClick={onAdd}>
+            <Plus className="size-4" />
+            Onboard partner
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-3">
+          {config.partnerTiers.map((tier) => (
+            <Card key={tier.id} className="border-slate-200/80">
+              <CardContent className="space-y-2 p-4">
+                <p className="font-medium text-slate-900">{tier.name}</p>
+                <p className="text-sm text-slate-600">${tier.minCommitment.toLocaleString()} minimum</p>
+                <Separator />
+                {tier.benefits.map((benefit) => (
+                  <p key={benefit} className="text-xs text-slate-500">
+                    - {benefit}
+                  </p>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Partner</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Tier</TableHead>
+              <TableHead>Total Contributed</TableHead>
+              <TableHead>Mentions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {config.partners.map((partner) => {
+              const tier = config.partnerTiers.find((entry) => entry.id === partner.tierId);
+              const mentions = config.partnerMentions.filter((mention) => mention.partnerId === partner.id).length;
+              return (
+                <TableRow key={partner.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="size-9 overflow-hidden rounded-lg border border-slate-200 bg-white p-1">
+                        <img src={partner.logo} alt={partner.name} className="h-full w-full object-contain" />
+                      </div>
+                      <span className="font-medium">{partner.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{partner.email}</TableCell>
+                  <TableCell>
+                    <Badge className="rounded-full bg-slate-100 text-slate-700">{tier?.name ?? "No tier"}</Badge>
+                  </TableCell>
+                  <TableCell>${partner.totalContributed.toLocaleString()}</TableCell>
+                  <TableCell>{mentions}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}

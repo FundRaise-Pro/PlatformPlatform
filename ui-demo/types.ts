@@ -1,4 +1,10 @@
 
+export type AppViewId = "dashboard" | "editor" | "crm" | "public";
+
+export type CrmTabId = "donors" | "partners";
+
+export type PublicPageId = "landing" | "stories" | "events" | "blog" | "partners";
+
 export interface DonationTier {
   id: string;
   amount: number;
@@ -12,7 +18,7 @@ export interface Donation {
   amount: number;
   date: string;
   tierId?: string;
-  channel: 'direct' | 'qrCode' | 'social' | 'partner';
+  channel: "direct" | "qrCode" | "social" | "partner";
   certificateGenerated: boolean;
 }
 
@@ -31,10 +37,18 @@ export interface Partner {
   email: string;
   logo: string;
   tierId: string;
-  status: 'prospective' | 'active' | 'on-hold';
+  status: "prospective" | "active" | "on-hold";
   totalContributed: number;
   joinedDate: string;
   lastContributionDate?: string;
+}
+
+export interface PartnerMention {
+  id: string;
+  partnerId: string;
+  quote: string;
+  context: string;
+  highlighted: boolean;
 }
 
 export interface Terminology {
@@ -75,7 +89,7 @@ export interface BlogPost {
 export interface Application {
   id: string;
   name: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   date: string;
   description: string;
 }
@@ -84,6 +98,23 @@ export interface Branch {
   id: string;
   name: string;
   location: string;
+}
+
+export interface NarrativeSection {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  ctaLabel: string;
+}
+
+export interface PageCustomization {
+  navigationLabel: string;
+  heading: string;
+  subheading: string;
+  heroImage: string;
+  isVisible: boolean;
+  sections: NarrativeSection[];
 }
 
 export interface FundraiserConfig {
@@ -101,13 +132,15 @@ export interface FundraiserConfig {
   donations: Donation[];
   partners: Partner[];
   partnerTiers: PartnerTier[];
+  partnerMentions: PartnerMention[];
   terminology: Terminology;
   beneficiaryStories: BeneficiaryStory[];
   events: FundraiserEvent[];
   blogPosts: BlogPost[];
   applications: Application[];
   branches: Branch[];
-  subscriptionPlan: 'Starter' | 'Pro' | 'Enterprise';
+  pageCustomizations: Record<PublicPageId, PageCustomization>;
+  subscriptionPlan: "Starter" | "Pro" | "Enterprise";
 }
 
 export interface AnalyticsData {

@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 172 38% 96%;
+    --foreground: 191 33% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 191 33% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 191 33% 14%;
+    --primary: 181 76% 25%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 27% 90%;
+    --secondary-foreground: 190 46% 19%;
+    --muted: 162 22% 91%;
+    --muted-foreground: 187 12% 39%;
+    --accent: 157 43% 84%;
+    --accent-foreground: 189 64% 15%;
+    --destructive: 2 72% 53%;
+    --destructive-foreground: 0 0% 99%;
+    --border: 177 22% 84%;
+    --input: 177 22% 84%;
+    --ring: 181 76% 25%;
+    --radius: 1rem;
+    --chart-1: 188 70% 35%;
+    --chart-2: 167 69% 31%;
+    --chart-3: 24 82% 45%;
+    --chart-4: 45 89% 52%;
+    --chart-5: 339 73% 45%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-family: "Sora", system-ui, sans-serif;
+    background-image: radial-gradient(circle at 20% -15%, rgba(15, 147, 132, 0.22), transparent 46%), radial-gradient(circle at 85% 0%, rgba(8, 54, 73, 0.15), transparent 40%);
+  }
+  .dark {
+    --background: 190 40% 7%;
+    --foreground: 160 29% 95%;
+    --card: 188 38% 11%;
+    --card-foreground: 160 29% 95%;
+    --popover: 190 40% 7%;
+    --popover-foreground: 160 29% 95%;
+    --primary: 164 75% 46%;
+    --primary-foreground: 191 33% 14%;
+    --secondary: 190 28% 16%;
+    --secondary-foreground: 160 29% 95%;
+    --muted: 190 22% 20%;
+    --muted-foreground: 173 14% 72%;
+    --accent: 190 22% 20%;
+    --accent-foreground: 160 29% 95%;
+    --destructive: 2 65% 46%;
+    --destructive-foreground: 0 0% 99%;
+    --border: 190 16% 24%;
+    --input: 190 16% 24%;
+    --ring: 164 75% 46%;
+    --chart-1: 167 71% 48%;
+    --chart-2: 188 75% 47%;
+    --chart-3: 46 87% 54%;
+    --chart-4: 24 92% 58%;
+    --chart-5: 339 78% 57%;
+  }
+}
+
+@layer utilities {
+  .glass-surface {
+    @apply bg-white/85 backdrop-blur-md border border-white/80 shadow-soft;
+  }
+}
