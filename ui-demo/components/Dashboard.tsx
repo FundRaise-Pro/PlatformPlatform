@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
   BookOpen,
@@ -37,6 +37,10 @@ import { ApplicationFieldType, ApplyPathId, FundraiserConfig, FundraiserEvent } 
 interface DashboardProps {
   config: FundraiserConfig;
   onUpdate: (updates: Partial<FundraiserConfig>) => void;
+  activeCampaignSlug?: string;
+  activeFundraiserSlug?: string;
+  onSelectCampaign?: (campaignSlug: string) => void;
+  onSelectFundraiser?: (fundraiserSlug: string) => void;
 }
 
 type DashboardTabId = "overview" | "media" | "fundraising" | "events" | "applications" | "operations";
@@ -115,7 +119,7 @@ const ANALYTICS_DATA = [
 
 const DOMAIN_ROWS = [
   { id: "campaigns", domain: "Campaigns", route: "/fundraiser/campaigns", status: "Ready", owner: "Fundraising Team" },
-  { id: "stories", domain: "Stories", route: "/fundraiser/stories", status: "Ready", owner: "Content Team" },
+  { id: "fundraisers", domain: "Fundraisers", route: "/campaigns/{campaign}/fundraisers/{slug}", status: "Ready", owner: "Program Team" },
   { id: "donations", domain: "Donations", route: "/fundraiser/donations", status: "Ready", owner: "Finance" },
   { id: "events", domain: "Events", route: "/fundraiser/events", status: "Ready", owner: "Field Ops" },
   { id: "certificates", domain: "Certificates", route: "/fundraiser/certificates", status: "Ready", owner: "Compliance" },
@@ -138,14 +142,68 @@ const DOMAIN_COLUMNS: DataTableColumn<(typeof DOMAIN_ROWS)[number]>[] = [
   { key: "owner", header: "Owner", accessor: (row) => row.owner, sortable: true },
 ];
 
-export default function Dashboard({ config, onUpdate }: DashboardProps) {
+function toSlug(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function resolveRiskBand(lowMax: number, mediumMax: number, highMax: number, effectiveAmount: number) {
+  if (effectiveAmount <= lowMax) {
+    return "low" as const;
+  }
+  if (effectiveAmount <= mediumMax) {
+    return "medium" as const;
+  }
+  if (effectiveAmount <= highMax) {
+    return "high" as const;
+  }
+  return "critical" as const;
+}
+
+function requiredApprovalsForRiskBand(
+  riskBand: "low" | "medium" | "high" | "critical",
+): FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number]["approvals"] {
+  if (riskBand === "low") {
+    return [{ role: "campaign-admin", approved: false }];
+  }
+  if (riskBand === "medium") {
+    return [
+      { role: "campaign-admin", approved: false },
+      { role: "finance-officer", approved: false },
+    ];
+  }
+  if (riskBand === "high") {
+    return [
+      { role: "campaign-admin", approved: false },
+      { role: "finance-officer", approved: false },
+      { role: "board-member", approved: false },
+    ];
+  }
+  return [
+    { role: "full-board", approved: false },
+    { role: "chair-president", approved: false },
+  ];
+}
+
+export default function Dashboard({
+  config,
+  onUpdate,
+  activeCampaignSlug,
+  activeFundraiserSlug,
+  onSelectCampaign,
+  onSelectFundraiser,
+}: DashboardProps) {
   const [activeTab, setActiveTab] = useState<DashboardTabId>("overview");
   const [isGenerating, setIsGenerating] = useState<GeneratorMode>(null);
   const [activeApplicationCategory, setActiveApplicationCategory] = useState<ApplyPathId>("volunteer");
-  const [newEvent, setNewEvent] = useState<{ title: string; venue: string; date: string }>({
+  const [newEvent, setNewEvent] = useState<{ title: string; venue: string; date: string; volunteerId: string }>({
     title: "",
     venue: "",
     date: new Date().toISOString().split("T")[0],
+    volunteerId: "",
   });
   const [newMediaPost, setNewMediaPost] = useState<{
     title: string;
@@ -173,6 +231,58 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
     required: true,
     options: "",
   });
+  const [conversionSubmissionId, setConversionSubmissionId] = useState<string | null>(null);
+  const [conversionDraft, setConversionDraft] = useState({
+    legalName: "",
+    nationalId: "",
+    contactPhone: "",
+    contactEmail: "",
+    physicalAddress: "",
+    requestedAmount: "",
+    approvalNotes: "",
+    fundraiserTitle: "",
+    fundraiserSummary: "",
+  });
+  const [allocationDraft, setAllocationDraft] = useState<{
+    targetType: "fundraiser" | "campaign-ops";
+    targetFundraiserId: string;
+    targetLabel: string;
+    amount: string;
+    percentageSplit: string;
+    reason: string;
+    operationalCritical: boolean;
+    donorIntentConfirmed: boolean;
+    boardResolutionReference: string;
+  }>({
+    targetType: "fundraiser",
+    targetFundraiserId: "",
+    targetLabel: "",
+    amount: "",
+    percentageSplit: "",
+    reason: "",
+    operationalCritical: false,
+    donorIntentConfirmed: false,
+    boardResolutionReference: "",
+  });
+  const selectedCampaign =
+    config.campaigns.find((campaign) => campaign.slug === activeCampaignSlug) ??
+    config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ??
+    config.campaigns[0];
+  const selectedCampaignFundraisers = selectedCampaign?.fundraisers ?? [];
+  const selectedFundraiser =
+    selectedCampaignFundraisers.find((fundraiser) => fundraiser.slug === activeFundraiserSlug) ??
+    selectedCampaignFundraisers.find((fundraiser) => fundraiser.id === config.activeFundraiserId) ??
+    selectedCampaignFundraisers[0];
+
+  useEffect(() => {
+    if (!selectedCampaignFundraisers.length) {
+      return;
+    }
+    setAllocationDraft((current) => ({
+      ...current,
+      targetFundraiserId: current.targetFundraiserId || selectedCampaignFundraisers[0].id,
+    }));
+  }, [selectedCampaignFundraisers]);
 
   const donationColumns = useMemo<DataTableColumn<FundraiserConfig["donations"][number]>[]>(
     () => [
@@ -212,6 +322,13 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
         cell: (row) => toShortDate(row.date),
       },
       { key: "venue", header: "Venue", accessor: (row) => row.venue, sortable: true },
+      {
+        key: "volunteers",
+        header: "Volunteer assignments",
+        accessor: (row) => row.volunteerIds?.length ?? 0,
+        sortable: true,
+        cell: (row) => String(row.volunteerIds?.length ?? 0),
+      },
       {
         key: "actions",
         header: "Actions",
@@ -267,6 +384,12 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
   );
 
   const activeApplicationForm = config.applicationForms[activeApplicationCategory];
+  const activeApplicationSubmissions = activeApplicationForm.submissions.filter(
+    (submission) => !selectedCampaign || submission.campaignId === selectedCampaign.id,
+  );
+  const selectedCampaignAllocations = selectedCampaign?.partnerPool.allocations ?? [];
+  const selectedCampaignPolicy = selectedCampaign?.partnerPool.policy;
+  const conversionSubmission = config.applicationForms.help.submissions.find((submission) => submission.id === conversionSubmissionId) ?? null;
 
   const applicationFieldColumns = useMemo<DataTableColumn<(typeof activeApplicationForm.fields)[number]>[]>(
     () => [
@@ -315,80 +438,6 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
     [activeApplicationCategory, activeApplicationForm, config.applicationForms, onUpdate],
   );
 
-  const applicationSubmissionColumns = useMemo<
-    DataTableColumn<(typeof activeApplicationForm.submissions)[number]>[]
-  >(
-    () => [
-      {
-        key: "submittedAt",
-        header: "Submitted",
-        accessor: (row) => row.submittedAt,
-        sortable: true,
-        cell: (row) => toShortDate(row.submittedAt),
-      },
-      {
-        key: "primary",
-        header: "Primary response",
-        accessor: (row) => {
-          const firstField = activeApplicationForm.fields[0];
-          if (!firstField) {
-            return "-";
-          }
-          return row.values[firstField.id] ?? "-";
-        },
-        sortable: false,
-      },
-      {
-        key: "summary",
-        header: "Submission details",
-        accessor: (row) =>
-          Object.entries(row.values)
-            .map((entry) => entry[1])
-            .filter(Boolean)
-            .join(" | "),
-        sortable: false,
-      },
-      {
-        key: "status",
-        header: "Status",
-        accessor: (row) => row.status,
-        sortable: true,
-        searchable: false,
-        cell: (row) => (
-          <Select
-            value={row.status}
-            onValueChange={(value) =>
-              onUpdate({
-                applicationForms: {
-                  ...config.applicationForms,
-                  [activeApplicationCategory]: {
-                    ...activeApplicationForm,
-                    submissions: activeApplicationForm.submissions.map((submission) =>
-                      submission.id === row.id
-                        ? { ...submission, status: value as "new" | "reviewing" | "approved" | "declined" }
-                        : submission,
-                    ),
-                  },
-                },
-              })
-            }
-          >
-            <SelectTrigger className="w-[9rem]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="reviewing">Reviewing</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="declined">Declined</SelectItem>
-            </SelectContent>
-          </Select>
-        ),
-      },
-    ],
-    [activeApplicationCategory, activeApplicationForm, config.applicationForms, onUpdate],
-  );
-
   const handleAiEvent = async () => {
     setIsGenerating("event");
     try {
@@ -398,7 +447,9 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
         title: generated.title ?? "Community Event",
         date: new Date().toISOString(),
         venue: generated.venue ?? "Main Hall",
-        linkedCampaignId: config.id,
+        campaignId: selectedCampaign?.id ?? config.activeCampaignId,
+        fundraiserId: selectedFundraiser?.id,
+        volunteerIds: [],
       };
       onUpdate({ events: [event, ...config.events] });
     } finally {
@@ -438,11 +489,13 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
       title: newEvent.title.trim(),
       venue: newEvent.venue.trim(),
       date: newEvent.date,
-      linkedCampaignId: config.id,
+      campaignId: selectedCampaign?.id ?? config.activeCampaignId,
+      fundraiserId: selectedFundraiser?.id,
+      volunteerIds: newEvent.volunteerId ? [newEvent.volunteerId] : [],
     };
 
     onUpdate({ events: [event, ...config.events] });
-    setNewEvent((current) => ({ ...current, title: "", venue: "" }));
+    setNewEvent((current) => ({ ...current, title: "", venue: "", volunteerId: "" }));
   };
 
   const handleMediaImageUpload = async (file?: File) => {
@@ -540,6 +593,487 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
     });
   };
 
+  const updateSelectedCampaign = (
+    updater: (campaign: FundraiserConfig["campaigns"][number]) => FundraiserConfig["campaigns"][number],
+  ) => {
+    if (!selectedCampaign) {
+      return;
+    }
+
+    onUpdate({
+      campaigns: config.campaigns.map((campaign) => (campaign.id === selectedCampaign.id ? updater(campaign) : campaign)),
+    });
+  };
+
+  const updateSubmissionStatus = (submissionId: string, nextStatus: "new" | "reviewing" | "approved" | "declined") => {
+    const submission = activeApplicationForm.submissions.find((entry) => entry.id === submissionId);
+    if (!submission) {
+      return;
+    }
+
+    let nextPartners = config.partners;
+    let linkedPartnerId = submission.linkedPartnerId;
+
+    if (activeApplicationCategory === "sponsor" && nextStatus === "approved" && !submission.linkedPartnerId) {
+      const tierName = submission.values["sponsor-tier"] ?? "";
+      const fallbackTier =
+        [...config.partnerTiers].sort((left, right) => left.minCommitment - right.minCommitment)[0] ?? config.partnerTiers[0];
+      const resolvedTier =
+        config.partnerTiers.find((tier) => tier.name.toLowerCase() === tierName.toLowerCase()) ?? fallbackTier;
+
+      if (resolvedTier) {
+        const partnerId = `partner-${Date.now()}`;
+        linkedPartnerId = partnerId;
+        nextPartners = [
+          ...config.partners,
+          {
+            id: partnerId,
+            name: submission.values["sponsor-organization"] ?? "New sponsor",
+            contactPerson: submission.values["sponsor-contact-person"] ?? "Team contact",
+            email: submission.values["sponsor-email"] ?? "partner@example.org",
+            logo:
+              "https://images.unsplash.com/photo-1599305090598-fe179d501c27?q=80&w=200&h=200&auto=format&fit=crop",
+            tierId: resolvedTier.id,
+            status: "active",
+            totalContributed: 0,
+            joinedDate: new Date().toISOString(),
+          },
+        ];
+      }
+    }
+
+    onUpdate({
+      partners: nextPartners,
+      applicationForms: {
+        ...config.applicationForms,
+        [activeApplicationCategory]: {
+          ...activeApplicationForm,
+          submissions: activeApplicationForm.submissions.map((entry) =>
+            entry.id === submissionId ? { ...entry, status: nextStatus, linkedPartnerId } : entry,
+          ),
+        },
+      },
+    });
+  };
+
+  const startHelpConversion = (submissionId: string) => {
+    const submission = config.applicationForms.help.submissions.find((entry) => entry.id === submissionId);
+    if (!submission) {
+      return;
+    }
+
+    setConversionSubmissionId(submission.id);
+    setConversionDraft({
+      legalName: submission.values["help-full-name"] ?? "",
+      nationalId: "",
+      contactPhone: submission.values["help-phone"] ?? "",
+      contactEmail: submission.values["help-email"] ?? "",
+      physicalAddress: submission.values["help-address"] ?? "",
+      requestedAmount: submission.values["help-requested-amount"] ?? "",
+      approvalNotes: submission.reviewNotes ?? "",
+      fundraiserTitle: submission.values["help-support-type"] ? `${submission.values["help-support-type"]} Support Fund` : "Community Support Fund",
+      fundraiserSummary: submission.values["help-details"] ?? "",
+    });
+  };
+
+  const confirmHelpConversion = () => {
+    if (!selectedCampaign || !conversionSubmission) {
+      return;
+    }
+
+    const requestedAmount = Number(conversionDraft.requestedAmount || 0);
+    if (
+      !conversionDraft.legalName.trim() ||
+      !conversionDraft.nationalId.trim() ||
+      !conversionDraft.contactPhone.trim() ||
+      !conversionDraft.physicalAddress.trim() ||
+      !conversionDraft.fundraiserTitle.trim() ||
+      requestedAmount <= 0
+    ) {
+      return;
+    }
+
+    const fundraiserId = `fund-${Date.now()}`;
+    const fundraiserSlug = toSlug(conversionDraft.fundraiserTitle) || fundraiserId;
+
+    const fundraiser = {
+      id: fundraiserId,
+      campaignId: selectedCampaign.id,
+      slug: fundraiserSlug,
+      title: conversionDraft.fundraiserTitle.trim(),
+      summary: conversionDraft.fundraiserSummary.trim() || "Officially approved fundraiser conversion.",
+      story: conversionDraft.fundraiserSummary.trim() || "Fundraiser details pending.",
+      goal: requestedAmount,
+      raised: 0,
+      heroImage:
+        "https://images.unsplash.com/photo-1469571486292-b53601020e6b?q=80&w=1200&auto=format&fit=crop",
+      status: "active" as const,
+      sourceSubmissionId: conversionSubmission.id,
+      officialDocument: {
+        legalName: conversionDraft.legalName.trim(),
+        nationalId: conversionDraft.nationalId.trim(),
+        contactPhone: conversionDraft.contactPhone.trim(),
+        contactEmail: conversionDraft.contactEmail.trim(),
+        physicalAddress: conversionDraft.physicalAddress.trim(),
+        requestedAmount,
+        approvalNotes: conversionDraft.approvalNotes.trim(),
+      },
+    };
+
+    onUpdate({
+      campaigns: config.campaigns.map((campaign) =>
+        campaign.id === selectedCampaign.id
+          ? {
+              ...campaign,
+              preset: campaign.preset === "general" ? "hybrid" : campaign.preset,
+              allowsFundraisers: true,
+              fundraisers: [fundraiser, ...campaign.fundraisers],
+            }
+          : campaign,
+      ),
+      applicationForms: {
+        ...config.applicationForms,
+        help: {
+          ...config.applicationForms.help,
+          submissions: config.applicationForms.help.submissions.map((entry) =>
+            entry.id === conversionSubmission.id
+              ? {
+                  ...entry,
+                  status: "approved",
+                  reviewNotes: conversionDraft.approvalNotes.trim(),
+                  convertedFundraiserId: fundraiserId,
+                }
+              : entry,
+          ),
+        },
+      },
+    });
+
+    onSelectFundraiser?.(fundraiserSlug);
+    setConversionSubmissionId(null);
+  };
+
+  const createPartnerPoolAllocation = () => {
+    if (!selectedCampaign || !selectedCampaignPolicy) {
+      return;
+    }
+
+    const amount = Number(allocationDraft.amount || 0);
+    const percentageSplit = Number(allocationDraft.percentageSplit || 0);
+    if (amount <= 0 || !allocationDraft.reason.trim()) {
+      return;
+    }
+
+    const now = new Date();
+    const rollingWindowStart = new Date(now);
+    rollingWindowStart.setDate(rollingWindowStart.getDate() - selectedCampaignPolicy.rollingWindowDays);
+
+    const rollingTotalBeforeThis = selectedCampaignAllocations
+      .filter((allocation) => allocation.status !== "rejected")
+      .filter((allocation) => new Date(allocation.createdAt) >= rollingWindowStart)
+      .reduce((total, allocation) => total + allocation.amount, 0);
+
+    const rolling30DayTotalAfterThis = rollingTotalBeforeThis + amount;
+    const effectiveRiskAmount = Math.max(amount, rolling30DayTotalAfterThis);
+    const riskBand = resolveRiskBand(
+      selectedCampaignPolicy.lowMax,
+      selectedCampaignPolicy.mediumMax,
+      selectedCampaignPolicy.highMax,
+      effectiveRiskAmount,
+    );
+
+    if (riskBand === "high" && !allocationDraft.donorIntentConfirmed) {
+      return;
+    }
+
+    if (allocationDraft.targetType === "campaign-ops" && riskBand === "high" && !allocationDraft.operationalCritical) {
+      return;
+    }
+
+    if (riskBand === "critical" && !allocationDraft.boardResolutionReference.trim()) {
+      return;
+    }
+
+    const selectedFundraiserTarget = selectedCampaign.fundraisers.find(
+      (fundraiser) => fundraiser.id === allocationDraft.targetFundraiserId,
+    );
+    const targetLabel =
+      allocationDraft.targetType === "fundraiser"
+        ? selectedFundraiserTarget?.title ?? "Fundraiser"
+        : allocationDraft.targetLabel.trim() || "Campaign Operations";
+
+    const cooldownUntil =
+      riskBand === "high" ? new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString() : undefined;
+
+    const allocation = {
+      id: `alloc-${Date.now()}`,
+      campaignId: selectedCampaign.id,
+      createdAt: now.toISOString(),
+      targetType: allocationDraft.targetType,
+      targetFundraiserId: allocationDraft.targetType === "fundraiser" ? allocationDraft.targetFundraiserId : undefined,
+      targetLabel,
+      amount,
+      percentageSplit: percentageSplit > 0 ? percentageSplit : undefined,
+      reason: allocationDraft.reason.trim(),
+      operationalCritical: allocationDraft.operationalCritical,
+      donorIntentConfirmed: allocationDraft.donorIntentConfirmed,
+      singleAmount: amount,
+      rolling30DayTotalAfterThis,
+      effectiveRiskAmount,
+      riskBand,
+      requiresBoardResolution: riskBand === "critical",
+      boardResolutionReference: allocationDraft.boardResolutionReference.trim() || undefined,
+      status: riskBand === "high" ? ("cooling-off" as const) : ("pending-approval" as const),
+      cooldownUntil,
+      approvals: requiredApprovalsForRiskBand(riskBand),
+    };
+
+    updateSelectedCampaign((campaign) => ({
+      ...campaign,
+      partnerPool: {
+        ...campaign.partnerPool,
+        totalPartnerDonations: campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0),
+        totalAllocated: campaign.partnerPool.allocations
+          .filter((entry) => entry.status === "executed")
+          .reduce((total, entry) => total + entry.amount, 0),
+        balance:
+          campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0) -
+          campaign.partnerPool.allocations
+            .filter((entry) => entry.status === "executed")
+            .reduce((total, entry) => total + entry.amount, 0),
+        allocations: [allocation, ...campaign.partnerPool.allocations],
+      },
+    }));
+
+    setAllocationDraft({
+      targetType: "fundraiser",
+      targetFundraiserId: selectedCampaign.fundraisers[0]?.id ?? "",
+      targetLabel: "",
+      amount: "",
+      percentageSplit: "",
+      reason: "",
+      operationalCritical: false,
+      donorIntentConfirmed: false,
+      boardResolutionReference: "",
+    });
+  };
+
+  const updateAllocation = (
+    allocationId: string,
+    updater: (allocation: FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number]) => FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number],
+  ) => {
+    updateSelectedCampaign((campaign) => ({
+      ...campaign,
+      partnerPool: (() => {
+        const nextAllocations = campaign.partnerPool.allocations.map((allocation) =>
+          allocation.id === allocationId ? updater(allocation) : allocation,
+        );
+        const totalPartnerDonations = campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0);
+        const totalAllocated = nextAllocations
+          .filter((allocation) => allocation.status === "executed")
+          .reduce((total, allocation) => total + allocation.amount, 0);
+
+        return {
+          ...campaign.partnerPool,
+          totalPartnerDonations,
+          totalAllocated,
+          balance: totalPartnerDonations - totalAllocated,
+          allocations: nextAllocations,
+        };
+      })(),
+    }));
+  };
+
+  const applicationSubmissionColumns = useMemo<
+    DataTableColumn<(typeof activeApplicationForm.submissions)[number]>[]
+  >(
+    () => [
+      {
+        key: "submittedAt",
+        header: "Submitted",
+        accessor: (row) => row.submittedAt,
+        sortable: true,
+        cell: (row) => toShortDate(row.submittedAt),
+      },
+      {
+        key: "primary",
+        header: "Primary response",
+        accessor: (row) => {
+          const firstField = activeApplicationForm.fields[0];
+          if (!firstField) {
+            return "-";
+          }
+          return row.values[firstField.id] ?? "-";
+        },
+        sortable: false,
+      },
+      {
+        key: "summary",
+        header: "Submission details",
+        accessor: (row) =>
+          Object.entries(row.values)
+            .map((entry) => entry[1])
+            .filter(Boolean)
+            .join(" | "),
+        sortable: false,
+      },
+      {
+        key: "status",
+        header: "Status",
+        accessor: (row) => row.status,
+        sortable: true,
+        searchable: false,
+        cell: (row) => (
+          <Select
+            value={row.status}
+            onValueChange={(value) => updateSubmissionStatus(row.id, value as "new" | "reviewing" | "approved" | "declined")}
+          >
+            <SelectTrigger className="w-[9rem]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="reviewing">Reviewing</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="declined">Declined</SelectItem>
+            </SelectContent>
+          </Select>
+        ),
+      },
+      {
+        key: "actions",
+        header: "Actions",
+        accessor: () => "",
+        searchable: false,
+        cell: (row) =>
+          activeApplicationCategory === "help" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => startHelpConversion(row.id)}
+              disabled={Boolean(row.convertedFundraiserId) || (row.status !== "reviewing" && row.status !== "approved")}
+            >
+              {row.convertedFundraiserId ? "Converted" : "Review & convert"}
+            </Button>
+          ) : row.linkedPartnerId ? (
+            <Badge className="bg-emerald-100 text-emerald-700">Partner created</Badge>
+          ) : (
+            <span className="text-xs text-slate-500">-</span>
+          ),
+      },
+    ],
+    [activeApplicationCategory, activeApplicationForm.fields, activeApplicationForm.submissions],
+  );
+
+  const allocationColumns = useMemo<
+    DataTableColumn<FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number]>[]
+  >(
+    () => [
+      {
+        key: "createdAt",
+        header: "Created",
+        accessor: (row) => row.createdAt,
+        sortable: true,
+        cell: (row) => toShortDate(row.createdAt),
+      },
+      { key: "targetLabel", header: "Target", accessor: (row) => row.targetLabel, sortable: true },
+      {
+        key: "amount",
+        header: "Amount",
+        accessor: (row) => row.amount,
+        sortable: true,
+        cell: (row) => `R${row.amount.toLocaleString()}`,
+      },
+      {
+        key: "riskBand",
+        header: "Risk",
+        accessor: (row) => row.riskBand,
+        sortable: true,
+        cell: (row) => (
+          <Badge
+            className={
+              row.riskBand === "low"
+                ? "bg-emerald-100 text-emerald-700"
+                : row.riskBand === "medium"
+                  ? "bg-amber-100 text-amber-700"
+                  : row.riskBand === "high"
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-rose-100 text-rose-700"
+            }
+          >
+            {row.riskBand}
+          </Badge>
+        ),
+      },
+      {
+        key: "approvals",
+        header: "Approvals",
+        accessor: (row) => `${row.approvals.filter((approval) => approval.approved).length}/${row.approvals.length}`,
+        sortable: false,
+        searchable: false,
+        cell: (row) => (
+          <div className="space-y-2">
+            <p className="text-xs text-slate-500">
+              {row.approvals.filter((approval) => approval.approved).length}/{row.approvals.length} complete
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const pendingApproval = row.approvals.find((approval) => !approval.approved);
+                if (!pendingApproval) {
+                  return;
+                }
+                updateAllocation(row.id, (allocation) => ({
+                  ...allocation,
+                  approvals: allocation.approvals.map((approval) =>
+                    approval.role === pendingApproval.role && !approval.approved
+                      ? { ...approval, approved: true, approvedAt: new Date().toISOString() }
+                      : approval,
+                  ),
+                }));
+              }}
+            >
+              Approve next
+            </Button>
+          </div>
+        ),
+      },
+      {
+        key: "status",
+        header: "Status",
+        accessor: (row) => row.status,
+        sortable: true,
+        searchable: false,
+        cell: (row) => (
+          <Select
+            value={row.status}
+            onValueChange={(value) =>
+              updateAllocation(row.id, (allocation) => ({
+                ...allocation,
+                status: value as "pending-approval" | "cooling-off" | "approved" | "rejected" | "executed",
+              }))
+            }
+          >
+            <SelectTrigger className="w-[11rem]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending-approval">Pending approval</SelectItem>
+              <SelectItem value="cooling-off">Cooling off</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="executed">Executed</SelectItem>
+            </SelectContent>
+          </Select>
+        ),
+      },
+    ],
+    [updateAllocation],
+  );
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <header className="border-b border-slate-200 bg-white px-8 py-4">
@@ -554,7 +1088,49 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {selectedCampaign ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2 py-1">
+                <Select
+                  value={selectedCampaign.slug}
+                  onValueChange={(value) => {
+                    onSelectCampaign?.(value);
+                    const campaign = config.campaigns.find((entry) => entry.slug === value);
+                    const nextFundraiser = campaign?.fundraisers[0];
+                    if (nextFundraiser) {
+                      onSelectFundraiser?.(nextFundraiser.slug);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[15rem] border-none bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {config.campaigns.map((campaign) => (
+                      <SelectItem key={campaign.id} value={campaign.slug}>
+                        {campaign.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedCampaign.allowsFundraisers && selectedCampaignFundraisers.length ? (
+                  <Select value={selectedFundraiser?.slug} onValueChange={(value) => onSelectFundraiser?.(value)}>
+                    <SelectTrigger className="h-8 w-[14rem] border-none bg-transparent">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedCampaignFundraisers.map((fundraiser) => (
+                        <SelectItem key={fundraiser.id} value={fundraiser.slug}>
+                          {fundraiser.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="px-2 text-xs uppercase tracking-[0.14em] text-slate-500">General campaign mode</p>
+                )}
+              </div>
+            ) : null}
             <Badge className="bg-emerald-100 text-emerald-700">
               <BadgeCheck className="size-3.5" />
               Everything synced
@@ -774,9 +1350,83 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
                     <Label htmlFor="campaign-title">Campaign title</Label>
                     <Input
                       id="campaign-title"
-                      value={config.title}
-                      onChange={(event) => onUpdate({ title: event.target.value })}
+                      value={selectedCampaign?.name ?? config.title}
+                      onChange={(event) =>
+                        updateSelectedCampaign((campaign) => ({
+                          ...campaign,
+                          name: event.target.value,
+                        }))
+                      }
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Campaign mode preset</Label>
+                    <Select
+                      value={selectedCampaign?.preset ?? "hybrid"}
+                      onValueChange={(value) =>
+                        updateSelectedCampaign((campaign) => ({
+                          ...campaign,
+                          preset: value as "general" | "fundraiser-based" | "hybrid",
+                          allowsDirectDonations: value === "general" || value === "hybrid",
+                          allowsFundraisers: value === "fundraiser-based" || value === "hybrid",
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="general">General campaign (direct donations only)</SelectItem>
+                        <SelectItem value="fundraiser-based">Fundraiser-based (fundraisers only)</SelectItem>
+                        <SelectItem value="hybrid">Hybrid campaign (default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">Allow direct donations</p>
+                        <p className="text-xs text-slate-500">Campaign pool donations without fundraiser targeting.</p>
+                      </div>
+                      <Switch
+                        checked={selectedCampaign?.allowsDirectDonations ?? true}
+                        onCheckedChange={(checked) =>
+                          updateSelectedCampaign((campaign) => ({
+                            ...campaign,
+                            allowsDirectDonations: checked,
+                            preset: checked && campaign.allowsFundraisers
+                              ? "hybrid"
+                              : checked
+                                ? "general"
+                                : campaign.allowsFundraisers
+                                  ? "fundraiser-based"
+                                  : campaign.preset,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">Allow fundraiser pages</p>
+                        <p className="text-xs text-slate-500">Each fundraiser gets its own public URL.</p>
+                      </div>
+                      <Switch
+                        checked={selectedCampaign?.allowsFundraisers ?? true}
+                        onCheckedChange={(checked) =>
+                          updateSelectedCampaign((campaign) => ({
+                            ...campaign,
+                            allowsFundraisers: checked,
+                            preset: campaign.allowsDirectDonations && checked
+                              ? "hybrid"
+                              : campaign.allowsDirectDonations
+                                ? "general"
+                                : checked
+                                  ? "fundraiser-based"
+                                  : campaign.preset,
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="campaign-goal">Goal amount</Label>
@@ -875,6 +1525,24 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
                       onChange={(event) => setNewEvent((current) => ({ ...current, date: event.target.value }))}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Assign lead volunteer</Label>
+                    <Select
+                      value={newEvent.volunteerId}
+                      onValueChange={(value) => setNewEvent((current) => ({ ...current, volunteerId: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Optional volunteer assignment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {config.volunteers.map((volunteer) => (
+                          <SelectItem key={volunteer.id} value={volunteer.id}>
+                            {volunteer.fullName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button onClick={handleCreateEvent} type="button">
                     <Plus className="size-4" />
                     Add event
@@ -916,7 +1584,11 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
                 <StatCard
                   key={categoryId}
                   title={APPLICATION_CATEGORY_META[categoryId].label}
-                  value={String(config.applicationForms[categoryId].submissions.length)}
+                  value={String(
+                    config.applicationForms[categoryId].submissions.filter(
+                      (submission) => !selectedCampaign || submission.campaignId === selectedCampaign.id,
+                    ).length,
+                  )}
                   icon={renderApplicationCategoryIcon(categoryId)}
                 />
               ))}
@@ -1151,11 +1823,310 @@ export default function Dashboard({ config, onUpdate }: DashboardProps) {
             <DataTable
               title="Submission inbox"
               description="Submissions sent from the public apply path."
-              data={activeApplicationForm.submissions}
+              data={activeApplicationSubmissions}
               columns={applicationSubmissionColumns}
               defaultSortKey="submittedAt"
               defaultSortDirection="desc"
               searchPlaceholder="Search submissions..."
+            />
+
+            {conversionSubmission ? (
+              <Card className="glass-surface">
+                <CardHeader>
+                  <CardTitle className="font-display text-2xl">Convert help request to fundraiser</CardTitle>
+                  <CardDescription>
+                    Complete this official review form before activating the fundraiser page.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="convert-legal-name">Legal name</Label>
+                      <Input
+                        id="convert-legal-name"
+                        value={conversionDraft.legalName}
+                        onChange={(event) =>
+                          setConversionDraft((current) => ({ ...current, legalName: event.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="convert-national-id">National ID / Passport</Label>
+                      <Input
+                        id="convert-national-id"
+                        value={conversionDraft.nationalId}
+                        onChange={(event) =>
+                          setConversionDraft((current) => ({ ...current, nationalId: event.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="convert-contact-phone">Contact phone</Label>
+                      <Input
+                        id="convert-contact-phone"
+                        value={conversionDraft.contactPhone}
+                        onChange={(event) =>
+                          setConversionDraft((current) => ({ ...current, contactPhone: event.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="convert-contact-email">Contact email</Label>
+                      <Input
+                        id="convert-contact-email"
+                        value={conversionDraft.contactEmail}
+                        onChange={(event) =>
+                          setConversionDraft((current) => ({ ...current, contactEmail: event.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="convert-physical-address">Physical address</Label>
+                    <Textarea
+                      id="convert-physical-address"
+                      rows={2}
+                      value={conversionDraft.physicalAddress}
+                      onChange={(event) =>
+                        setConversionDraft((current) => ({ ...current, physicalAddress: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="convert-fundraiser-title">Fundraiser title</Label>
+                      <Input
+                        id="convert-fundraiser-title"
+                        value={conversionDraft.fundraiserTitle}
+                        onChange={(event) =>
+                          setConversionDraft((current) => ({ ...current, fundraiserTitle: event.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="convert-requested-amount">Requested amount</Label>
+                      <Input
+                        id="convert-requested-amount"
+                        type="number"
+                        value={conversionDraft.requestedAmount}
+                        onChange={(event) =>
+                          setConversionDraft((current) => ({ ...current, requestedAmount: event.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="convert-summary">Fundraiser summary</Label>
+                    <Textarea
+                      id="convert-summary"
+                      rows={3}
+                      value={conversionDraft.fundraiserSummary}
+                      onChange={(event) =>
+                        setConversionDraft((current) => ({ ...current, fundraiserSummary: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="convert-notes">Approval notes</Label>
+                    <Textarea
+                      id="convert-notes"
+                      rows={2}
+                      value={conversionDraft.approvalNotes}
+                      onChange={(event) =>
+                        setConversionDraft((current) => ({ ...current, approvalNotes: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" onClick={confirmHelpConversion}>
+                      Convert to fundraiser
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setConversionSubmissionId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            <Card className="glass-surface">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl">Restricted partner pool allocation</CardTitle>
+                <CardDescription>
+                  Risk uses max(single amount, rolling 30-day cumulative). Band thresholds: R10k / R50k / R150k.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Card className="border-slate-200/80">
+                    <CardContent className="p-4">
+                      <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Partner pool balance</p>
+                      <p className="font-display text-3xl text-slate-900">
+                        R{(selectedCampaign?.partnerPool.balance ?? 0).toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-slate-200/80">
+                    <CardContent className="p-4">
+                      <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Total partner donations</p>
+                      <p className="font-display text-3xl text-slate-900">
+                        R{(selectedCampaign?.partnerPool.totalPartnerDonations ?? 0).toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-slate-200/80">
+                    <CardContent className="p-4">
+                      <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Allocated (executed)</p>
+                      <p className="font-display text-3xl text-slate-900">
+                        R{(selectedCampaign?.partnerPool.totalAllocated ?? 0).toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Allocation target</Label>
+                    <Select
+                      value={allocationDraft.targetType}
+                      onValueChange={(value) =>
+                        setAllocationDraft((current) => ({
+                          ...current,
+                          targetType: value as "fundraiser" | "campaign-ops",
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fundraiser">Fundraiser</SelectItem>
+                        <SelectItem value="campaign-ops">Campaign operations</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {allocationDraft.targetType === "fundraiser" ? (
+                    <div className="space-y-2">
+                      <Label>Fundraiser target</Label>
+                      <Select
+                        value={allocationDraft.targetFundraiserId}
+                        onValueChange={(value) =>
+                          setAllocationDraft((current) => ({
+                            ...current,
+                            targetFundraiserId: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedCampaignFundraisers.map((fundraiser) => (
+                            <SelectItem key={fundraiser.id} value={fundraiser.id}>
+                              {fundraiser.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="allocation-target-label">Ops target label</Label>
+                      <Input
+                        id="allocation-target-label"
+                        value={allocationDraft.targetLabel}
+                        onChange={(event) =>
+                          setAllocationDraft((current) => ({ ...current, targetLabel: event.target.value }))
+                        }
+                        placeholder="Example: Water logistics and transport"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="allocation-amount">Fixed amount (required)</Label>
+                    <Input
+                      id="allocation-amount"
+                      type="number"
+                      value={allocationDraft.amount}
+                      onChange={(event) =>
+                        setAllocationDraft((current) => ({ ...current, amount: event.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="allocation-split">% split (optional)</Label>
+                    <Input
+                      id="allocation-split"
+                      type="number"
+                      value={allocationDraft.percentageSplit}
+                      onChange={(event) =>
+                        setAllocationDraft((current) => ({ ...current, percentageSplit: event.target.value }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="allocation-reason">Allocation reason</Label>
+                  <Textarea
+                    id="allocation-reason"
+                    rows={3}
+                    value={allocationDraft.reason}
+                    onChange={(event) => setAllocationDraft((current) => ({ ...current, reason: event.target.value }))}
+                  />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                    <p className="text-sm text-slate-700">Operational critical (required for high-risk ops)</p>
+                    <Switch
+                      checked={allocationDraft.operationalCritical}
+                      onCheckedChange={(checked) =>
+                        setAllocationDraft((current) => ({ ...current, operationalCritical: checked }))
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                    <p className="text-sm text-slate-700">Donor-intent compliance confirmed</p>
+                    <Switch
+                      checked={allocationDraft.donorIntentConfirmed}
+                      onCheckedChange={(checked) =>
+                        setAllocationDraft((current) => ({ ...current, donorIntentConfirmed: checked }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="board-resolution">Board resolution reference (critical risk only)</Label>
+                  <Input
+                    id="board-resolution"
+                    value={allocationDraft.boardResolutionReference}
+                    onChange={(event) =>
+                      setAllocationDraft((current) => ({ ...current, boardResolutionReference: event.target.value }))
+                    }
+                  />
+                </div>
+
+                <Button type="button" onClick={createPartnerPoolAllocation}>
+                  Create allocation request
+                </Button>
+              </CardContent>
+            </Card>
+
+            <DataTable
+              title="Allocation approvals"
+              description="Single transaction and rolling 30-day cumulative risk bands with role-based approvals."
+              data={selectedCampaignAllocations}
+              columns={allocationColumns}
+              defaultSortKey="createdAt"
+              defaultSortDirection="desc"
+              searchPlaceholder="Search allocations..."
             />
           </TabsContent>
 

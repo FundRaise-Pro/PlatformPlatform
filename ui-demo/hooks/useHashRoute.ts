@@ -5,39 +5,128 @@ const DEFAULT_VIEW: AppViewId = "dashboard";
 const DEFAULT_CRM_TAB: CrmTabId = "donors";
 const DEFAULT_PUBLIC_PAGE: PublicPageId = "landing";
 const DEFAULT_APPLY_PATH: ApplyPathId = "volunteer";
+const DEFAULT_CAMPAIGN_SLUG = "urban-water-resilience-2024";
+const DEFAULT_FUNDRAISER_SLUG = "guguletu-water-grid";
 
 export interface AppRoute {
   view: AppViewId;
   crmTab: CrmTabId;
   publicPage: PublicPageId;
   applyPath: ApplyPathId;
+  campaignSlug: string;
+  fundraiserSlug: string;
 }
 
 function parseRoute(hash: string): AppRoute {
-  const [viewSegment, childSegment, nestedSegment] = hash.replace(/^#\/?/, "").split("/");
+  const segments = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  const [viewSegment] = segments;
 
-  if (viewSegment === "editor") {
-    const publicPage: PublicPageId = isPublicPage(childSegment) ? childSegment : DEFAULT_PUBLIC_PAGE;
-    const applyPath: ApplyPathId = publicPage === "apply" && isApplyPath(nestedSegment) ? nestedSegment : DEFAULT_APPLY_PATH;
-    return { view: "editor", crmTab: DEFAULT_CRM_TAB, publicPage, applyPath };
+  if (viewSegment === "dashboard") {
+    if (segments[1] === "campaigns") {
+      return {
+        view: "dashboard",
+        crmTab: DEFAULT_CRM_TAB,
+        publicPage: "fundraisers",
+        applyPath: DEFAULT_APPLY_PATH,
+        campaignSlug: segments[2] || DEFAULT_CAMPAIGN_SLUG,
+        fundraiserSlug: segments[4] || DEFAULT_FUNDRAISER_SLUG,
+      };
+    }
+
+    return {
+      view: "dashboard",
+      crmTab: DEFAULT_CRM_TAB,
+      publicPage: DEFAULT_PUBLIC_PAGE,
+      applyPath: DEFAULT_APPLY_PATH,
+      campaignSlug: DEFAULT_CAMPAIGN_SLUG,
+      fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+    };
   }
 
   if (viewSegment === "crm") {
-    const crmTab: CrmTabId = childSegment === "partners" ? "partners" : DEFAULT_CRM_TAB;
-    return { view: "crm", crmTab, publicPage: DEFAULT_PUBLIC_PAGE, applyPath: DEFAULT_APPLY_PATH };
+    const crmTab: CrmTabId = segments[1] === "partners" ? "partners" : DEFAULT_CRM_TAB;
+    return {
+      view: "crm",
+      crmTab,
+      publicPage: DEFAULT_PUBLIC_PAGE,
+      applyPath: DEFAULT_APPLY_PATH,
+      campaignSlug: DEFAULT_CAMPAIGN_SLUG,
+      fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+    };
   }
 
-  if (viewSegment === "public") {
-    const publicPage: PublicPageId = isPublicPage(childSegment) ? childSegment : DEFAULT_PUBLIC_PAGE;
-    const applyPath: ApplyPathId = publicPage === "apply" && isApplyPath(nestedSegment) ? nestedSegment : DEFAULT_APPLY_PATH;
-    return { view: "public", crmTab: DEFAULT_CRM_TAB, publicPage, applyPath };
+  if (viewSegment === "public" || viewSegment === "editor") {
+    const view: AppViewId = viewSegment;
+    if (segments[1] === "campaigns") {
+      const campaignSlug = segments[2] || DEFAULT_CAMPAIGN_SLUG;
+      const pageSegment = segments[3];
+
+      if (pageSegment === "fundraisers") {
+        return {
+          view,
+          crmTab: DEFAULT_CRM_TAB,
+          publicPage: "fundraisers",
+          applyPath: DEFAULT_APPLY_PATH,
+          campaignSlug,
+          fundraiserSlug: segments[4] || DEFAULT_FUNDRAISER_SLUG,
+        };
+      }
+
+      if (pageSegment === "apply") {
+        return {
+          view,
+          crmTab: DEFAULT_CRM_TAB,
+          publicPage: "apply",
+          applyPath: isApplyPath(segments[4]) ? segments[4] : DEFAULT_APPLY_PATH,
+          campaignSlug,
+          fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+        };
+      }
+
+      return {
+        view,
+        crmTab: DEFAULT_CRM_TAB,
+        publicPage: isPublicPage(pageSegment) ? pageSegment : DEFAULT_PUBLIC_PAGE,
+        applyPath: DEFAULT_APPLY_PATH,
+        campaignSlug,
+        fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+      };
+    }
+
+    const childSegment = segments[1];
+    return {
+      view,
+      crmTab: DEFAULT_CRM_TAB,
+      publicPage: isLegacyStories(childSegment) ? "fundraisers" : isPublicPage(childSegment) ? childSegment : DEFAULT_PUBLIC_PAGE,
+      applyPath: DEFAULT_APPLY_PATH,
+      campaignSlug: DEFAULT_CAMPAIGN_SLUG,
+      fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+    };
   }
 
-  return { view: DEFAULT_VIEW, crmTab: DEFAULT_CRM_TAB, publicPage: DEFAULT_PUBLIC_PAGE, applyPath: DEFAULT_APPLY_PATH };
+  return {
+    view: DEFAULT_VIEW,
+    crmTab: DEFAULT_CRM_TAB,
+    publicPage: DEFAULT_PUBLIC_PAGE,
+    applyPath: DEFAULT_APPLY_PATH,
+    campaignSlug: DEFAULT_CAMPAIGN_SLUG,
+    fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+  };
 }
 
 function isPublicPage(value?: string): value is PublicPageId {
-  return value === "landing" || value === "stories" || value === "events" || value === "blog" || value === "partners" || value === "apply";
+  return (
+    value === "landing" ||
+    value === "fundraisers" ||
+    value === "events" ||
+    value === "blog" ||
+    value === "partners" ||
+    value === "apply"
+  );
+}
+
+function isLegacyStories(value?: string): boolean {
+  return value === "stories";
 }
 
 function isApplyPath(value?: string): value is ApplyPathId {
@@ -49,18 +138,20 @@ function toHash(route: AppRoute): string {
     return `#/crm/${route.crmTab}`;
   }
 
-  if (route.view === "public") {
-    if (route.publicPage === "apply") {
-      return `#/public/${route.publicPage}/${route.applyPath}`;
+  if (route.view === "public" || route.view === "editor") {
+    if (route.publicPage === "fundraisers") {
+      return `#/${route.view}/campaigns/${route.campaignSlug}/fundraisers/${route.fundraiserSlug}`;
     }
-    return `#/public/${route.publicPage}`;
+
+    if (route.publicPage === "apply") {
+      return `#/${route.view}/campaigns/${route.campaignSlug}/apply/${route.applyPath}`;
+    }
+
+    return `#/${route.view}/campaigns/${route.campaignSlug}/${route.publicPage}`;
   }
 
-  if (route.view === "editor") {
-    if (route.publicPage === "apply") {
-      return `#/editor/${route.publicPage}/${route.applyPath}`;
-    }
-    return `#/editor/${route.publicPage}`;
+  if (route.view === "dashboard") {
+    return `#/dashboard/campaigns/${route.campaignSlug}/fundraisers/${route.fundraiserSlug}`;
   }
 
   return `#/${route.view}`;
@@ -87,8 +178,10 @@ export function useHashRoute() {
         view === "crm"
           ? { ...route, view: "crm", crmTab: route.crmTab || DEFAULT_CRM_TAB }
           : view === "public"
-            ? { ...route, view: "public", publicPage: route.publicPage || DEFAULT_PUBLIC_PAGE }
-            : { ...route, view };
+            ? { ...route, view: "public" }
+            : view === "editor"
+              ? { ...route, view: "editor" }
+              : { ...route, view };
 
       window.location.hash = toHash(nextRoute);
     },
@@ -109,7 +202,6 @@ export function useHashRoute() {
         ...route,
         view: route.view === "editor" ? "editor" : "public",
         publicPage,
-        applyPath: route.applyPath,
       };
       window.location.hash = toHash(nextRoute);
     },
@@ -129,6 +221,27 @@ export function useHashRoute() {
     [route],
   );
 
+  const setCampaignSlug = useCallback(
+    (campaignSlug: string) => {
+      const nextRoute: AppRoute = { ...route, campaignSlug };
+      window.location.hash = toHash(nextRoute);
+    },
+    [route],
+  );
+
+  const setFundraiserSlug = useCallback(
+    (fundraiserSlug: string) => {
+      const nextRoute: AppRoute = {
+        ...route,
+        view: route.view === "editor" || route.view === "public" ? route.view : "dashboard",
+        publicPage: "fundraisers",
+        fundraiserSlug,
+      };
+      window.location.hash = toHash(nextRoute);
+    },
+    [route],
+  );
+
   return useMemo(
     () => ({
       route,
@@ -136,7 +249,9 @@ export function useHashRoute() {
       setCrmTab,
       setPublicPage,
       setApplyPath,
+      setCampaignSlug,
+      setFundraiserSlug,
     }),
-    [route, setApplyPath, setCrmTab, setPublicPage, setView],
+    [route, setApplyPath, setCampaignSlug, setCrmTab, setFundraiserSlug, setPublicPage, setView],
   );
 }

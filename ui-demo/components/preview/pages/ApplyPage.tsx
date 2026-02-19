@@ -41,6 +41,7 @@ const APPLY_PATH_META: Record<ApplyPathId, { label: string; icon: ReactNode; pat
 export function ApplyPage({ config, activePath, onPathChange, onSubmitApplication }: ApplyPageProps) {
   const customization = config.pageCustomizations.apply;
   const category = config.applicationForms[activePath];
+  const activeCampaign = config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ?? config.campaigns[0];
   const [valuesByPath, setValuesByPath] = useState<Record<ApplyPathId, Record<string, string>>>({
     volunteer: {},
     help: {},
@@ -109,7 +110,7 @@ export function ApplyPage({ config, activePath, onPathChange, onSubmitApplicatio
           </Tabs>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.16em] text-slate-500">
-            Active path: {APPLY_PATH_META[activePath].path}
+            Active path: {`/campaigns/${activeCampaign?.slug ?? "campaign"}`}{APPLY_PATH_META[activePath].path}
           </div>
 
           <Card className="border-slate-200 bg-white">

@@ -13,6 +13,8 @@ interface PreviewNavigationProps {
 
 export function PreviewNavigation({ config, activePage, onNavigate, onDonate }: PreviewNavigationProps) {
   const visiblePages = PUBLIC_PAGE_ORDER.filter((pageId) => config.pageCustomizations[pageId].isVisible);
+  const activeCampaign = config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ?? config.campaigns[0];
+  const canDonateDirectly = activeCampaign?.allowsDirectDonations ?? true;
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
@@ -26,7 +28,7 @@ export function PreviewNavigation({ config, activePage, onNavigate, onDonate }: 
             <Heart className="size-5" />
           </span>
           <span>
-            <span className="block text-xs uppercase tracking-[0.18em] text-slate-500">Fundraise Pro</span>
+            <span className="block text-xs uppercase tracking-[0.18em] text-slate-500">Campaign Hub</span>
             <span className="font-display text-lg font-semibold text-slate-900">{config.tenantName}</span>
           </span>
         </button>
@@ -46,8 +48,14 @@ export function PreviewNavigation({ config, activePage, onNavigate, onDonate }: 
         </nav>
 
         <div className="flex items-center gap-3">
-          <Badge className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">S18A Ready</Badge>
-          <Button type="button" className="rounded-full px-6" onClick={onDonate} style={{ backgroundColor: config.primaryColor }}>
+          <Badge className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">{activeCampaign?.name ?? "Campaign"}</Badge>
+          <Button
+            type="button"
+            className="rounded-full px-6"
+            onClick={onDonate}
+            style={{ backgroundColor: config.primaryColor }}
+            disabled={!canDonateDirectly}
+          >
             {config.terminology.donation}
           </Button>
         </div>

@@ -9,10 +9,10 @@ import { PageSections } from "@/components/preview/PageSections";
 interface LandingPageProps {
   config: FundraiserConfig;
   onStartDonate: () => void;
-  onNavigateStories: () => void;
+  onNavigateFundraisers: () => void;
 }
 
-export function LandingPage({ config, onStartDonate, onNavigateStories }: LandingPageProps) {
+export function LandingPage({ config, onStartDonate, onNavigateFundraisers }: LandingPageProps) {
   const customization = config.pageCustomizations.landing;
   const progressPercent = Math.min(100, (config.raised / config.goal) * 100);
 
@@ -71,8 +71,8 @@ export function LandingPage({ config, onStartDonate, onNavigateStories }: Landin
 
       <Card className="glass-surface">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="font-display text-2xl">Featured stories</CardTitle>
-          <Button variant="ghost" className="rounded-full" onClick={onNavigateStories} type="button">
+          <CardTitle className="font-display text-2xl">Featured fundraisers</CardTitle>
+          <Button variant="ghost" className="rounded-full" onClick={onNavigateFundraisers} type="button">
             Explore all <ArrowRight className="size-4" />
           </Button>
         </CardHeader>

@@ -43,6 +43,14 @@ export function EventsPage({ config }: EventsPageProps) {
                   year: "numeric",
                 })}
               </p>
+              {event.volunteerIds?.length ? (
+                <p className="text-xs text-slate-500">
+                  Volunteers:{" "}
+                  {event.volunteerIds
+                    .map((volunteerId) => config.volunteers.find((volunteer) => volunteer.id === volunteerId)?.fullName ?? "Team member")
+                    .join(", ")}
+                </p>
+              ) : null}
               <Button variant="outline" className="w-full rounded-full">
                 Reserve seat
               </Button>

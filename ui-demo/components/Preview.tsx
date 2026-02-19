@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ApplyPathId, PublicPageId, FundraiserConfig, DonationTier } from "@/types";
 import { PreviewNavigation } from "@/components/preview/PreviewNavigation";
 import { LandingPage } from "@/components/preview/pages/LandingPage";
-import { StoriesPage } from "@/components/preview/pages/StoriesPage";
+import { FundraisersPage } from "@/components/preview/pages/FundraisersPage";
 import { EventsPage } from "@/components/preview/pages/EventsPage";
 import { BlogPage } from "@/components/preview/pages/BlogPage";
 import { PartnersPage } from "@/components/preview/pages/PartnersPage";
@@ -20,8 +20,10 @@ interface PreviewProps {
   config: FundraiserConfig;
   activePage: PublicPageId;
   applyPath: ApplyPathId;
+  fundraiserSlug: string;
   onNavigate: (page: PublicPageId) => void;
   onApplyPathChange: (path: ApplyPathId) => void;
+  onFundraiserChange: (slug: string) => void;
   onDonate?: (amount: number, name: string, tierId?: string) => void;
   onSubmitApplication?: (categoryId: ApplyPathId, values: Record<string, string>) => void;
 }
@@ -32,8 +34,10 @@ export default function Preview({
   config,
   activePage,
   applyPath,
+  fundraiserSlug,
   onNavigate,
   onApplyPathChange,
+  onFundraiserChange,
   onDonate,
   onSubmitApplication,
 }: PreviewProps) {
@@ -74,8 +78,8 @@ export default function Preview({
       return <SuccessPage config={config} onContinue={() => setShowSuccess(false)} />;
     }
 
-    if (activePage === "stories") {
-      return <StoriesPage config={config} />;
+    if (activePage === "fundraisers") {
+      return <FundraisersPage config={config} activeFundraiserSlug={fundraiserSlug} onOpenFundraiser={onFundraiserChange} />;
     }
 
     if (activePage === "events") {
@@ -101,7 +105,7 @@ export default function Preview({
       );
     }
 
-    return <LandingPage config={config} onStartDonate={() => setIsDonateDialogOpen(true)} onNavigateStories={() => onNavigate("stories")} />;
+    return <LandingPage config={config} onStartDonate={() => setIsDonateDialogOpen(true)} onNavigateFundraisers={() => onNavigate("fundraisers")} />;
   };
 
   return (

@@ -1,10 +1,10 @@
 import { PublicPageId } from "@/types";
 
-export const PUBLIC_PAGE_ORDER: PublicPageId[] = ["landing", "stories", "events", "blog", "partners", "apply"];
+export const PUBLIC_PAGE_ORDER: PublicPageId[] = ["landing", "fundraisers", "events", "blog", "partners", "apply"];
 
 export const PUBLIC_PAGE_LABELS: Record<PublicPageId, string> = {
   landing: "Home",
-  stories: "Stories",
+  fundraisers: "Fundraisers",
   events: "Events",
   blog: "Media",
   partners: "Partners",

@@ -44,16 +44,162 @@ export default function App() {
     ...INITIAL_NEW_PARTNER,
     tierId: INITIAL_CONFIG.partnerTiers[0]?.id,
   });
-  const { route, setApplyPath, setCrmTab, setPublicPage, setView } = useHashRoute();
+  const { route, setApplyPath, setCampaignSlug, setCrmTab, setFundraiserSlug, setPublicPage, setView } = useHashRoute();
 
-  const updateConfig = (updates: Partial<FundraiserConfig>) => setConfig((current) => ({ ...current, ...updates }));
+  const activeCampaign = useMemo(
+    () =>
+      config.campaigns.find((campaign) => campaign.slug === route.campaignSlug) ??
+      config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ??
+      config.campaigns[0],
+    [config.activeCampaignId, config.campaigns, route.campaignSlug],
+  );
+
+  const activeFundraiser = useMemo(
+    () =>
+      activeCampaign?.fundraisers.find((fundraiser) => fundraiser.slug === route.fundraiserSlug) ??
+      activeCampaign?.fundraisers.find((fundraiser) => fundraiser.id === config.activeFundraiserId) ??
+      activeCampaign?.fundraisers[0],
+    [activeCampaign, config.activeFundraiserId, route.fundraiserSlug],
+  );
+
+  const scopedConfig = useMemo<FundraiserConfig>(() => {
+    const campaign = activeCampaign;
+    const fundraiser = activeFundraiser;
+    const campaignDonations = campaign?.donations ?? [];
+    const campaignPartnerPoolDonations = campaign?.partnerPoolDonations ?? [];
+    const campaignEvents = campaign?.events ?? [];
+    const campaignMedia = campaign?.mediaPosts ?? [];
+    const fundraiserSummaries = (campaign?.fundraisers ?? []).map((entry) => ({
+      id: entry.id,
+      name: entry.title,
+      bio: entry.summary,
+      goal: entry.goal,
+      raised: entry.raised,
+      image: entry.heroImage,
+    }));
+
+    return {
+      ...config,
+      activeCampaignId: campaign?.id ?? config.activeCampaignId,
+      activeFundraiserId: fundraiser?.id ?? config.activeFundraiserId,
+      title: fundraiser?.title ?? campaign?.name ?? config.title,
+      subtitle: fundraiser?.summary ?? campaign?.description ?? config.subtitle,
+      story: fundraiser?.story ?? config.story,
+      goal: fundraiser?.goal ?? config.goal,
+      raised: fundraiser?.raised ?? config.raised,
+      heroImage: fundraiser?.heroImage ?? config.heroImage,
+      beneficiaryStories: fundraiserSummaries,
+      events: campaignEvents,
+      blogPosts: campaignMedia,
+      donations: [...campaignDonations, ...campaignPartnerPoolDonations],
+    };
+  }, [activeCampaign, activeFundraiser, config]);
+
+  const updateConfig = (updates: Partial<FundraiserConfig>) =>
+    setConfig((current) => {
+      const selectedCampaign =
+        current.campaigns.find((campaign) => campaign.slug === route.campaignSlug) ??
+        current.campaigns.find((campaign) => campaign.id === current.activeCampaignId) ??
+        current.campaigns[0];
+      const selectedFundraiser =
+        selectedCampaign?.fundraisers.find((fundraiser) => fundraiser.slug === route.fundraiserSlug) ??
+        selectedCampaign?.fundraisers.find((fundraiser) => fundraiser.id === current.activeFundraiserId) ??
+        selectedCampaign?.fundraisers[0];
+
+      const nextCampaigns = updates.campaigns
+        ? updates.campaigns
+        : current.campaigns.map((campaign) => {
+            if (!selectedCampaign || campaign.id !== selectedCampaign.id) {
+              return campaign;
+            }
+
+            const mappedDonations = updates.donations
+              ? updates.donations.map((donation) => ({
+                  ...donation,
+                  campaignId: campaign.id,
+                  fundraiserId:
+                    donation.channel === "partner" ? donation.fundraiserId : donation.fundraiserId ?? selectedFundraiser?.id,
+                }))
+              : undefined;
+
+            return {
+              ...campaign,
+              name: updates.title ?? campaign.name,
+              description: updates.subtitle ?? campaign.description,
+              donations: mappedDonations ? mappedDonations.filter((donation) => donation.channel !== "partner") : campaign.donations,
+              partnerPoolDonations: mappedDonations
+                ? mappedDonations.filter((donation) => donation.channel === "partner")
+                : campaign.partnerPoolDonations,
+              events: updates.events
+                ? updates.events.map((event) => ({
+                    ...event,
+                    campaignId: campaign.id,
+                    fundraiserId: event.fundraiserId ?? selectedFundraiser?.id,
+                  }))
+                : campaign.events,
+              mediaPosts: updates.blogPosts
+                ? updates.blogPosts.map((post) => ({
+                    ...post,
+                    campaignId: campaign.id,
+                    fundraiserId: post.fundraiserId ?? selectedFundraiser?.id,
+                  }))
+                : campaign.mediaPosts,
+              fundraisers: campaign.fundraisers.map((fundraiser) => {
+                if (!selectedFundraiser || fundraiser.id !== selectedFundraiser.id) {
+                  return fundraiser;
+                }
+
+                return {
+                  ...fundraiser,
+                  title: updates.title ?? fundraiser.title,
+                  summary: updates.subtitle ?? fundraiser.summary,
+                  story: updates.story ?? fundraiser.story,
+                  goal: updates.goal ?? fundraiser.goal,
+                  raised: updates.raised ?? fundraiser.raised,
+                  heroImage: updates.heroImage ?? fundraiser.heroImage,
+                };
+              }),
+            };
+          });
+
+      return {
+        ...current,
+        ...updates,
+        campaigns: nextCampaigns,
+        activeCampaignId: updates.activeCampaignId ?? selectedCampaign?.id ?? current.activeCampaignId,
+        activeFundraiserId: updates.activeFundraiserId ?? selectedFundraiser?.id ?? current.activeFundraiserId,
+      };
+    });
+
+  const handleEditorChange = (nextConfig: FundraiserConfig) => {
+    updateConfig({
+      tenantName: nextConfig.tenantName,
+      title: nextConfig.title,
+      subtitle: nextConfig.subtitle,
+      story: nextConfig.story,
+      goal: nextConfig.goal,
+      raised: nextConfig.raised,
+      primaryColor: nextConfig.primaryColor,
+      heroImage: nextConfig.heroImage,
+      terminology: nextConfig.terminology,
+      partnerTiers: nextConfig.partnerTiers,
+      partnerMentions: nextConfig.partnerMentions,
+      pageCustomizations: nextConfig.pageCustomizations,
+    });
+  };
 
   const handleDonate = (amount: number, name: string, tierId?: string) => {
+    if (!activeCampaign?.allowsDirectDonations) {
+      return;
+    }
+
     const donation: Donation = {
       id: `tx-${Math.random().toString(36).slice(2, 8)}`,
       donorName: name,
       amount,
       date: new Date().toISOString(),
+      campaignId: activeCampaign?.id,
+      fundraiserId: activeFundraiser?.id,
       tierId,
       channel: "direct",
       certificateGenerated: true,
@@ -63,6 +209,19 @@ export default function App() {
       ...current,
       raised: current.raised + amount,
       donations: [...current.donations, donation],
+      campaigns: current.campaigns.map((campaign) => {
+        if (!activeCampaign || campaign.id !== activeCampaign.id) {
+          return campaign;
+        }
+
+        return {
+          ...campaign,
+          donations: [donation, ...campaign.donations],
+          fundraisers: campaign.fundraisers.map((fundraiser) =>
+            fundraiser.id === activeFundraiser?.id ? { ...fundraiser, raised: fundraiser.raised + amount } : fundraiser,
+          ),
+        };
+      }),
     }));
   };
 
@@ -101,6 +260,7 @@ export default function App() {
     const submission = {
       id: `apply-${Date.now()}`,
       submittedAt: new Date().toISOString(),
+      campaignId: activeCampaign?.id ?? config.activeCampaignId,
       status: "new" as const,
       values,
     };
@@ -128,11 +288,11 @@ export default function App() {
 
   const crmMetrics = useMemo(
     () => ({
-      totalGiving: config.raised,
-      activeContributors: config.donations.filter((donation) => donation.donorName !== "Anonymous").length,
+      totalGiving: scopedConfig.raised,
+      activeContributors: scopedConfig.donations.filter((donation) => donation.donorName !== "Anonymous").length,
       activePartners: config.partners.length,
     }),
-    [config],
+    [config.partners.length, scopedConfig.donations, scopedConfig.raised],
   );
 
   const crmTabGuide = route.crmTab === "donors"
@@ -203,11 +363,13 @@ export default function App() {
     return (
       <div className="relative h-screen w-full overflow-hidden">
         <Preview
-          config={config}
+          config={scopedConfig}
           activePage={route.publicPage}
           applyPath={route.applyPath}
+          fundraiserSlug={route.fundraiserSlug}
           onNavigate={setPublicPage}
           onApplyPathChange={setApplyPath}
+          onFundraiserChange={setFundraiserSlug}
           onDonate={handleDonate}
           onSubmitApplication={handleApplySubmission}
         />
@@ -246,12 +408,19 @@ export default function App() {
 
       <main className="min-w-0 flex-1">
         {route.view === "dashboard" ? (
-          <Dashboard config={config} onUpdate={updateConfig} />
+          <Dashboard
+            config={scopedConfig}
+            onUpdate={updateConfig}
+            activeCampaignSlug={route.campaignSlug}
+            activeFundraiserSlug={route.fundraiserSlug}
+            onSelectCampaign={setCampaignSlug}
+            onSelectFundraiser={setFundraiserSlug}
+          />
         ) : null}
 
         {route.view === "editor" ? (
           <div className="flex h-full">
-            <Editor config={config} onChange={setConfig} />
+            <Editor config={scopedConfig} onChange={handleEditorChange} />
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="flex items-center justify-between border-b border-white/70 bg-white/75 px-6 py-4 backdrop-blur-xl">
                 <div className="flex items-center gap-3">
@@ -274,11 +443,13 @@ export default function App() {
                 {showPreviewPanel ? (
                   <div className="h-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/70 shadow-soft">
                     <Preview
-                      config={config}
+                      config={scopedConfig}
                       activePage={route.publicPage}
                       applyPath={route.applyPath}
+                      fundraiserSlug={route.fundraiserSlug}
                       onNavigate={setPublicPage}
                       onApplyPathChange={setApplyPath}
+                      onFundraiserChange={setFundraiserSlug}
                       onDonate={handleDonate}
                       onSubmitApplication={handleApplySubmission}
                     />
@@ -329,7 +500,7 @@ export default function App() {
               </section>
 
               {route.crmTab === "donors" ? (
-                <DonorTable config={config} columns={donorColumns} />
+                <DonorTable config={scopedConfig} columns={donorColumns} />
               ) : (
                 <PartnerTable config={config} columns={partnerColumns} onAdd={() => setIsPartnerModalOpen(true)} />
               )}

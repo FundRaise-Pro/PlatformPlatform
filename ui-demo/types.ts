@@ -3,8 +3,9 @@ export type AppViewId = "dashboard" | "editor" | "crm" | "public";
 
 export type CrmTabId = "donors" | "partners";
 
-export type PublicPageId = "landing" | "stories" | "events" | "blog" | "partners" | "apply";
+export type PublicPageId = "landing" | "fundraisers" | "events" | "blog" | "partners" | "apply";
 export type ApplyPathId = "volunteer" | "help" | "sponsor";
+export type CampaignPreset = "general" | "fundraiser-based" | "hybrid";
 
 export interface DonationTier {
   id: string;
@@ -18,6 +19,8 @@ export interface Donation {
   donorName: string;
   amount: number;
   date: string;
+  campaignId?: string;
+  fundraiserId?: string;
   tierId?: string;
   channel: "direct" | "qrCode" | "social" | "partner";
   certificateGenerated: boolean;
@@ -52,6 +55,15 @@ export interface PartnerMention {
   highlighted: boolean;
 }
 
+export interface Volunteer {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  skills: string;
+  status: "available" | "assigned" | "inactive";
+}
+
 export interface Terminology {
   donation: string;
   donor: string;
@@ -73,7 +85,9 @@ export interface FundraiserEvent {
   title: string;
   date: string;
   venue: string;
-  linkedCampaignId: string;
+  campaignId: string;
+  fundraiserId?: string;
+  volunteerIds?: string[];
   image?: string;
 }
 
@@ -84,6 +98,8 @@ export interface BlogPost {
   content: string;
   date: string;
   author: string;
+  campaignId?: string;
+  fundraiserId?: string;
   image?: string;
 }
 
@@ -109,8 +125,12 @@ export interface ApplicationFormField {
 export interface ApplicationFormSubmission {
   id: string;
   submittedAt: string;
+  campaignId: string;
   status: "new" | "reviewing" | "approved" | "declined";
   values: Record<string, string>;
+  reviewNotes?: string;
+  convertedFundraiserId?: string;
+  linkedPartnerId?: string;
 }
 
 export interface ApplicationFormCategory {
@@ -120,6 +140,101 @@ export interface ApplicationFormCategory {
   submitLabel: string;
   fields: ApplicationFormField[];
   submissions: ApplicationFormSubmission[];
+}
+
+export interface FundraiserOfficialDocument {
+  legalName: string;
+  nationalId: string;
+  contactPhone: string;
+  contactEmail: string;
+  physicalAddress: string;
+  requestedAmount: number;
+  approvalNotes: string;
+}
+
+export interface FundraiserRecord {
+  id: string;
+  campaignId: string;
+  slug: string;
+  title: string;
+  summary: string;
+  story: string;
+  goal: number;
+  raised: number;
+  heroImage: string;
+  status: "draft" | "active" | "closed";
+  sourceSubmissionId?: string;
+  officialDocument?: FundraiserOfficialDocument;
+}
+
+export type AllocationRiskBand = "low" | "medium" | "high" | "critical";
+export type AllocationTargetType = "fundraiser" | "campaign-ops";
+export type AllocationApproverRole =
+  | "campaign-admin"
+  | "finance-officer"
+  | "board-member"
+  | "full-board"
+  | "chair-president";
+
+export interface AllocationApproval {
+  role: AllocationApproverRole;
+  approved: boolean;
+  approvedAt?: string;
+}
+
+export interface CampaignPoolAllocation {
+  id: string;
+  campaignId: string;
+  createdAt: string;
+  targetType: AllocationTargetType;
+  targetFundraiserId?: string;
+  targetLabel: string;
+  amount: number;
+  percentageSplit?: number;
+  reason: string;
+  operationalCritical: boolean;
+  donorIntentConfirmed: boolean;
+  singleAmount: number;
+  rolling30DayTotalAfterThis: number;
+  effectiveRiskAmount: number;
+  riskBand: AllocationRiskBand;
+  requiresBoardResolution: boolean;
+  boardResolutionReference?: string;
+  status: "pending-approval" | "cooling-off" | "approved" | "rejected" | "executed";
+  cooldownUntil?: string;
+  approvals: AllocationApproval[];
+}
+
+export interface CampaignAllocationPolicy {
+  currency: "ZAR";
+  rollingWindowDays: 30;
+  lowMax: number;
+  mediumMax: number;
+  highMax: number;
+}
+
+export interface CampaignPartnerPool {
+  totalPartnerDonations: number;
+  totalAllocated: number;
+  balance: number;
+  policy: CampaignAllocationPolicy;
+  allocations: CampaignPoolAllocation[];
+}
+
+export interface CampaignRecord {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  preset: CampaignPreset;
+  allowsDirectDonations: boolean;
+  allowsFundraisers: boolean;
+  fundraisers: FundraiserRecord[];
+  events: FundraiserEvent[];
+  mediaPosts: BlogPost[];
+  donations: Donation[];
+  partnerPoolDonations: Donation[];
+  partnerPool: CampaignPartnerPool;
 }
 
 export interface Branch {
@@ -167,6 +282,10 @@ export interface FundraiserConfig {
   blogPosts: BlogPost[];
   applications: Application[];
   applicationForms: Record<ApplyPathId, ApplicationFormCategory>;
+  volunteers: Volunteer[];
+  campaigns: CampaignRecord[];
+  activeCampaignId: string;
+  activeFundraiserId: string;
   branches: Branch[];
   pageCustomizations: Record<PublicPageId, PageCustomization>;
   subscriptionPlan: "Starter" | "Pro" | "Enterprise";
