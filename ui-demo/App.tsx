@@ -1,32 +1,31 @@
-import { ReactNode, useMemo, useState } from "react";
-import {
-  CircleHelp,
-  Globe,
-  LayoutTemplate,
-  Layers,
-  PieChart,
-  Plus,
-  Upload,
-  UserCircle2,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Globe, LayoutTemplate, Layers, PieChart, UserCircle2 } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import Editor from "@/components/Editor";
 import Preview from "@/components/Preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { DataTable, DataTableColumn } from "@/components/ui/data-table";
+import { DataTableColumn } from "@/components/ui/data-table";
+import { CrmWorkspace } from "@/features/crm/CrmWorkspace";
+import {
+  AllocationDraft,
+  CampaignAllocation,
+  canTransitionAllocationStatus,
+  hasAllocationApprovalsCompleted,
+  isAllocationCoolingOffComplete,
+  requiredAllocationApprovalsForBand,
+  resolveAllocationRiskBand,
+} from "@/features/crm/allocationPolicy";
+import { PartnerOnboardingDialog } from "@/features/crm/PartnerOnboardingDialog";
+import { SideNavButton } from "@/features/shell/SideNavButton";
 import { readImageFile } from "@/lib/fileUploads";
 import { INITIAL_CONFIG } from "@/lib/defaultConfig";
 import { useHashRoute } from "@/hooks/useHashRoute";
 import { ApplyPathId, Donation, FundraiserConfig, Partner } from "@/types";
-import { IMAGE_FILE_ACCEPT } from "@/lib/constants";
 
 const INITIAL_NEW_PARTNER: Partial<Partner> = {
   name: "",
@@ -43,6 +42,17 @@ export default function App() {
   const [newPartner, setNewPartner] = useState<Partial<Partner>>({
     ...INITIAL_NEW_PARTNER,
     tierId: INITIAL_CONFIG.partnerTiers[0]?.id,
+  });
+  const [allocationDraft, setAllocationDraft] = useState<AllocationDraft>({
+    targetType: "fundraiser",
+    targetFundraiserId: "",
+    targetLabel: "",
+    amount: "",
+    percentageSplit: "",
+    reason: "",
+    operationalCritical: false,
+    donorIntentConfirmed: false,
+    boardResolutionReference: "",
   });
   const { route, setApplyPath, setCampaignSlug, setCrmTab, setFundraiserSlug, setPublicPage, setView } = useHashRoute();
 
@@ -61,6 +71,23 @@ export default function App() {
       activeCampaign?.fundraisers[0],
     [activeCampaign, config.activeFundraiserId, route.fundraiserSlug],
   );
+  const activeCampaignFundraisers = activeCampaign?.fundraisers ?? [];
+  const activeCampaignAllocations = activeCampaign?.partnerPool.allocations ?? [];
+  const activeCampaignAllocationPolicy = activeCampaign?.partnerPool.policy;
+
+  useEffect(() => {
+    if (!activeCampaignFundraisers.length) {
+      setAllocationDraft((current) => ({ ...current, targetFundraiserId: "" }));
+      return;
+    }
+
+    const hasCurrentTarget = activeCampaignFundraisers.some((fundraiser) => fundraiser.id === allocationDraft.targetFundraiserId);
+    if (hasCurrentTarget) {
+      return;
+    }
+
+    setAllocationDraft((current) => ({ ...current, targetFundraiserId: activeCampaignFundraisers[0].id }));
+  }, [activeCampaignFundraisers, allocationDraft.targetFundraiserId]);
 
   const scopedConfig = useMemo<FundraiserConfig>(() => {
     const campaign = activeCampaign;
@@ -286,6 +313,334 @@ export default function App() {
     setNewPartner((current) => ({ ...current, logo: image }));
   };
 
+  const updateActiveCampaign = (
+    updater: (campaign: FundraiserConfig["campaigns"][number]) => FundraiserConfig["campaigns"][number],
+  ) => {
+    setConfig((current) => {
+      const selectedCampaign =
+        current.campaigns.find((campaign) => campaign.slug === route.campaignSlug) ??
+        current.campaigns.find((campaign) => campaign.id === current.activeCampaignId) ??
+        current.campaigns[0];
+
+      if (!selectedCampaign) {
+        return current;
+      }
+
+      return {
+        ...current,
+        campaigns: current.campaigns.map((campaign) =>
+          campaign.id === selectedCampaign.id ? updater(campaign) : campaign,
+        ),
+      };
+    });
+  };
+
+  const createPartnerPoolAllocation = () => {
+    if (!activeCampaign || !activeCampaignAllocationPolicy) {
+      return;
+    }
+
+    const amount = Number(allocationDraft.amount || 0);
+    const percentageSplit = Number(allocationDraft.percentageSplit || 0);
+    if (amount <= 0 || !allocationDraft.reason.trim()) {
+      return;
+    }
+
+    const now = new Date();
+    const rollingWindowStart = new Date(now);
+    rollingWindowStart.setDate(rollingWindowStart.getDate() - activeCampaignAllocationPolicy.rollingWindowDays);
+
+    const rollingTotalBeforeThis = activeCampaignAllocations
+      .filter((allocation) => allocation.status !== "rejected")
+      .filter((allocation) => new Date(allocation.createdAt) >= rollingWindowStart)
+      .reduce((total, allocation) => total + allocation.amount, 0);
+
+    const rolling30DayTotalAfterThis = rollingTotalBeforeThis + amount;
+    const effectiveRiskAmount = Math.max(amount, rolling30DayTotalAfterThis);
+    const riskBand = resolveAllocationRiskBand(
+      activeCampaignAllocationPolicy.lowMax,
+      activeCampaignAllocationPolicy.mediumMax,
+      activeCampaignAllocationPolicy.highMax,
+      effectiveRiskAmount,
+    );
+
+    if (riskBand === "high" && !allocationDraft.donorIntentConfirmed) {
+      return;
+    }
+
+    if (allocationDraft.targetType === "campaign-ops" && riskBand === "high" && !allocationDraft.operationalCritical) {
+      return;
+    }
+
+    if (riskBand === "critical" && !allocationDraft.boardResolutionReference.trim()) {
+      return;
+    }
+
+    const selectedFundraiserTarget = activeCampaignFundraisers.find(
+      (fundraiser) => fundraiser.id === allocationDraft.targetFundraiserId,
+    );
+    const targetLabel =
+      allocationDraft.targetType === "fundraiser"
+        ? selectedFundraiserTarget?.title ?? "Fundraiser"
+        : allocationDraft.targetLabel.trim() || "Campaign Operations";
+
+    const cooldownUntil = undefined;
+    const approvals = requiredAllocationApprovalsForBand(riskBand).map((approval, index) =>
+      riskBand === "low" && index === 0 ? { ...approval, approved: true, approvedAt: now.toISOString() } : approval,
+    );
+    const approvalsCompleted = approvals.every((approval) => approval.approved);
+    const coolingOffComplete = !cooldownUntil || now >= new Date(cooldownUntil);
+    const status = approvalsCompleted
+      ? coolingOffComplete
+        ? ("approved" as const)
+        : ("cooling-off" as const)
+      : ("pending-approval" as const);
+
+    const allocation: CampaignAllocation = {
+      id: `alloc-${Date.now()}`,
+      campaignId: activeCampaign.id,
+      createdAt: now.toISOString(),
+      targetType: allocationDraft.targetType,
+      targetFundraiserId: allocationDraft.targetType === "fundraiser" ? allocationDraft.targetFundraiserId : undefined,
+      targetLabel,
+      amount,
+      percentageSplit: percentageSplit > 0 ? percentageSplit : undefined,
+      reason: allocationDraft.reason.trim(),
+      operationalCritical: allocationDraft.operationalCritical,
+      donorIntentConfirmed: allocationDraft.donorIntentConfirmed,
+      singleAmount: amount,
+      rolling30DayTotalAfterThis,
+      effectiveRiskAmount,
+      riskBand,
+      requiresBoardResolution: riskBand === "critical",
+      boardResolutionReference: allocationDraft.boardResolutionReference.trim() || undefined,
+      status,
+      cooldownUntil,
+      approvals,
+    };
+
+    updateActiveCampaign((campaign) => ({
+      ...campaign,
+      partnerPool: {
+        ...campaign.partnerPool,
+        totalPartnerDonations: campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0),
+        totalAllocated: campaign.partnerPool.allocations
+          .filter((entry) => entry.status === "executed")
+          .reduce((total, entry) => total + entry.amount, 0),
+        balance:
+          campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0) -
+          campaign.partnerPool.allocations
+            .filter((entry) => entry.status === "executed")
+            .reduce((total, entry) => total + entry.amount, 0),
+        allocations: [allocation, ...campaign.partnerPool.allocations],
+      },
+    }));
+
+    setAllocationDraft({
+      targetType: "fundraiser",
+      targetFundraiserId: activeCampaign.fundraisers[0]?.id ?? "",
+      targetLabel: "",
+      amount: "",
+      percentageSplit: "",
+      reason: "",
+      operationalCritical: false,
+      donorIntentConfirmed: false,
+      boardResolutionReference: "",
+    });
+  };
+
+  const updatePartnerAllocation = (
+    allocationId: string,
+    updater: (allocation: CampaignAllocation) => CampaignAllocation,
+  ) => {
+    updateActiveCampaign((campaign) => {
+      const nextAllocations = campaign.partnerPool.allocations.map((allocation) =>
+        allocation.id === allocationId ? updater(allocation) : allocation,
+      );
+      const totalPartnerDonations = campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0);
+      const totalAllocated = nextAllocations
+        .filter((allocation) => allocation.status === "executed")
+        .reduce((total, allocation) => total + allocation.amount, 0);
+
+      return {
+        ...campaign,
+        partnerPool: {
+          ...campaign.partnerPool,
+          totalPartnerDonations,
+          totalAllocated,
+          balance: totalPartnerDonations - totalAllocated,
+          allocations: nextAllocations,
+        },
+      };
+    });
+  };
+
+  const partnerAllocationColumns = useMemo<DataTableColumn<CampaignAllocation>[]>(
+    () => [
+      {
+        key: "createdAt",
+        header: "Created",
+        accessor: (row) => row.createdAt,
+        sortable: true,
+        cell: (row) => new Date(row.createdAt).toLocaleDateString(),
+      },
+      { key: "targetLabel", header: "Target", accessor: (row) => row.targetLabel, sortable: true },
+      {
+        key: "amount",
+        header: "Amount",
+        accessor: (row) => row.amount,
+        sortable: true,
+        cell: (row) => `R${row.amount.toLocaleString()}`,
+      },
+      {
+        key: "riskBand",
+        header: "Risk",
+        accessor: (row) => row.riskBand,
+        sortable: true,
+        cell: (row) => (
+          <Badge
+            className={
+              row.riskBand === "low"
+                ? "bg-emerald-100 text-emerald-700"
+                : row.riskBand === "medium"
+                  ? "bg-amber-100 text-amber-700"
+                  : row.riskBand === "high"
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-rose-100 text-rose-700"
+            }
+          >
+            {row.riskBand}
+          </Badge>
+        ),
+      },
+      {
+        key: "approvals",
+        header: "Approvals",
+        accessor: (row) => `${row.approvals.filter((approval) => approval.approved).length}/${row.approvals.length}`,
+        sortable: false,
+        searchable: false,
+        cell: (row) => (
+          <div className="space-y-2">
+            <p className="text-xs text-slate-500">
+              {row.approvals.filter((approval) => approval.approved).length}/{row.approvals.length} complete
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={!row.approvals.some((approval) => !approval.approved) || row.status === "rejected" || row.status === "executed"}
+              onClick={() => {
+                updatePartnerAllocation(row.id, (allocation) => {
+                  const pendingApproval = allocation.approvals.find((approval) => !approval.approved);
+                  if (!pendingApproval || allocation.status === "rejected" || allocation.status === "executed") {
+                    return allocation;
+                  }
+
+                  const nextApprovals = allocation.approvals.map((approval) =>
+                    approval.role === pendingApproval.role && !approval.approved
+                      ? { ...approval, approved: true, approvedAt: new Date().toISOString() }
+                      : approval,
+                  );
+
+                  const nextAllocation = {
+                    ...allocation,
+                    approvals: nextApprovals,
+                  };
+
+                  if (!hasAllocationApprovalsCompleted(nextAllocation)) {
+                    return {
+                      ...nextAllocation,
+                      status: "pending-approval",
+                    };
+                  }
+
+                  const nextCooldownUntil =
+                    nextAllocation.riskBand === "high"
+                      ? nextAllocation.cooldownUntil ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                      : nextAllocation.cooldownUntil;
+                  const finalizedAllocation = {
+                    ...nextAllocation,
+                    cooldownUntil: nextCooldownUntil,
+                  };
+
+                  return {
+                    ...finalizedAllocation,
+                    status: isAllocationCoolingOffComplete(finalizedAllocation, new Date()) ? "approved" : "cooling-off",
+                  };
+                });
+              }}
+            >
+              Approve next
+            </Button>
+          </div>
+        ),
+      },
+      {
+        key: "status",
+        header: "Status",
+        accessor: (row) => row.status,
+        sortable: true,
+        searchable: false,
+        cell: (row) => (
+          <Select
+            value={row.status}
+            onValueChange={(value) =>
+              updatePartnerAllocation(row.id, (allocation) => {
+                const nextStatus = value as CampaignAllocation["status"];
+                const now = new Date();
+                if (!canTransitionAllocationStatus(allocation, nextStatus, now)) {
+                  return allocation;
+                }
+                if (nextStatus === "cooling-off") {
+                  return {
+                    ...allocation,
+                    status: "cooling-off",
+                    cooldownUntil: allocation.cooldownUntil ?? new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+                  };
+                }
+                return {
+                  ...allocation,
+                  status: nextStatus,
+                };
+              })
+            }
+          >
+            <SelectTrigger className="w-[11rem]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending-approval" disabled={row.status === "executed"}>
+                Pending approval
+              </SelectItem>
+              <SelectItem
+                value="cooling-off"
+                disabled={row.riskBand !== "high" || !hasAllocationApprovalsCompleted(row) || row.status === "executed"}
+              >
+                Cooling off
+              </SelectItem>
+              <SelectItem
+                value="approved"
+                disabled={!hasAllocationApprovalsCompleted(row) || !isAllocationCoolingOffComplete(row, new Date())}
+              >
+                Approved
+              </SelectItem>
+              <SelectItem value="rejected" disabled={row.status === "executed"}>
+                Rejected
+              </SelectItem>
+              <SelectItem
+                value="executed"
+                disabled={!hasAllocationApprovalsCompleted(row) || !isAllocationCoolingOffComplete(row, new Date())}
+              >
+                Executed
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        ),
+      },
+    ],
+    [updatePartnerAllocation],
+  );
+
   const crmMetrics = useMemo(
     () => ({
       totalGiving: scopedConfig.raised,
@@ -469,255 +824,35 @@ export default function App() {
         ) : null}
 
         {route.view === "crm" ? (
-          <div className="flex h-full flex-col">
-            <header className="border-b border-white/70 bg-white/80 px-8 py-6 backdrop-blur-xl">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    <CircleHelp className="size-4" />
-                    Relationship Management
-                  </p>
-                  <h2 className="font-display text-4xl text-slate-900">{crmTabGuide.title}</h2>
-                  <p className="mt-1 max-w-3xl text-sm text-slate-600">{crmTabGuide.instruction}</p>
-                  <p className="mt-1 text-sm text-emerald-700">Website note: {crmTabGuide.websiteNote}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button variant={route.crmTab === "donors" ? "secondary" : "outline"} className="rounded-full" onClick={() => setCrmTab("donors")}>
-                    Supporters
-                  </Button>
-                  <Button variant={route.crmTab === "partners" ? "secondary" : "outline"} className="rounded-full" onClick={() => setCrmTab("partners")}>
-                    Partners
-                  </Button>
-                </div>
-              </div>
-            </header>
-
-            <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
-              <section className="mb-6 grid gap-4 md:grid-cols-3">
-                <MetricCard title="Aggregate giving" value={`$${crmMetrics.totalGiving.toLocaleString()}`} />
-                <MetricCard title="Active contributors" value={crmMetrics.activeContributors.toString()} />
-                <MetricCard title="Partners onboarded" value={crmMetrics.activePartners.toString()} />
-              </section>
-
-              {route.crmTab === "donors" ? (
-                <DonorTable config={scopedConfig} columns={donorColumns} />
-              ) : (
-                <PartnerTable config={config} columns={partnerColumns} onAdd={() => setIsPartnerModalOpen(true)} />
-              )}
-            </div>
-          </div>
+          <CrmWorkspace
+            crmTab={route.crmTab}
+            onTabChange={setCrmTab}
+            crmTabGuide={crmTabGuide}
+            crmMetrics={crmMetrics}
+            scopedConfig={scopedConfig}
+            config={config}
+            donorColumns={donorColumns}
+            partnerColumns={partnerColumns}
+            onOpenPartnerModal={() => setIsPartnerModalOpen(true)}
+            activeCampaign={activeCampaign}
+            activeCampaignFundraisers={activeCampaignFundraisers}
+            allocationDraft={allocationDraft}
+            setAllocationDraft={setAllocationDraft}
+            onCreatePartnerPoolAllocation={createPartnerPoolAllocation}
+            activeCampaignAllocations={activeCampaignAllocations}
+            partnerAllocationColumns={partnerAllocationColumns}
+          />
         ) : null}
       </main>
-
-      <Dialog open={isPartnerModalOpen} onOpenChange={setIsPartnerModalOpen}>
-        <DialogContent className="rounded-3xl sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="font-display text-3xl">Onboard Partner</DialogTitle>
-            <DialogDescription>Attach partner details, logo, and tier so mentions can be surfaced in preview pages.</DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4">
-            <div className="grid grid-cols-[6rem_1fr] items-center gap-3">
-              <div className="size-20 overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-2">
-                <img src={newPartner.logo} alt="Partner logo preview" className="h-full w-full object-contain" />
-              </div>
-              <Button variant="outline" className="justify-start rounded-full" asChild>
-                <label className="cursor-pointer">
-                  <Upload className="size-4" />
-                  Upload logo
-                  <input
-                    type="file"
-                    accept={IMAGE_FILE_ACCEPT}
-                    className="hidden"
-                    onChange={(event) => uploadNewPartnerLogo(event.target.files?.[0])}
-                  />
-                </label>
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="partnerName">Partner name</Label>
-              <Input
-                id="partnerName"
-                value={newPartner.name}
-                onChange={(event) => setNewPartner((current) => ({ ...current, name: event.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="partnerEmail">Partner email</Label>
-              <Input
-                id="partnerEmail"
-                value={newPartner.email}
-                onChange={(event) => setNewPartner((current) => ({ ...current, email: event.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="partnerContact">Contact person</Label>
-              <Input
-                id="partnerContact"
-                value={newPartner.contactPerson}
-                onChange={(event) => setNewPartner((current) => ({ ...current, contactPerson: event.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Tier assignment</Label>
-              <Select
-                value={newPartner.tierId}
-                onValueChange={(value) => setNewPartner((current) => ({ ...current, tierId: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose tier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {config.partnerTiers.map((tier) => (
-                    <SelectItem key={tier.id} value={tier.id}>
-                      {tier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" className="rounded-full" onClick={() => setIsPartnerModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button className="rounded-full" onClick={handleOnboardPartner} disabled={!newPartner.name || !newPartner.email || !newPartner.tierId}>
-              <Plus className="size-4" />
-              Add partner
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PartnerOnboardingDialog
+        open={isPartnerModalOpen}
+        onOpenChange={setIsPartnerModalOpen}
+        newPartner={newPartner}
+        setNewPartner={setNewPartner}
+        partnerTiers={config.partnerTiers}
+        onUploadLogo={uploadNewPartnerLogo}
+        onSubmit={handleOnboardPartner}
+      />
     </div>
-  );
-}
-
-interface SideNavButtonProps {
-  icon: ReactNode;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-function SideNavButton({ icon, label, isActive, onClick }: SideNavButtonProps) {
-  return (
-    <Button
-      type="button"
-      variant={isActive ? "secondary" : "ghost"}
-      size="icon"
-      className="group relative size-12 rounded-2xl"
-      onClick={onClick}
-    >
-      {icon}
-      <span className="pointer-events-none absolute left-full ml-2 hidden rounded-lg bg-slate-900 px-2 py-1 text-xs text-white group-hover:block">
-        {label}
-      </span>
-    </Button>
-  );
-}
-
-interface MetricCardProps {
-  title: string;
-  value: string;
-}
-
-function MetricCard({ title, value }: MetricCardProps) {
-  return (
-    <Card className="glass-surface">
-      <CardHeader className="pb-2">
-        <CardDescription>{title}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="font-display text-4xl font-semibold text-slate-900">{value}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface TableProps {
-  config: FundraiserConfig;
-  columns: DataTableColumn<FundraiserConfig["donations"][number]>[];
-}
-
-function DonorTable({ config, columns }: TableProps) {
-  return (
-    <DataTable
-      title="Supporter ledger"
-      description="Search and sort supporters while tracking certificate readiness."
-      data={config.donations.filter((donation) => donation.donorName !== "Anonymous")}
-      columns={columns}
-      defaultSortKey="date"
-      defaultSortDirection="desc"
-      searchPlaceholder="Search supporters..."
-    />
-  );
-}
-
-interface PartnerTableProps {
-  config: FundraiserConfig;
-  columns: DataTableColumn<
-    Partner & {
-      tierName: string;
-      mentions: number;
-    }
-  >[];
-  onAdd: () => void;
-}
-
-function PartnerTable({ config, columns, onAdd }: PartnerTableProps) {
-  const partnerRows = config.partners.map((partner) => {
-    const tier = config.partnerTiers.find((entry) => entry.id === partner.tierId);
-    const mentions = config.partnerMentions.filter((mention) => mention.partnerId === partner.id).length;
-    return {
-      ...partner,
-      tierName: tier?.name ?? "No tier",
-      mentions,
-    };
-  });
-
-  return (
-    <Card className="glass-surface space-y-4">
-      <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <CardTitle className="font-display text-2xl">Partner accounts</CardTitle>
-            <CardDescription>Tier assignment and public mention readiness.</CardDescription>
-          </div>
-          <Button className="rounded-full" onClick={onAdd}>
-            <Plus className="size-4" />
-            Onboard partner
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-3">
-          {config.partnerTiers.map((tier) => (
-            <Card key={tier.id} className="border-slate-200/80">
-              <CardContent className="space-y-2 p-4">
-                <p className="font-medium text-slate-900">{tier.name}</p>
-                <p className="text-sm text-slate-600">${tier.minCommitment.toLocaleString()} minimum</p>
-                <Separator />
-                {tier.benefits.map((benefit) => (
-                  <p key={benefit} className="text-xs text-slate-500">
-                    - {benefit}
-                  </p>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <DataTable
-          title="Partner accounts"
-          description="Tier and mention readiness mapped to public website partner pages."
-          data={partnerRows}
-          columns={columns}
-          defaultSortKey="name"
-          searchPlaceholder="Search partners..."
-        />
-      </CardContent>
-    </Card>
   );
 }

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import {
   BadgeCheck,
   BookOpen,
@@ -150,44 +150,6 @@ function toSlug(input: string): string {
     .slice(0, 80);
 }
 
-function resolveRiskBand(lowMax: number, mediumMax: number, highMax: number, effectiveAmount: number) {
-  if (effectiveAmount <= lowMax) {
-    return "low" as const;
-  }
-  if (effectiveAmount <= mediumMax) {
-    return "medium" as const;
-  }
-  if (effectiveAmount <= highMax) {
-    return "high" as const;
-  }
-  return "critical" as const;
-}
-
-function requiredApprovalsForRiskBand(
-  riskBand: "low" | "medium" | "high" | "critical",
-): FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number]["approvals"] {
-  if (riskBand === "low") {
-    return [{ role: "campaign-admin", approved: false }];
-  }
-  if (riskBand === "medium") {
-    return [
-      { role: "campaign-admin", approved: false },
-      { role: "finance-officer", approved: false },
-    ];
-  }
-  if (riskBand === "high") {
-    return [
-      { role: "campaign-admin", approved: false },
-      { role: "finance-officer", approved: false },
-      { role: "board-member", approved: false },
-    ];
-  }
-  return [
-    { role: "full-board", approved: false },
-    { role: "chair-president", approved: false },
-  ];
-}
-
 export default function Dashboard({
   config,
   onUpdate,
@@ -243,27 +205,6 @@ export default function Dashboard({
     fundraiserTitle: "",
     fundraiserSummary: "",
   });
-  const [allocationDraft, setAllocationDraft] = useState<{
-    targetType: "fundraiser" | "campaign-ops";
-    targetFundraiserId: string;
-    targetLabel: string;
-    amount: string;
-    percentageSplit: string;
-    reason: string;
-    operationalCritical: boolean;
-    donorIntentConfirmed: boolean;
-    boardResolutionReference: string;
-  }>({
-    targetType: "fundraiser",
-    targetFundraiserId: "",
-    targetLabel: "",
-    amount: "",
-    percentageSplit: "",
-    reason: "",
-    operationalCritical: false,
-    donorIntentConfirmed: false,
-    boardResolutionReference: "",
-  });
   const selectedCampaign =
     config.campaigns.find((campaign) => campaign.slug === activeCampaignSlug) ??
     config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ??
@@ -273,16 +214,6 @@ export default function Dashboard({
     selectedCampaignFundraisers.find((fundraiser) => fundraiser.slug === activeFundraiserSlug) ??
     selectedCampaignFundraisers.find((fundraiser) => fundraiser.id === config.activeFundraiserId) ??
     selectedCampaignFundraisers[0];
-
-  useEffect(() => {
-    if (!selectedCampaignFundraisers.length) {
-      return;
-    }
-    setAllocationDraft((current) => ({
-      ...current,
-      targetFundraiserId: current.targetFundraiserId || selectedCampaignFundraisers[0].id,
-    }));
-  }, [selectedCampaignFundraisers]);
 
   const donationColumns = useMemo<DataTableColumn<FundraiserConfig["donations"][number]>[]>(
     () => [
@@ -387,8 +318,6 @@ export default function Dashboard({
   const activeApplicationSubmissions = activeApplicationForm.submissions.filter(
     (submission) => !selectedCampaign || submission.campaignId === selectedCampaign.id,
   );
-  const selectedCampaignAllocations = selectedCampaign?.partnerPool.allocations ?? [];
-  const selectedCampaignPolicy = selectedCampaign?.partnerPool.policy;
   const conversionSubmission = config.applicationForms.help.submissions.find((submission) => submission.id === conversionSubmissionId) ?? null;
 
   const applicationFieldColumns = useMemo<DataTableColumn<(typeof activeApplicationForm.fields)[number]>[]>(
@@ -753,137 +682,6 @@ export default function Dashboard({
     setConversionSubmissionId(null);
   };
 
-  const createPartnerPoolAllocation = () => {
-    if (!selectedCampaign || !selectedCampaignPolicy) {
-      return;
-    }
-
-    const amount = Number(allocationDraft.amount || 0);
-    const percentageSplit = Number(allocationDraft.percentageSplit || 0);
-    if (amount <= 0 || !allocationDraft.reason.trim()) {
-      return;
-    }
-
-    const now = new Date();
-    const rollingWindowStart = new Date(now);
-    rollingWindowStart.setDate(rollingWindowStart.getDate() - selectedCampaignPolicy.rollingWindowDays);
-
-    const rollingTotalBeforeThis = selectedCampaignAllocations
-      .filter((allocation) => allocation.status !== "rejected")
-      .filter((allocation) => new Date(allocation.createdAt) >= rollingWindowStart)
-      .reduce((total, allocation) => total + allocation.amount, 0);
-
-    const rolling30DayTotalAfterThis = rollingTotalBeforeThis + amount;
-    const effectiveRiskAmount = Math.max(amount, rolling30DayTotalAfterThis);
-    const riskBand = resolveRiskBand(
-      selectedCampaignPolicy.lowMax,
-      selectedCampaignPolicy.mediumMax,
-      selectedCampaignPolicy.highMax,
-      effectiveRiskAmount,
-    );
-
-    if (riskBand === "high" && !allocationDraft.donorIntentConfirmed) {
-      return;
-    }
-
-    if (allocationDraft.targetType === "campaign-ops" && riskBand === "high" && !allocationDraft.operationalCritical) {
-      return;
-    }
-
-    if (riskBand === "critical" && !allocationDraft.boardResolutionReference.trim()) {
-      return;
-    }
-
-    const selectedFundraiserTarget = selectedCampaign.fundraisers.find(
-      (fundraiser) => fundraiser.id === allocationDraft.targetFundraiserId,
-    );
-    const targetLabel =
-      allocationDraft.targetType === "fundraiser"
-        ? selectedFundraiserTarget?.title ?? "Fundraiser"
-        : allocationDraft.targetLabel.trim() || "Campaign Operations";
-
-    const cooldownUntil =
-      riskBand === "high" ? new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString() : undefined;
-
-    const allocation = {
-      id: `alloc-${Date.now()}`,
-      campaignId: selectedCampaign.id,
-      createdAt: now.toISOString(),
-      targetType: allocationDraft.targetType,
-      targetFundraiserId: allocationDraft.targetType === "fundraiser" ? allocationDraft.targetFundraiserId : undefined,
-      targetLabel,
-      amount,
-      percentageSplit: percentageSplit > 0 ? percentageSplit : undefined,
-      reason: allocationDraft.reason.trim(),
-      operationalCritical: allocationDraft.operationalCritical,
-      donorIntentConfirmed: allocationDraft.donorIntentConfirmed,
-      singleAmount: amount,
-      rolling30DayTotalAfterThis,
-      effectiveRiskAmount,
-      riskBand,
-      requiresBoardResolution: riskBand === "critical",
-      boardResolutionReference: allocationDraft.boardResolutionReference.trim() || undefined,
-      status: riskBand === "high" ? ("cooling-off" as const) : ("pending-approval" as const),
-      cooldownUntil,
-      approvals: requiredApprovalsForRiskBand(riskBand),
-    };
-
-    updateSelectedCampaign((campaign) => ({
-      ...campaign,
-      partnerPool: {
-        ...campaign.partnerPool,
-        totalPartnerDonations: campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0),
-        totalAllocated: campaign.partnerPool.allocations
-          .filter((entry) => entry.status === "executed")
-          .reduce((total, entry) => total + entry.amount, 0),
-        balance:
-          campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0) -
-          campaign.partnerPool.allocations
-            .filter((entry) => entry.status === "executed")
-            .reduce((total, entry) => total + entry.amount, 0),
-        allocations: [allocation, ...campaign.partnerPool.allocations],
-      },
-    }));
-
-    setAllocationDraft({
-      targetType: "fundraiser",
-      targetFundraiserId: selectedCampaign.fundraisers[0]?.id ?? "",
-      targetLabel: "",
-      amount: "",
-      percentageSplit: "",
-      reason: "",
-      operationalCritical: false,
-      donorIntentConfirmed: false,
-      boardResolutionReference: "",
-    });
-  };
-
-  const updateAllocation = (
-    allocationId: string,
-    updater: (allocation: FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number]) => FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number],
-  ) => {
-    updateSelectedCampaign((campaign) => ({
-      ...campaign,
-      partnerPool: (() => {
-        const nextAllocations = campaign.partnerPool.allocations.map((allocation) =>
-          allocation.id === allocationId ? updater(allocation) : allocation,
-        );
-        const totalPartnerDonations = campaign.partnerPoolDonations.reduce((total, donation) => total + donation.amount, 0);
-        const totalAllocated = nextAllocations
-          .filter((allocation) => allocation.status === "executed")
-          .reduce((total, allocation) => total + allocation.amount, 0);
-
-        return {
-          ...campaign.partnerPool,
-          totalPartnerDonations,
-          totalAllocated,
-          balance: totalPartnerDonations - totalAllocated,
-          allocations: nextAllocations,
-        };
-      })(),
-    }));
-  };
-
   const applicationSubmissionColumns = useMemo<
     DataTableColumn<(typeof activeApplicationForm.submissions)[number]>[]
   >(
@@ -964,114 +762,6 @@ export default function Dashboard({
       },
     ],
     [activeApplicationCategory, activeApplicationForm.fields, activeApplicationForm.submissions],
-  );
-
-  const allocationColumns = useMemo<
-    DataTableColumn<FundraiserConfig["campaigns"][number]["partnerPool"]["allocations"][number]>[]
-  >(
-    () => [
-      {
-        key: "createdAt",
-        header: "Created",
-        accessor: (row) => row.createdAt,
-        sortable: true,
-        cell: (row) => toShortDate(row.createdAt),
-      },
-      { key: "targetLabel", header: "Target", accessor: (row) => row.targetLabel, sortable: true },
-      {
-        key: "amount",
-        header: "Amount",
-        accessor: (row) => row.amount,
-        sortable: true,
-        cell: (row) => `R${row.amount.toLocaleString()}`,
-      },
-      {
-        key: "riskBand",
-        header: "Risk",
-        accessor: (row) => row.riskBand,
-        sortable: true,
-        cell: (row) => (
-          <Badge
-            className={
-              row.riskBand === "low"
-                ? "bg-emerald-100 text-emerald-700"
-                : row.riskBand === "medium"
-                  ? "bg-amber-100 text-amber-700"
-                  : row.riskBand === "high"
-                    ? "bg-orange-100 text-orange-700"
-                    : "bg-rose-100 text-rose-700"
-            }
-          >
-            {row.riskBand}
-          </Badge>
-        ),
-      },
-      {
-        key: "approvals",
-        header: "Approvals",
-        accessor: (row) => `${row.approvals.filter((approval) => approval.approved).length}/${row.approvals.length}`,
-        sortable: false,
-        searchable: false,
-        cell: (row) => (
-          <div className="space-y-2">
-            <p className="text-xs text-slate-500">
-              {row.approvals.filter((approval) => approval.approved).length}/{row.approvals.length} complete
-            </p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const pendingApproval = row.approvals.find((approval) => !approval.approved);
-                if (!pendingApproval) {
-                  return;
-                }
-                updateAllocation(row.id, (allocation) => ({
-                  ...allocation,
-                  approvals: allocation.approvals.map((approval) =>
-                    approval.role === pendingApproval.role && !approval.approved
-                      ? { ...approval, approved: true, approvedAt: new Date().toISOString() }
-                      : approval,
-                  ),
-                }));
-              }}
-            >
-              Approve next
-            </Button>
-          </div>
-        ),
-      },
-      {
-        key: "status",
-        header: "Status",
-        accessor: (row) => row.status,
-        sortable: true,
-        searchable: false,
-        cell: (row) => (
-          <Select
-            value={row.status}
-            onValueChange={(value) =>
-              updateAllocation(row.id, (allocation) => ({
-                ...allocation,
-                status: value as "pending-approval" | "cooling-off" | "approved" | "rejected" | "executed",
-              }))
-            }
-          >
-            <SelectTrigger className="w-[11rem]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending-approval">Pending approval</SelectItem>
-              <SelectItem value="cooling-off">Cooling off</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="executed">Executed</SelectItem>
-            </SelectContent>
-          </Select>
-        ),
-      },
-    ],
-    [updateAllocation],
   );
 
   return (
@@ -1240,6 +930,16 @@ export default function Dashboard({
           </TabsContent>
 
           <TabsContent value="media" className="space-y-6">
+            <DataTable
+              title="Media stories"
+              description="Search and sort every story shown on your public media page."
+              data={config.blogPosts}
+              columns={mediaColumns}
+              defaultSortKey="date"
+              defaultSortDirection="desc"
+              searchPlaceholder="Search stories..."
+            />
+
             <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
               <Card className="glass-surface">
                 <CardHeader>
@@ -1326,19 +1026,19 @@ export default function Dashboard({
                 </CardContent>
               </Card>
             </div>
-
-            <DataTable
-              title="Media stories"
-              description="Search and sort every story shown on your public media page."
-              data={config.blogPosts}
-              columns={mediaColumns}
-              defaultSortKey="date"
-              defaultSortDirection="desc"
-              searchPlaceholder="Search stories..."
-            />
           </TabsContent>
 
           <TabsContent value="fundraising" className="space-y-6">
+            <DataTable
+              title="Donation ledger"
+              description="Search, sort, and review supporter contributions in one place."
+              data={config.donations}
+              columns={donationColumns}
+              defaultSortKey="date"
+              defaultSortDirection="desc"
+              searchPlaceholder="Search supporters..."
+            />
+
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="glass-surface">
                 <CardHeader>
@@ -1474,24 +1174,25 @@ export default function Dashboard({
                 </CardContent>
               </Card>
             </div>
-
-            <DataTable
-              title="Donation ledger"
-              description="Search, sort, and review supporter contributions in one place."
-              data={config.donations}
-              columns={donationColumns}
-              defaultSortKey="date"
-              defaultSortDirection="desc"
-              searchPlaceholder="Search supporters..."
-            />
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
-            <EventCalendar
-              events={config.events}
-              title="Event calendar"
-              description="Highlighted dates are synced with builder and public preview event experiences."
-            />
+            <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+              <EventCalendar
+                events={config.events}
+                title="Event calendar"
+                description="Highlighted dates are synced with builder and public preview event experiences."
+              />
+              <DataTable
+                title="Event schedule"
+                description="Search and sort all scheduled events."
+                data={config.events}
+                columns={eventColumns}
+                defaultSortKey="date"
+                defaultSortDirection="asc"
+                searchPlaceholder="Search events..."
+              />
+            </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
               <Card className="glass-surface">
@@ -1566,16 +1267,6 @@ export default function Dashboard({
                 </CardContent>
               </Card>
             </div>
-
-            <DataTable
-              title="Event schedule"
-              description="Search and sort all scheduled events."
-              data={config.events}
-              columns={eventColumns}
-              defaultSortKey="date"
-              defaultSortDirection="asc"
-              searchPlaceholder="Search events..."
-            />
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-6">
@@ -1619,6 +1310,25 @@ export default function Dashboard({
                 </p>
               </CardContent>
             </Card>
+
+            <DataTable
+              title="Submission inbox"
+              description="Submissions sent from the public apply path."
+              data={activeApplicationSubmissions}
+              columns={applicationSubmissionColumns}
+              defaultSortKey="submittedAt"
+              defaultSortDirection="desc"
+              searchPlaceholder="Search submissions..."
+            />
+
+            <DataTable
+              title="Form fields"
+              description="Current field set for this application category."
+              data={activeApplicationForm.fields}
+              columns={applicationFieldColumns}
+              defaultSortKey="label"
+              searchPlaceholder="Search fields..."
+            />
 
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="glass-surface">
@@ -1731,15 +1441,6 @@ export default function Dashboard({
               </Card>
             </div>
 
-            <DataTable
-              title="Form fields"
-              description="Current field set for this application category."
-              data={activeApplicationForm.fields}
-              columns={applicationFieldColumns}
-              defaultSortKey="label"
-              searchPlaceholder="Search fields..."
-            />
-
             <Card className="glass-surface">
               <CardHeader>
                 <CardTitle className="font-display text-2xl">Field editor</CardTitle>
@@ -1819,16 +1520,6 @@ export default function Dashboard({
                 ))}
               </CardContent>
             </Card>
-
-            <DataTable
-              title="Submission inbox"
-              description="Submissions sent from the public apply path."
-              data={activeApplicationSubmissions}
-              columns={applicationSubmissionColumns}
-              defaultSortKey="submittedAt"
-              defaultSortDirection="desc"
-              searchPlaceholder="Search submissions..."
-            />
 
             {conversionSubmission ? (
               <Card className="glass-surface">
@@ -1953,181 +1644,13 @@ export default function Dashboard({
 
             <Card className="glass-surface">
               <CardHeader>
-                <CardTitle className="font-display text-2xl">Restricted partner pool allocation</CardTitle>
+                <CardTitle className="font-display text-2xl">Partner pool allocations moved</CardTitle>
                 <CardDescription>
-                  Risk uses max(single amount, rolling 30-day cumulative). Band thresholds: R10k / R50k / R150k.
+                  Allocation requests and approvals are now managed in CRM under the Partners tab to keep application
+                  review and partner finance workflows separate.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3 md:grid-cols-3">
-                  <Card className="border-slate-200/80">
-                    <CardContent className="p-4">
-                      <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Partner pool balance</p>
-                      <p className="font-display text-3xl text-slate-900">
-                        R{(selectedCampaign?.partnerPool.balance ?? 0).toLocaleString()}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-slate-200/80">
-                    <CardContent className="p-4">
-                      <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Total partner donations</p>
-                      <p className="font-display text-3xl text-slate-900">
-                        R{(selectedCampaign?.partnerPool.totalPartnerDonations ?? 0).toLocaleString()}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-slate-200/80">
-                    <CardContent className="p-4">
-                      <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Allocated (executed)</p>
-                      <p className="font-display text-3xl text-slate-900">
-                        R{(selectedCampaign?.partnerPool.totalAllocated ?? 0).toLocaleString()}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Allocation target</Label>
-                    <Select
-                      value={allocationDraft.targetType}
-                      onValueChange={(value) =>
-                        setAllocationDraft((current) => ({
-                          ...current,
-                          targetType: value as "fundraiser" | "campaign-ops",
-                        }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="fundraiser">Fundraiser</SelectItem>
-                        <SelectItem value="campaign-ops">Campaign operations</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {allocationDraft.targetType === "fundraiser" ? (
-                    <div className="space-y-2">
-                      <Label>Fundraiser target</Label>
-                      <Select
-                        value={allocationDraft.targetFundraiserId}
-                        onValueChange={(value) =>
-                          setAllocationDraft((current) => ({
-                            ...current,
-                            targetFundraiserId: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {selectedCampaignFundraisers.map((fundraiser) => (
-                            <SelectItem key={fundraiser.id} value={fundraiser.id}>
-                              {fundraiser.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label htmlFor="allocation-target-label">Ops target label</Label>
-                      <Input
-                        id="allocation-target-label"
-                        value={allocationDraft.targetLabel}
-                        onChange={(event) =>
-                          setAllocationDraft((current) => ({ ...current, targetLabel: event.target.value }))
-                        }
-                        placeholder="Example: Water logistics and transport"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="allocation-amount">Fixed amount (required)</Label>
-                    <Input
-                      id="allocation-amount"
-                      type="number"
-                      value={allocationDraft.amount}
-                      onChange={(event) =>
-                        setAllocationDraft((current) => ({ ...current, amount: event.target.value }))
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="allocation-split">% split (optional)</Label>
-                    <Input
-                      id="allocation-split"
-                      type="number"
-                      value={allocationDraft.percentageSplit}
-                      onChange={(event) =>
-                        setAllocationDraft((current) => ({ ...current, percentageSplit: event.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="allocation-reason">Allocation reason</Label>
-                  <Textarea
-                    id="allocation-reason"
-                    rows={3}
-                    value={allocationDraft.reason}
-                    onChange={(event) => setAllocationDraft((current) => ({ ...current, reason: event.target.value }))}
-                  />
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
-                    <p className="text-sm text-slate-700">Operational critical (required for high-risk ops)</p>
-                    <Switch
-                      checked={allocationDraft.operationalCritical}
-                      onCheckedChange={(checked) =>
-                        setAllocationDraft((current) => ({ ...current, operationalCritical: checked }))
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
-                    <p className="text-sm text-slate-700">Donor-intent compliance confirmed</p>
-                    <Switch
-                      checked={allocationDraft.donorIntentConfirmed}
-                      onCheckedChange={(checked) =>
-                        setAllocationDraft((current) => ({ ...current, donorIntentConfirmed: checked }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="board-resolution">Board resolution reference (critical risk only)</Label>
-                  <Input
-                    id="board-resolution"
-                    value={allocationDraft.boardResolutionReference}
-                    onChange={(event) =>
-                      setAllocationDraft((current) => ({ ...current, boardResolutionReference: event.target.value }))
-                    }
-                  />
-                </div>
-
-                <Button type="button" onClick={createPartnerPoolAllocation}>
-                  Create allocation request
-                </Button>
-              </CardContent>
             </Card>
-
-            <DataTable
-              title="Allocation approvals"
-              description="Single transaction and rolling 30-day cumulative risk bands with role-based approvals."
-              data={selectedCampaignAllocations}
-              columns={allocationColumns}
-              defaultSortKey="createdAt"
-              defaultSortDirection="desc"
-              searchPlaceholder="Search allocations..."
-            />
           </TabsContent>
 
           <TabsContent value="operations" className="space-y-6">
