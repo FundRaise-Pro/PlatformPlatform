@@ -1,19 +1,29 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import {
+  Bold,
   BadgeCheck,
   BookOpen,
   CalendarDays,
   Calendar,
+  Facebook,
   FileCheck2,
+  Heading2,
   HandHeart,
   Handshake,
   House,
   ImagePlus,
+  Instagram,
+  Italic,
   HandCoins,
   LayoutTemplate,
   Layers,
+  Link,
+  List,
+  MessageCircle,
   Plus,
+  SendHorizontal,
   Sparkles,
+  Twitter,
   Workflow,
   UsersRound,
 } from "lucide-react";
@@ -23,6 +33,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,6 +105,56 @@ const APPLICATION_CATEGORY_META: Record<ApplyPathId, { label: string; path: stri
     path: "/apply/sponsor",
   },
 };
+
+type MediaChannelId = "whatsapp" | "instagram" | "facebook" | "twitter";
+type MediaChannelStatus = "draft" | "scheduled" | "live";
+
+interface MediaActivityRow {
+  id: string;
+  channel: MediaChannelId;
+  postTitle: string;
+  campaign: string;
+  scheduledFor: string;
+  status: MediaChannelStatus;
+  audience: string;
+}
+
+const MEDIA_CHANNEL_META: Record<
+  MediaChannelId,
+  {
+    label: string;
+    icon: ReactNode;
+    badgeClassName: string;
+    audienceLabel: string;
+  }
+> = {
+  whatsapp: {
+    label: "WhatsApp",
+    icon: <MessageCircle className="size-4" />,
+    badgeClassName: "bg-emerald-100 text-emerald-700",
+    audienceLabel: "Volunteer and field broadcast",
+  },
+  instagram: {
+    label: "Instagram",
+    icon: <Instagram className="size-4" />,
+    badgeClassName: "bg-pink-100 text-pink-700",
+    audienceLabel: "Visual story feed",
+  },
+  facebook: {
+    label: "Facebook",
+    icon: <Facebook className="size-4" />,
+    badgeClassName: "bg-blue-100 text-blue-700",
+    audienceLabel: "Community updates",
+  },
+  twitter: {
+    label: "Twitter / X",
+    icon: <Twitter className="size-4" />,
+    badgeClassName: "bg-slate-200 text-slate-700",
+    audienceLabel: "Rapid response updates",
+  },
+};
+
+const MEDIA_DEFAULT_CHANNELS: MediaChannelId[] = ["whatsapp", "instagram", "facebook"];
 
 function renderApplicationCategoryIcon(categoryId: ApplyPathId, className = "size-5"): ReactNode {
   if (categoryId === "volunteer") {
@@ -173,13 +234,29 @@ export default function Dashboard({
     author: string;
     date: string;
     image: string;
+    contentHtml: string;
+    channels: MediaChannelId[];
+    channelStatus: Record<MediaChannelId, MediaChannelStatus>;
+    whatsappAudience: string;
   }>({
     title: "",
     excerpt: "",
-    author: "",
+    author: "Campaign Team",
     date: new Date().toISOString().split("T")[0],
     image: "",
+    contentHtml: "<p>Start writing your campaign message here...</p>",
+    channels: MEDIA_DEFAULT_CHANNELS,
+    channelStatus: {
+      whatsapp: "draft",
+      instagram: "draft",
+      facebook: "draft",
+      twitter: "draft",
+    },
+    whatsappAudience: "Volunteer broadcast",
   });
+  const [isMediaDetailsOpen, setIsMediaDetailsOpen] = useState(false);
+  const [isMediaChannelsOpen, setIsMediaChannelsOpen] = useState(false);
+  const mediaComposerRef = useRef<HTMLDivElement>(null);
   const [newApplicationField, setNewApplicationField] = useState<{
     label: string;
     type: ApplicationFieldType;
@@ -291,6 +368,27 @@ export default function Dashboard({
   const mediaColumns = useMemo<DataTableColumn<FundraiserConfig["blogPosts"][number]>[]>(
     () => [
       { key: "title", header: "Story title", accessor: (row) => row.title, sortable: true },
+      {
+        key: "channels",
+        header: "Channels",
+        accessor: (row) => (row.channels ?? []).join(", "),
+        sortable: false,
+        searchable: false,
+        cell: (row) => (
+          <div className="flex flex-wrap gap-1">
+            {(row.channels ?? []).length ? (
+              (row.channels ?? []).map((channel) => (
+                <Badge key={`${row.id}-${channel}`} className={MEDIA_CHANNEL_META[channel].badgeClassName}>
+                  {MEDIA_CHANNEL_META[channel].icon}
+                  {MEDIA_CHANNEL_META[channel].label}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-xs text-slate-500">Not assigned</span>
+            )}
+          </div>
+        ),
+      },
       { key: "author", header: "Author", accessor: (row) => row.author, sortable: true },
       { key: "date", header: "Publish date", accessor: (row) => row.date, sortable: true },
       { key: "excerpt", header: "Summary", accessor: (row) => row.excerpt, sortable: false },
@@ -312,6 +410,76 @@ export default function Dashboard({
       },
     ],
     [config.blogPosts, onUpdate],
+  );
+
+  const mediaActivityRows = useMemo<MediaActivityRow[]>(
+    () =>
+      config.blogPosts.flatMap((post) => {
+        const channels = post.channels ?? [];
+        return channels.map((channel) => ({
+          id: `${post.id}-${channel}`,
+          channel,
+          postTitle: post.title,
+          campaign: selectedCampaign?.name ?? config.title,
+          scheduledFor: post.date,
+          status: post.channelStatus?.[channel] ?? "draft",
+          audience:
+            channel === "whatsapp"
+              ? post.whatsappAudience ?? MEDIA_CHANNEL_META.whatsapp.audienceLabel
+              : MEDIA_CHANNEL_META[channel].audienceLabel,
+        }));
+      }),
+    [config.blogPosts, config.title, selectedCampaign?.name],
+  );
+
+  const mediaActivityColumns = useMemo<DataTableColumn<MediaActivityRow>[]>(
+    () => [
+      {
+        key: "channel",
+        header: "Channel",
+        accessor: (row) => row.channel,
+        sortable: true,
+        cell: (row) => (
+          <Badge className={MEDIA_CHANNEL_META[row.channel].badgeClassName}>
+            {MEDIA_CHANNEL_META[row.channel].icon}
+            {MEDIA_CHANNEL_META[row.channel].label}
+          </Badge>
+        ),
+      },
+      { key: "postTitle", header: "Post", accessor: (row) => row.postTitle, sortable: true },
+      { key: "campaign", header: "Campaign", accessor: (row) => row.campaign, sortable: true },
+      { key: "scheduledFor", header: "Planned date", accessor: (row) => row.scheduledFor, sortable: true },
+      {
+        key: "status",
+        header: "Status",
+        accessor: (row) => row.status,
+        sortable: true,
+        cell: (row) => (
+          <Badge
+            className={
+              row.status === "live"
+                ? "bg-emerald-100 text-emerald-700"
+                : row.status === "scheduled"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-slate-100 text-slate-700"
+            }
+          >
+            {row.status}
+          </Badge>
+        ),
+      },
+      { key: "audience", header: "Audience", accessor: (row) => row.audience, sortable: false },
+    ],
+    [],
+  );
+
+  const mediaActivitySummary = useMemo(
+    () => ({
+      live: mediaActivityRows.filter((row) => row.status === "live").length,
+      scheduled: mediaActivityRows.filter((row) => row.status === "scheduled").length,
+      draft: mediaActivityRows.filter((row) => row.status === "draft").length,
+    }),
+    [mediaActivityRows],
   );
 
   const activeApplicationForm = config.applicationForms[activeApplicationCategory];
@@ -367,6 +535,43 @@ export default function Dashboard({
     [activeApplicationCategory, activeApplicationForm, config.applicationForms, onUpdate],
   );
 
+  const applyMediaComposerFormat = (command: "bold" | "italic" | "insertUnorderedList" | "formatBlock" | "createLink", value?: string) => {
+    if (!mediaComposerRef.current) {
+      return;
+    }
+
+    mediaComposerRef.current.focus();
+    document.execCommand(command, false, value);
+
+    setNewMediaPost((current) => ({
+      ...current,
+      contentHtml: mediaComposerRef.current?.innerHTML ?? current.contentHtml,
+    }));
+  };
+
+  const toggleMediaChannel = (channel: MediaChannelId, checked: boolean) => {
+    setNewMediaPost((current) => {
+      const nextChannels = checked
+        ? Array.from(new Set([...current.channels, channel]))
+        : current.channels.filter((entry) => entry !== channel);
+
+      return {
+        ...current,
+        channels: nextChannels,
+      };
+    });
+  };
+
+  const updateMediaChannelStatus = (channel: MediaChannelId, status: MediaChannelStatus) => {
+    setNewMediaPost((current) => ({
+      ...current,
+      channelStatus: {
+        ...current.channelStatus,
+        [channel]: status,
+      },
+    }));
+  };
+
   const handleAiEvent = async () => {
     setIsGenerating("event");
     try {
@@ -390,19 +595,17 @@ export default function Dashboard({
     setIsGenerating("blog");
     try {
       const generated = await generateBlogPost(config.title);
-      onUpdate({
-        blogPosts: [
-          {
-            id: `blog-${Date.now()}`,
-            title: generated.title ?? "Campaign update",
-            excerpt: generated.excerpt ?? "New update published.",
-            content: generated.content ?? "Story details pending.",
-            date: new Date().toLocaleDateString(),
-            author: "Content Bot",
-          },
-          ...config.blogPosts,
-        ],
-      });
+      const nextHtml = `<p>${(generated.content ?? generated.excerpt ?? "Story details pending.").replace(/\n/g, "</p><p>")}</p>`;
+      setNewMediaPost((current) => ({
+        ...current,
+        title: generated.title ?? current.title,
+        excerpt: generated.excerpt ?? current.excerpt,
+        contentHtml: nextHtml,
+      }));
+      if (mediaComposerRef.current) {
+        mediaComposerRef.current.innerHTML = nextHtml;
+      }
+      setIsMediaDetailsOpen(true);
     } finally {
       setIsGenerating(null);
     }
@@ -437,7 +640,9 @@ export default function Dashboard({
   };
 
   const handleCreateMediaPost = () => {
-    if (!newMediaPost.title.trim() || !newMediaPost.excerpt.trim() || !newMediaPost.author.trim() || !newMediaPost.date) {
+    const bodyText = htmlToPlainText(newMediaPost.contentHtml).trim();
+    const excerpt = newMediaPost.excerpt.trim() || bodyText.slice(0, 180);
+    if (!newMediaPost.title.trim() || !bodyText || !newMediaPost.author.trim() || !newMediaPost.date || !newMediaPost.channels.length) {
       return;
     }
 
@@ -446,11 +651,14 @@ export default function Dashboard({
         {
           id: `blog-${Date.now()}`,
           title: newMediaPost.title.trim(),
-          excerpt: newMediaPost.excerpt.trim(),
-          content: newMediaPost.excerpt.trim(),
+          excerpt,
+          content: newMediaPost.contentHtml.trim(),
           author: newMediaPost.author.trim(),
           date: toShortDate(newMediaPost.date),
           image: newMediaPost.image || undefined,
+          channels: newMediaPost.channels,
+          channelStatus: newMediaPost.channelStatus,
+          whatsappAudience: newMediaPost.whatsappAudience,
         },
         ...config.blogPosts,
       ],
@@ -459,10 +667,22 @@ export default function Dashboard({
     setNewMediaPost({
       title: "",
       excerpt: "",
-      author: "",
+      author: "Campaign Team",
       date: new Date().toISOString().split("T")[0],
       image: "",
+      contentHtml: "<p>Start writing your campaign message here...</p>",
+      channels: MEDIA_DEFAULT_CHANNELS,
+      channelStatus: {
+        whatsapp: "draft",
+        instagram: "draft",
+        facebook: "draft",
+        twitter: "draft",
+      },
+      whatsappAudience: "Volunteer broadcast",
     });
+    if (mediaComposerRef.current) {
+      mediaComposerRef.current.innerHTML = "<p>Start writing your campaign message here...</p>";
+    }
   };
 
   const updateActiveApplicationForm = (updates: Partial<FundraiserConfig["applicationForms"][ApplyPathId]>) => {
@@ -930,6 +1150,265 @@ export default function Dashboard({
           </TabsContent>
 
           <TabsContent value="media" className="space-y-6">
+            <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+              <Card className="glass-surface">
+                <CardHeader>
+                  <CardTitle className="font-display text-2xl">Media studio</CardTitle>
+                  <CardDescription>
+                    Write once, adapt per channel, and publish with a cleaner WYSIWYG workflow.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Sheet open={isMediaDetailsOpen} onOpenChange={setIsMediaDetailsOpen}>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" type="button">
+                          <LayoutTemplate className="size-4" />
+                          Post details
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-full max-w-xl overflow-y-auto bg-white">
+                        <SheetHeader className="mb-4">
+                          <SheetTitle>Post details</SheetTitle>
+                          <SheetDescription>
+                            Keep these fields tucked away until you need them.
+                          </SheetDescription>
+                        </SheetHeader>
+
+                        <div className="space-y-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="media-title">Story title</Label>
+                            <Input
+                              id="media-title"
+                              value={newMediaPost.title}
+                              onChange={(event) => setNewMediaPost((current) => ({ ...current, title: event.target.value }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="media-excerpt">Short summary (optional)</Label>
+                            <Textarea
+                              id="media-excerpt"
+                              rows={3}
+                              value={newMediaPost.excerpt}
+                              onChange={(event) => setNewMediaPost((current) => ({ ...current, excerpt: event.target.value }))}
+                            />
+                          </div>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label htmlFor="media-author">Author</Label>
+                              <Input
+                                id="media-author"
+                                value={newMediaPost.author}
+                                onChange={(event) => setNewMediaPost((current) => ({ ...current, author: event.target.value }))}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="media-date">Publish date</Label>
+                              <Input
+                                id="media-date"
+                                type="date"
+                                value={newMediaPost.date}
+                                onChange={(event) => setNewMediaPost((current) => ({ ...current, date: event.target.value }))}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Cover image</Label>
+                            <Button variant="outline" className="w-full" type="button" asChild>
+                              <label className="cursor-pointer">
+                                <ImagePlus className="size-4" />
+                                Upload cover image
+                                <input
+                                  type="file"
+                                  accept={IMAGE_FILE_ACCEPT}
+                                  className="hidden"
+                                  onChange={(event) => handleMediaImageUpload(event.target.files?.[0])}
+                                />
+                              </label>
+                            </Button>
+                            <Input
+                              value={newMediaPost.image}
+                              onChange={(event) => setNewMediaPost((current) => ({ ...current, image: event.target.value }))}
+                              placeholder="Or paste image URL"
+                            />
+                          </div>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+
+                    <Sheet open={isMediaChannelsOpen} onOpenChange={setIsMediaChannelsOpen}>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" type="button">
+                          <Layers className="size-4" />
+                          Channel settings
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-full max-w-xl overflow-y-auto bg-white">
+                        <SheetHeader className="mb-4">
+                          <SheetTitle>Channel manager</SheetTitle>
+                          <SheetDescription>
+                            Control WhatsApp communications and social platform activity from one panel.
+                          </SheetDescription>
+                        </SheetHeader>
+
+                        <div className="space-y-4">
+                          {(Object.keys(MEDIA_CHANNEL_META) as MediaChannelId[]).map((channel) => (
+                            <Card key={channel} className="border-slate-200/80">
+                              <CardContent className="space-y-3 p-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="inline-flex items-center gap-2 font-medium text-slate-900">
+                                      {MEDIA_CHANNEL_META[channel].icon}
+                                      {MEDIA_CHANNEL_META[channel].label}
+                                    </p>
+                                    <p className="text-xs text-slate-500">{MEDIA_CHANNEL_META[channel].audienceLabel}</p>
+                                  </div>
+                                  <Switch
+                                    checked={newMediaPost.channels.includes(channel)}
+                                    onCheckedChange={(checked) => toggleMediaChannel(channel, checked)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label>Publishing status</Label>
+                                  <Select
+                                    value={newMediaPost.channelStatus[channel]}
+                                    onValueChange={(value) => updateMediaChannelStatus(channel, value as MediaChannelStatus)}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="draft">Draft</SelectItem>
+                                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                                      <SelectItem value="live">Live</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+
+                          {newMediaPost.channels.includes("whatsapp") ? (
+                            <div className="space-y-2">
+                              <Label htmlFor="whatsapp-audience">WhatsApp audience</Label>
+                              <Input
+                                id="whatsapp-audience"
+                                value={newMediaPost.whatsappAudience}
+                                onChange={(event) =>
+                                  setNewMediaPost((current) => ({ ...current, whatsappAudience: event.target.value }))
+                                }
+                                placeholder="Example: Event volunteers and local coordinators"
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+
+                    <Button onClick={handleAiBlog} disabled={isGenerating === "blog"} type="button" variant="outline">
+                      <Sparkles className={isGenerating === "blog" ? "size-4 animate-spin" : "size-4"} />
+                      {isGenerating === "blog" ? "Generating..." : "Generate draft"}
+                    </Button>
+                    <Button onClick={handleCreateMediaPost} type="button">
+                      <SendHorizontal className="size-4" />
+                      Publish to queue
+                    </Button>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white">
+                    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2">
+                      <Button type="button" size="sm" variant="outline" onClick={() => applyMediaComposerFormat("bold")}>
+                        <Bold className="size-4" />
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => applyMediaComposerFormat("italic")}>
+                        <Italic className="size-4" />
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => applyMediaComposerFormat("formatBlock", "h2")}>
+                        <Heading2 className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyMediaComposerFormat("insertUnorderedList")}
+                      >
+                        <List className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const url = window.prompt("Enter a URL");
+                          if (url) {
+                            applyMediaComposerFormat("createLink", url);
+                          }
+                        }}
+                      >
+                        <Link className="size-4" />
+                      </Button>
+                    </div>
+                    <div
+                      ref={mediaComposerRef}
+                      className="min-h-[14rem] px-4 py-3 text-sm text-slate-700 outline-none [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-lg [&_h2]:font-semibold [&_li]:ml-4 [&_li]:list-disc [&_p]:mb-2"
+                      contentEditable
+                      suppressContentEditableWarning
+                      dangerouslySetInnerHTML={{ __html: newMediaPost.contentHtml }}
+                      onInput={(event) =>
+                        setNewMediaPost((current) => ({
+                          ...current,
+                          contentHtml: event.currentTarget.innerHTML,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {newMediaPost.channels.map((channel) => (
+                      <Card key={`composer-preview-${channel}`} className="border-slate-200/80">
+                        <CardContent className="space-y-2 p-4">
+                          <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-900">
+                            {MEDIA_CHANNEL_META[channel].icon}
+                            {MEDIA_CHANNEL_META[channel].label}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Status: {newMediaPost.channelStatus[channel]} | Audience:{" "}
+                            {channel === "whatsapp" ? newMediaPost.whatsappAudience : MEDIA_CHANNEL_META[channel].audienceLabel}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-surface">
+                <CardHeader>
+                  <CardTitle className="font-display text-2xl">Distribution pulse</CardTitle>
+                  <CardDescription>Quick read of live, scheduled, and draft channel activity.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid gap-3">
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                      <p className="text-xs uppercase tracking-[0.15em] text-emerald-700">Live posts</p>
+                      <p className="font-display text-3xl text-emerald-800">{mediaActivitySummary.live}</p>
+                    </div>
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+                      <p className="text-xs uppercase tracking-[0.15em] text-amber-700">Scheduled posts</p>
+                      <p className="font-display text-3xl text-amber-800">{mediaActivitySummary.scheduled}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-100 px-3 py-2">
+                      <p className="text-xs uppercase tracking-[0.15em] text-slate-700">Draft posts</p>
+                      <p className="font-display text-3xl text-slate-800">{mediaActivitySummary.draft}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    WhatsApp coordination, Instagram/Facebook storytelling, and Twitter updates are managed from this one media studio.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
             <DataTable
               title="Media stories"
               description="Search and sort every story shown on your public media page."
@@ -940,92 +1419,15 @@ export default function Dashboard({
               searchPlaceholder="Search stories..."
             />
 
-            <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-              <Card className="glass-surface">
-                <CardHeader>
-                  <CardTitle className="font-display text-2xl">Manage media</CardTitle>
-                  <CardDescription>Add stories, set cover images, and keep your public media page fresh.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="media-title">Story title</Label>
-                    <Input
-                      id="media-title"
-                      value={newMediaPost.title}
-                      onChange={(event) => setNewMediaPost((current) => ({ ...current, title: event.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="media-excerpt">Short summary</Label>
-                    <Textarea
-                      id="media-excerpt"
-                      rows={3}
-                      value={newMediaPost.excerpt}
-                      onChange={(event) => setNewMediaPost((current) => ({ ...current, excerpt: event.target.value }))}
-                    />
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="media-author">Author</Label>
-                      <Input
-                        id="media-author"
-                        value={newMediaPost.author}
-                        onChange={(event) => setNewMediaPost((current) => ({ ...current, author: event.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="media-date">Publish date</Label>
-                      <Input
-                        id="media-date"
-                        type="date"
-                        value={newMediaPost.date}
-                        onChange={(event) => setNewMediaPost((current) => ({ ...current, date: event.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Cover image</Label>
-                    <Button variant="outline" className="w-full" type="button" asChild>
-                      <label className="cursor-pointer">
-                        <ImagePlus className="size-4" />
-                        Upload cover image
-                        <input
-                          type="file"
-                          accept={IMAGE_FILE_ACCEPT}
-                          className="hidden"
-                          onChange={(event) => handleMediaImageUpload(event.target.files?.[0])}
-                        />
-                      </label>
-                    </Button>
-                    <Input
-                      value={newMediaPost.image}
-                      onChange={(event) => setNewMediaPost((current) => ({ ...current, image: event.target.value }))}
-                      placeholder="Or paste image URL"
-                    />
-                  </div>
-                  <Button onClick={handleCreateMediaPost} type="button">
-                    <Plus className="size-4" />
-                    Add media story
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-surface">
-                <CardHeader>
-                  <CardTitle className="font-display text-2xl">Smart draft helper</CardTitle>
-                  <CardDescription>Need a quick start? Generate a story draft and edit it before sharing.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full" onClick={handleAiBlog} disabled={isGenerating === "blog"} type="button">
-                    <Sparkles className={isGenerating === "blog" ? "size-4 animate-spin" : "size-4"} />
-                    {isGenerating === "blog" ? "Generating draft..." : "Generate story draft"}
-                  </Button>
-                  <p className="text-sm text-slate-600">
-                    Drafts appear in your media list right away so your team can refine and publish.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <DataTable
+              title="Channel activity"
+              description="Cross-channel publishing activity, including WhatsApp communications and social feed readiness."
+              data={mediaActivityRows}
+              columns={mediaActivityColumns}
+              defaultSortKey="scheduledFor"
+              defaultSortDirection="desc"
+              searchPlaceholder="Search channel activity..."
+            />
           </TabsContent>
 
           <TabsContent value="fundraising" className="space-y-6">
@@ -1696,4 +2098,13 @@ function StatCard({ title, value, icon }: StatCardProps) {
 
 function toShortDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

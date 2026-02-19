@@ -101,6 +101,9 @@ export interface BlogPost {
   campaignId?: string;
   fundraiserId?: string;
   image?: string;
+  channels?: ("whatsapp" | "instagram" | "facebook" | "twitter")[];
+  channelStatus?: Partial<Record<"whatsapp" | "instagram" | "facebook" | "twitter", "draft" | "scheduled" | "live">>;
+  whatsappAudience?: string;
 }
 
 export interface Application {
