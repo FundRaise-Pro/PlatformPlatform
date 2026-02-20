@@ -6,19 +6,20 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
-import { PageSections } from "@/components/preview/PageSections";
+import { PageSections, PageSectionsBuilderProps } from "@/components/preview/PageSections";
 
 interface PartnersPageProps {
   config: FundraiserConfig;
+  sectionBuilder?: PageSectionsBuilderProps;
 }
 
-export function PartnersPage({ config }: PartnersPageProps) {
+export function PartnersPage({ config, sectionBuilder }: PartnersPageProps) {
   const customization = config.pageCustomizations.partners;
 
   return (
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
       <PageHero customization={customization} campaignLabel="Partnership ecosystem" />
-      <PageSections sections={customization.sections} />
+      <PageSections sections={customization.sections} builder={sectionBuilder} />
 
       <Card className="border-white/90 bg-white/90 shadow-soft">
         <CardHeader>

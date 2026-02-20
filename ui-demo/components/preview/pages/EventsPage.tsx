@@ -4,26 +4,32 @@ import { Button } from "@/components/ui/button";
 import { EventCalendar } from "@/components/EventCalendar";
 import { FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
-import { PageSections } from "@/components/preview/PageSections";
+import { PageSections, PageSectionsBuilderProps } from "@/components/preview/PageSections";
 
 interface EventsPageProps {
   config: FundraiserConfig;
+  sectionBuilder?: PageSectionsBuilderProps;
 }
 
-export function EventsPage({ config }: EventsPageProps) {
+export function EventsPage({ config, sectionBuilder }: EventsPageProps) {
   const customization = config.pageCustomizations.events;
+  const allEvents = config.campaigns.flatMap((campaign) => campaign.events);
+  const campaignNameLookup = config.campaigns.reduce<Record<string, string>>((accumulator, campaign) => {
+    accumulator[campaign.id] = campaign.name;
+    return accumulator;
+  }, {});
 
   return (
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
       <PageHero customization={customization} campaignLabel="Community events" />
-      <PageSections sections={customization.sections} />
+      <PageSections sections={customization.sections} builder={sectionBuilder} />
       <EventCalendar
-        events={config.events}
+        events={allEvents}
         title="Event calendar"
         description="Dates with events are highlighted so supporters can plan participation early."
       />
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {config.events.map((event) => (
+        {allEvents.map((event) => (
           <Card key={event.id} className="border-white/90 bg-white/90 shadow-soft">
             <CardHeader>
               <div className="mb-3 inline-flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
@@ -42,6 +48,9 @@ export function EventsPage({ config }: EventsPageProps) {
                   day: "numeric",
                   year: "numeric",
                 })}
+              </p>
+              <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
+                {campaignNameLookup[event.campaignId] ?? "Campaign"}
               </p>
               {event.volunteerIds?.length ? (
                 <p className="text-xs text-slate-500">

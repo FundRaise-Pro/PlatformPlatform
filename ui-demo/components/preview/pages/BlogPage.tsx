@@ -3,26 +3,35 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
-import { PageSections } from "@/components/preview/PageSections";
+import { PageSections, PageSectionsBuilderProps } from "@/components/preview/PageSections";
 
 interface BlogPageProps {
   config: FundraiserConfig;
+  sectionBuilder?: PageSectionsBuilderProps;
 }
 
-export function BlogPage({ config }: BlogPageProps) {
+export function BlogPage({ config, sectionBuilder }: BlogPageProps) {
   const customization = config.pageCustomizations.blog;
+  const allPosts = config.campaigns.flatMap((campaign) => campaign.mediaPosts);
+  const campaignNameLookup = config.campaigns.reduce<Record<string, string>>((accumulator, campaign) => {
+    accumulator[campaign.id] = campaign.name;
+    return accumulator;
+  }, {});
 
   return (
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
       <PageHero customization={customization} campaignLabel="Media and updates" />
-      <PageSections sections={customization.sections} />
+      <PageSections sections={customization.sections} builder={sectionBuilder} />
       <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        {config.blogPosts.map((post) => (
+        {allPosts.map((post) => (
           <Card key={post.id} className="flex flex-col overflow-hidden border-white/90 bg-white/90 shadow-soft">
             <img src={post.image} alt={post.title} className="h-48 w-full object-cover" loading="lazy" />
             <CardHeader>
               <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">
                 {post.date} | {post.author}
+              </p>
+              <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
+                {campaignNameLookup[post.campaignId ?? ""] ?? "Campaign update"}
               </p>
               <CardTitle className="font-display text-2xl text-slate-900">{post.title}</CardTitle>
             </CardHeader>

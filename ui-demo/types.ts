@@ -6,6 +6,7 @@ export type CrmTabId = "donors" | "partners";
 export type PublicPageId = "landing" | "fundraisers" | "events" | "blog" | "partners" | "apply";
 export type ApplyPathId = "volunteer" | "help" | "sponsor";
 export type CampaignPreset = "general" | "fundraiser-based" | "hybrid";
+export type CampaignLifecycleStatus = "active" | "completed" | "archived" | "planned";
 
 export interface DonationTier {
   id: string;
@@ -229,6 +230,7 @@ export interface CampaignRecord {
   slug: string;
   name: string;
   description: string;
+  lifecycleStatus?: CampaignLifecycleStatus;
   preset: CampaignPreset;
   allowsDirectDonations: boolean;
   allowsFundraisers: boolean;
@@ -252,6 +254,15 @@ export interface NarrativeSection {
   description: string;
   image: string;
   ctaLabel: string;
+  ctaUrl?: string;
+  ctaOpenInNewTab?: boolean;
+  mediaType?: "image" | "video";
+  mediaUrl?: string;
+  layout?: {
+    columnSpan: number;
+    minHeightRem: number;
+    order: number;
+  };
 }
 
 export interface PageCustomization {
@@ -259,6 +270,8 @@ export interface PageCustomization {
   heading: string;
   subheading: string;
   heroImage: string;
+  heroMediaType?: "image" | "video";
+  heroMediaUrl?: string;
   isVisible: boolean;
   sections: NarrativeSection[];
 }

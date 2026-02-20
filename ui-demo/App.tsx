@@ -22,10 +22,11 @@ import {
 } from "@/features/crm/allocationPolicy";
 import { PartnerOnboardingDialog } from "@/features/crm/PartnerOnboardingDialog";
 import { SideNavButton } from "@/features/shell/SideNavButton";
+import { getSectionLayout } from "@/lib/builderLayout";
 import { readImageFile } from "@/lib/fileUploads";
 import { INITIAL_CONFIG } from "@/lib/defaultConfig";
 import { useHashRoute } from "@/hooks/useHashRoute";
-import { ApplyPathId, Donation, FundraiserConfig, Partner } from "@/types";
+import { ApplyPathId, Donation, FundraiserConfig, Partner, PublicPageId } from "@/types";
 
 const INITIAL_NEW_PARTNER: Partial<Partner> = {
   name: "",
@@ -54,6 +55,7 @@ export default function App() {
     donorIntentConfirmed: false,
     boardResolutionReference: "",
   });
+  const [focusedBuilderSectionId, setFocusedBuilderSectionId] = useState<string | null>(null);
   const { route, setApplyPath, setCampaignSlug, setCrmTab, setFundraiserSlug, setPublicPage, setView } = useHashRoute();
 
   const activeCampaign = useMemo(
@@ -88,6 +90,10 @@ export default function App() {
 
     setAllocationDraft((current) => ({ ...current, targetFundraiserId: activeCampaignFundraisers[0].id }));
   }, [activeCampaignFundraisers, allocationDraft.targetFundraiserId]);
+
+  useEffect(() => {
+    setFocusedBuilderSectionId(null);
+  }, [route.publicPage, route.view]);
 
   const scopedConfig = useMemo<FundraiserConfig>(() => {
     const campaign = activeCampaign;
@@ -213,6 +219,63 @@ export default function App() {
       partnerMentions: nextConfig.partnerMentions,
       pageCustomizations: nextConfig.pageCustomizations,
     });
+  };
+
+  const updateBuilderPageSection = (
+    pageId: PublicPageId,
+    sectionId: string,
+    updates: Partial<FundraiserConfig["pageCustomizations"][PublicPageId]["sections"][number]>,
+  ) => {
+    setConfig((current) => ({
+      ...current,
+      pageCustomizations: {
+        ...current.pageCustomizations,
+        [pageId]: {
+          ...current.pageCustomizations[pageId],
+          sections: current.pageCustomizations[pageId].sections.map((section, index) => {
+            if (section.id !== sectionId) {
+              return section;
+            }
+
+            const currentLayout = getSectionLayout(section, index);
+            return {
+              ...section,
+              ...updates,
+              layout: updates.layout
+                ? {
+                    ...currentLayout,
+                    ...updates.layout,
+                  }
+                : section.layout,
+            };
+          }),
+        },
+      },
+    }));
+  };
+
+  const reorderBuilderPageSections = (pageId: PublicPageId, orderedSectionIds: string[]) => {
+    const orderLookup = orderedSectionIds.reduce<Record<string, number>>((accumulator, id, index) => {
+      accumulator[id] = index;
+      return accumulator;
+    }, {});
+
+    setConfig((current) => ({
+      ...current,
+      pageCustomizations: {
+        ...current.pageCustomizations,
+        [pageId]: {
+          ...current.pageCustomizations[pageId],
+          sections: current.pageCustomizations[pageId].sections.map((section, index) => ({
+            ...section,
+            layout: {
+              ...getSectionLayout(section, index),
+              order: orderLookup[section.id] ?? index,
+            },
+          })),
+        },
+      },
+    }));
   };
 
   const handleDonate = (amount: number, name: string, tierId?: string) => {
@@ -721,9 +784,11 @@ export default function App() {
           config={scopedConfig}
           activePage={route.publicPage}
           applyPath={route.applyPath}
+          campaignSlug={route.campaignSlug}
           fundraiserSlug={route.fundraiserSlug}
           onNavigate={setPublicPage}
           onApplyPathChange={setApplyPath}
+          onCampaignChange={setCampaignSlug}
           onFundraiserChange={setFundraiserSlug}
           onDonate={handleDonate}
           onSubmitApplication={handleApplySubmission}
@@ -775,7 +840,14 @@ export default function App() {
 
         {route.view === "editor" ? (
           <div className="flex h-full">
-            <Editor config={scopedConfig} onChange={handleEditorChange} />
+            <Editor
+              config={scopedConfig}
+              activePage={route.publicPage}
+              focusedSectionId={focusedBuilderSectionId}
+              onActivePageChange={setPublicPage}
+              onFocusedSectionChange={setFocusedBuilderSectionId}
+              onChange={handleEditorChange}
+            />
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="flex items-center justify-between border-b border-white/70 bg-white/75 px-6 py-4 backdrop-blur-xl">
                 <div className="flex items-center gap-3">
@@ -801,12 +873,19 @@ export default function App() {
                       config={scopedConfig}
                       activePage={route.publicPage}
                       applyPath={route.applyPath}
+                      campaignSlug={route.campaignSlug}
                       fundraiserSlug={route.fundraiserSlug}
                       onNavigate={setPublicPage}
                       onApplyPathChange={setApplyPath}
+                      onCampaignChange={setCampaignSlug}
                       onFundraiserChange={setFundraiserSlug}
                       onDonate={handleDonate}
                       onSubmitApplication={handleApplySubmission}
+                      builderMode
+                      focusedSectionId={focusedBuilderSectionId}
+                      onFocusSection={setFocusedBuilderSectionId}
+                      onUpdatePageSection={updateBuilderPageSection}
+                      onReorderPageSections={reorderBuilderPageSections}
                     />
                   </div>
                 ) : (

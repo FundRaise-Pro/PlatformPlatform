@@ -1,16 +1,30 @@
 import { useMemo, useState } from "react";
 import {
   BadgeCheck,
+  Focus,
   ImagePlus,
   LayoutTemplate,
+  MoveHorizontal,
+  MoveVertical,
   Plus,
   Settings2,
   Sparkles,
   Trash2,
   Type,
   Users,
+  Video,
 } from "lucide-react";
 import { IMAGE_FILE_ACCEPT, PUBLIC_PAGE_ORDER } from "@/lib/constants";
+import {
+  DEFAULT_SECTION_COLUMN_SPAN,
+  DEFAULT_SECTION_MIN_HEIGHT_REM,
+  MAX_SECTION_COLUMN_SPAN,
+  MAX_SECTION_HEIGHT_REM,
+  MIN_SECTION_COLUMN_SPAN,
+  MIN_SECTION_HEIGHT_REM,
+  getSectionLayout,
+  sortSectionsForBuilder,
+} from "@/lib/builderLayout";
 import { readImageFile } from "@/lib/fileUploads";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +41,10 @@ import { FundraiserConfig, NarrativeSection, PublicPageId } from "@/types";
 
 interface EditorProps {
   config: FundraiserConfig;
+  activePage: PublicPageId;
+  focusedSectionId: string | null;
+  onActivePageChange: (pageId: PublicPageId) => void;
+  onFocusedSectionChange: (sectionId: string | null) => void;
   onChange: (config: FundraiserConfig) => void;
 }
 
@@ -36,11 +54,22 @@ const EMPTY_MENTION = {
   context: "",
 };
 
-export default function Editor({ config, onChange }: EditorProps) {
-  const [activePage, setActivePage] = useState<PublicPageId>("landing");
+export default function Editor({
+  config,
+  activePage,
+  focusedSectionId,
+  onActivePageChange,
+  onFocusedSectionChange,
+  onChange,
+}: EditorProps) {
   const [newMention, setNewMention] = useState(EMPTY_MENTION);
 
   const pageCustomization = config.pageCustomizations[activePage];
+  const orderedSections = useMemo(
+    () => sortSectionsForBuilder(pageCustomization.sections),
+    [pageCustomization.sections],
+  );
+  const focusedSection = orderedSections.find((section) => section.id === focusedSectionId) ?? null;
 
   const updateConfig = (updates: Partial<FundraiserConfig>) => {
     onChange({ ...config, ...updates });
@@ -60,10 +89,62 @@ export default function Editor({ config, onChange }: EditorProps) {
 
   const updatePageSection = (page: PublicPageId, sectionId: string, updates: Partial<NarrativeSection>) => {
     updatePageCustomization(page, {
-      sections: config.pageCustomizations[page].sections.map((section) =>
-        section.id === sectionId ? { ...section, ...updates } : section,
-      ),
+      sections: config.pageCustomizations[page].sections.map((section, index) => {
+        if (section.id !== sectionId) {
+          return section;
+        }
+
+        const currentLayout = getSectionLayout(section, index);
+        return {
+          ...section,
+          ...updates,
+          layout: updates.layout
+            ? {
+                ...currentLayout,
+                ...updates.layout,
+              }
+            : section.layout,
+        };
+      }),
     });
+  };
+
+  const applySectionOrder = (page: PublicPageId, orderedIds: string[]) => {
+    const orderLookup = orderedIds.reduce<Record<string, number>>((accumulator, id, index) => {
+      accumulator[id] = index;
+      return accumulator;
+    }, {});
+
+    updatePageCustomization(page, {
+      sections: config.pageCustomizations[page].sections.map((section, index) => ({
+        ...section,
+        layout: {
+          ...getSectionLayout(section, index),
+          order: orderLookup[section.id] ?? index,
+        },
+      })),
+    });
+  };
+
+  const moveFocusedSection = (direction: "up" | "down") => {
+    if (!focusedSection) {
+      return;
+    }
+
+    const index = orderedSections.findIndex((section) => section.id === focusedSection.id);
+    if (index < 0) {
+      return;
+    }
+
+    const targetIndex = direction === "up" ? Math.max(0, index - 1) : Math.min(orderedSections.length - 1, index + 1);
+    if (targetIndex === index) {
+      return;
+    }
+
+    const orderedIds = orderedSections.map((section) => section.id);
+    const [movedId] = orderedIds.splice(index, 1);
+    orderedIds.splice(targetIndex, 0, movedId);
+    applySectionOrder(activePage, orderedIds);
   };
 
   const addPageSection = (page: PublicPageId) => {
@@ -74,18 +155,32 @@ export default function Editor({ config, onChange }: EditorProps) {
       description: "Add context for this section.",
       image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=900&auto=format&fit=crop",
       ctaLabel: "Learn more",
+      ctaUrl: "",
+      ctaOpenInNewTab: false,
+      mediaType: "image",
+      mediaUrl: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=900&auto=format&fit=crop",
+      layout: {
+        columnSpan: DEFAULT_SECTION_COLUMN_SPAN,
+        minHeightRem: DEFAULT_SECTION_MIN_HEIGHT_REM,
+        order: nextIndex - 1,
+      },
     };
 
     updatePageCustomization(page, {
       sections: [...config.pageCustomizations[page].sections, section],
       heading: config.pageCustomizations[page].heading || `Page ${nextIndex}`,
     });
+    onFocusedSectionChange(section.id);
   };
 
   const removePageSection = (page: PublicPageId, sectionId: string) => {
     updatePageCustomization(page, {
       sections: config.pageCustomizations[page].sections.filter((section) => section.id !== sectionId),
     });
+
+    if (focusedSectionId === sectionId) {
+      onFocusedSectionChange(null);
+    }
   };
 
   const uploadPageHero = async (page: PublicPageId, file?: File) => {
@@ -94,7 +189,11 @@ export default function Editor({ config, onChange }: EditorProps) {
       return;
     }
 
-    updatePageCustomization(page, { heroImage: image });
+    updatePageCustomization(page, {
+      heroImage: image,
+      heroMediaType: "image",
+      heroMediaUrl: image,
+    });
   };
 
   const uploadSectionImage = async (page: PublicPageId, sectionId: string, file?: File) => {
@@ -103,7 +202,11 @@ export default function Editor({ config, onChange }: EditorProps) {
       return;
     }
 
-    updatePageSection(page, sectionId, { image });
+    updatePageSection(page, sectionId, {
+      image,
+      mediaType: "image",
+      mediaUrl: image,
+    });
   };
 
   const updateTierBenefitString = (tierId: string, nextValue: string) => {
@@ -153,26 +256,26 @@ export default function Editor({ config, onChange }: EditorProps) {
   );
 
   return (
-    <div className="flex h-full w-[27rem] shrink-0 flex-col border-r border-white/70 bg-white/85 backdrop-blur-xl xl:w-[30rem]">
+    <div className="flex h-full w-[27rem] shrink-0 flex-col border-r border-white/70 bg-white/85 backdrop-blur-xl xl:w-[31rem]">
       <div className="border-b border-slate-200/60 px-5 py-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Website Builder</p>
-            <h2 className="font-display text-2xl text-slate-900">Narrative Editor</h2>
+            <h2 className="font-display text-2xl text-slate-900">Visual Composer</h2>
           </div>
           <Sparkles className="size-6 text-emerald-600" />
         </div>
       </div>
 
-      <Tabs defaultValue="pages" className="flex min-h-0 flex-1 flex-col">
+      <Tabs defaultValue="builder" className="flex min-h-0 flex-1 flex-col">
         <TabsList className="mx-5 mt-4 grid grid-cols-3 rounded-xl">
+          <TabsTrigger value="builder" className="gap-1">
+            <LayoutTemplate className="size-4" />
+            Builder
+          </TabsTrigger>
           <TabsTrigger value="general" className="gap-1">
             <Settings2 className="size-4" />
-            General
-          </TabsTrigger>
-          <TabsTrigger value="pages" className="gap-1">
-            <LayoutTemplate className="size-4" />
-            Pages
+            Global
           </TabsTrigger>
           <TabsTrigger value="partners" className="gap-1">
             <Users className="size-4" />
@@ -274,18 +377,24 @@ export default function Editor({ config, onChange }: EditorProps) {
             </Card>
           </TabsContent>
 
-          <TabsContent value="pages" className="space-y-4 px-5 pb-6 pt-4">
+          <TabsContent value="builder" className="space-y-4 px-5 pb-6 pt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="font-display text-xl">Page customization studio</CardTitle>
+                <CardTitle className="font-display text-xl">Live canvas controls</CardTitle>
                 <CardDescription>
-                  Every public page has independent controls for navigation naming, hero visuals, and custom sections.
+                  Drag components on preview in a 12-column grid. Click any component to open focus mode editing.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Page target</Label>
-                  <Select value={activePage} onValueChange={(value) => setActivePage(value as PublicPageId)}>
+                  <Label>Active page</Label>
+                  <Select
+                    value={activePage}
+                    onValueChange={(value) => {
+                      onActivePageChange(value as PublicPageId);
+                      onFocusedSectionChange(null);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose page" />
                     </SelectTrigger>
@@ -298,13 +407,14 @@ export default function Editor({ config, onChange }: EditorProps) {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="navigationLabel">Navigation Label</Label>
-                  <Input
-                    id="navigationLabel"
-                    value={pageCustomization.navigationLabel}
-                    onChange={(event) => updatePageCustomization(activePage, { navigationLabel: event.target.value })}
-                  />
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Button type="button" className="rounded-full" onClick={() => addPageSection(activePage)}>
+                    <Plus className="size-4" />
+                    Add section
+                  </Button>
+                  <Button type="button" variant="outline" className="rounded-full" onClick={() => onFocusedSectionChange(null)}>
+                    Clear focus
+                  </Button>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
                   <div>
@@ -317,7 +427,191 @@ export default function Editor({ config, onChange }: EditorProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pageHeading">Page Heading</Label>
+                  <Label htmlFor="navigationLabel">Navigation label</Label>
+                  <Input
+                    id="navigationLabel"
+                    value={pageCustomization.navigationLabel}
+                    onChange={(event) => updatePageCustomization(activePage, { navigationLabel: event.target.value })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Focus mode inspector</CardTitle>
+                <CardDescription>
+                  Selected component controls appear here. Width and height map directly to preview resize handles.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {focusedSection ? (
+                  <>
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                      Editing: {focusedSection.title || "Untitled section"}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Section title</Label>
+                      <Input
+                        value={focusedSection.title}
+                        onChange={(event) => updatePageSection(activePage, focusedSection.id, { title: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Section description</Label>
+                      <Textarea
+                        rows={3}
+                        value={focusedSection.description}
+                        onChange={(event) => updatePageSection(activePage, focusedSection.id, { description: event.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>CTA label</Label>
+                        <Input
+                          value={focusedSection.ctaLabel}
+                          onChange={(event) => updatePageSection(activePage, focusedSection.id, { ctaLabel: event.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>CTA URL</Label>
+                        <Input
+                          value={focusedSection.ctaUrl ?? ""}
+                          onChange={(event) => updatePageSection(activePage, focusedSection.id, { ctaUrl: event.target.value })}
+                          placeholder="/internal-path or https://example.com"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">Open CTA in new tab</p>
+                        <p className="text-xs text-slate-500">Works for internal and external links.</p>
+                      </div>
+                      <Switch
+                        checked={focusedSection.ctaOpenInNewTab ?? false}
+                        onCheckedChange={(checked) => updatePageSection(activePage, focusedSection.id, { ctaOpenInNewTab: checked })}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Label>Media type</Label>
+                      <Select
+                        value={focusedSection.mediaType ?? "image"}
+                        onValueChange={(value) =>
+                          updatePageSection(activePage, focusedSection.id, { mediaType: value as "image" | "video" })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="image">Image</SelectItem>
+                          <SelectItem value="video">Embedded video URL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{(focusedSection.mediaType ?? "image") === "video" ? "Video embed URL" : "Image URL"}</Label>
+                      <Input
+                        value={focusedSection.mediaUrl ?? focusedSection.image}
+                        onChange={(event) =>
+                          updatePageSection(activePage, focusedSection.id, {
+                            mediaUrl: event.target.value,
+                            image: event.target.value,
+                          })
+                        }
+                      />
+                      {(focusedSection.mediaType ?? "image") === "image" ? (
+                        <Button type="button" variant="outline" className="w-full rounded-full" asChild>
+                          <label className="cursor-pointer">
+                            <ImagePlus className="size-4" />
+                            Upload section image
+                            <input
+                              type="file"
+                              accept={IMAGE_FILE_ACCEPT}
+                              className="hidden"
+                              onChange={(event) => uploadSectionImage(activePage, focusedSection.id, event.target.files?.[0])}
+                            />
+                          </label>
+                        </Button>
+                      ) : null}
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Label className="inline-flex items-center gap-2">
+                        <MoveHorizontal className="size-4 text-slate-500" />
+                        Width ({getSectionLayout(focusedSection, 0).columnSpan}/12)
+                      </Label>
+                      <Input
+                        type="range"
+                        min={String(MIN_SECTION_COLUMN_SPAN)}
+                        max={String(MAX_SECTION_COLUMN_SPAN)}
+                        value={String(getSectionLayout(focusedSection, 0).columnSpan)}
+                        onChange={(event) =>
+                          updatePageSection(activePage, focusedSection.id, {
+                            layout: {
+                              ...getSectionLayout(focusedSection, 0),
+                              columnSpan: Number(event.target.value),
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="inline-flex items-center gap-2">
+                        <MoveVertical className="size-4 text-slate-500" />
+                        Height ({getSectionLayout(focusedSection, 0).minHeightRem.toFixed(1)}rem)
+                      </Label>
+                      <Input
+                        type="range"
+                        min={String(MIN_SECTION_HEIGHT_REM)}
+                        max={String(MAX_SECTION_HEIGHT_REM)}
+                        step="0.5"
+                        value={String(getSectionLayout(focusedSection, 0).minHeightRem)}
+                        onChange={(event) =>
+                          updatePageSection(activePage, focusedSection.id, {
+                            layout: {
+                              ...getSectionLayout(focusedSection, 0),
+                              minHeightRem: Number(event.target.value),
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Button type="button" variant="outline" onClick={() => moveFocusedSection("up")}>
+                        Move up
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => moveFocusedSection("down")}>
+                        Move down
+                      </Button>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-rose-200 text-rose-700 hover:bg-rose-50"
+                      onClick={() => removePageSection(activePage, focusedSection.id)}
+                    >
+                      <Trash2 className="size-4" />
+                      Remove component
+                    </Button>
+                  </>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+                    Click any section in preview to open focus mode editing here.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Page frame controls</CardTitle>
+                <CardDescription>Hero media and heading controls for the current page.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="pageHeading">Page heading</Label>
                   <Input
                     id="pageHeading"
                     value={pageCustomization.heading}
@@ -325,7 +619,7 @@ export default function Editor({ config, onChange }: EditorProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pageSubheading">Page Subheading</Label>
+                  <Label htmlFor="pageSubheading">Page subheading</Label>
                   <Textarea
                     id="pageSubheading"
                     value={pageCustomization.subheading}
@@ -334,25 +628,89 @@ export default function Editor({ config, onChange }: EditorProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="heroImage">Hero Image URL</Label>
-                  <Input
-                    id="heroImage"
-                    value={pageCustomization.heroImage}
-                    onChange={(event) => updatePageCustomization(activePage, { heroImage: event.target.value })}
-                  />
-                  <Button type="button" variant="outline" className="w-full rounded-full" asChild>
-                    <label className="cursor-pointer">
-                      <ImagePlus className="size-4" />
-                      Upload hero image
-                      <input
-                        type="file"
-                        accept={IMAGE_FILE_ACCEPT}
-                        className="hidden"
-                        onChange={(event) => uploadPageHero(activePage, event.target.files?.[0])}
-                      />
-                    </label>
-                  </Button>
+                  <Label>Hero media type</Label>
+                  <Select
+                    value={pageCustomization.heroMediaType ?? "image"}
+                    onValueChange={(value) =>
+                      updatePageCustomization(activePage, { heroMediaType: value as "image" | "video" })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">Image</SelectItem>
+                      <SelectItem value="video">Embedded video URL</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="heroMediaUrl">
+                    {(pageCustomization.heroMediaType ?? "image") === "video" ? "Hero video URL" : "Hero image URL"}
+                  </Label>
+                  <Input
+                    id="heroMediaUrl"
+                    value={pageCustomization.heroMediaUrl ?? pageCustomization.heroImage}
+                    onChange={(event) =>
+                      updatePageCustomization(activePage, {
+                        heroMediaUrl: event.target.value,
+                        heroImage: event.target.value,
+                      })
+                    }
+                  />
+                  {(pageCustomization.heroMediaType ?? "image") === "image" ? (
+                    <Button type="button" variant="outline" className="w-full rounded-full" asChild>
+                      <label className="cursor-pointer">
+                        <ImagePlus className="size-4" />
+                        Upload hero image
+                        <input
+                          type="file"
+                          accept={IMAGE_FILE_ACCEPT}
+                          className="hidden"
+                          onChange={(event) => uploadPageHero(activePage, event.target.files?.[0])}
+                        />
+                      </label>
+                    </Button>
+                  ) : (
+                    <p className="inline-flex items-center gap-2 text-xs text-slate-500">
+                      <Video className="size-4" />
+                      Supports embedded URLs like YouTube and Vimeo.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Component map</CardTitle>
+                <CardDescription>Jump focus to any section in this page layout.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {orderedSections.length ? (
+                  orderedSections.map((section, index) => {
+                    const layout = getSectionLayout(section, index);
+                    return (
+                      <button
+                        type="button"
+                        key={section.id}
+                        className={`w-full rounded-xl border px-3 py-2 text-left transition ${
+                          focusedSectionId === section.id
+                            ? "border-emerald-400 bg-emerald-50"
+                            : "border-slate-200 bg-white hover:bg-slate-50"
+                        }`}
+                        onClick={() => onFocusedSectionChange(section.id)}
+                      >
+                        <p className="text-sm font-medium text-slate-900">{section.title || `Section ${index + 1}`}</p>
+                        <p className="text-xs text-slate-500">
+                          Span {layout.columnSpan}/12 | Min height {layout.minHeightRem}rem
+                        </p>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-slate-500">No sections yet. Add one to start designing.</p>
+                )}
               </CardContent>
             </Card>
 
@@ -374,72 +732,6 @@ export default function Editor({ config, onChange }: EditorProps) {
                 </CardHeader>
               </Card>
             ) : null}
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <div>
-                  <CardTitle className="font-display text-xl">Custom Sections</CardTitle>
-                  <CardDescription>Add context blocks for this page.</CardDescription>
-                </div>
-                <Button type="button" size="sm" className="rounded-full" onClick={() => addPageSection(activePage)}>
-                  <Plus className="size-4" />
-                  Add
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {pageCustomization.sections.map((section) => (
-                  <Card key={section.id} className="border-dashed border-slate-300">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                      <CardTitle className="text-base">Section block</CardTitle>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removePageSection(activePage, section.id)}
-                        className="rounded-full text-slate-500 hover:text-destructive"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <Input
-                        value={section.title}
-                        onChange={(event) => updatePageSection(activePage, section.id, { title: event.target.value })}
-                        placeholder="Section title"
-                      />
-                      <Textarea
-                        rows={2}
-                        value={section.description}
-                        onChange={(event) => updatePageSection(activePage, section.id, { description: event.target.value })}
-                        placeholder="Section description"
-                      />
-                      <Input
-                        value={section.ctaLabel}
-                        onChange={(event) => updatePageSection(activePage, section.id, { ctaLabel: event.target.value })}
-                        placeholder="CTA label"
-                      />
-                      <Input
-                        value={section.image}
-                        onChange={(event) => updatePageSection(activePage, section.id, { image: event.target.value })}
-                        placeholder="Image URL"
-                      />
-                      <Button type="button" variant="outline" className="w-full rounded-full" asChild>
-                        <label className="cursor-pointer">
-                          <ImagePlus className="size-4" />
-                          Upload section image
-                          <input
-                            type="file"
-                            accept={IMAGE_FILE_ACCEPT}
-                            className="hidden"
-                            onChange={(event) => uploadSectionImage(activePage, section.id, event.target.files?.[0])}
-                          />
-                        </label>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="partners" className="space-y-4 px-5 pb-6 pt-4">
@@ -587,6 +879,7 @@ export default function Editor({ config, onChange }: EditorProps) {
 
       <div className="border-t border-slate-200/60 px-5 py-4">
         <Button className="w-full rounded-full bg-slate-900 text-white hover:bg-slate-800">
+          <Focus className="size-4" />
           Publish preview updates
         </Button>
       </div>

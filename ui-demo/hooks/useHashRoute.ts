@@ -230,11 +230,12 @@ export function useHashRoute() {
   );
 
   const setFundraiserSlug = useCallback(
-    (fundraiserSlug: string) => {
+    (fundraiserSlug: string, campaignSlug?: string) => {
       const nextRoute: AppRoute = {
         ...route,
         view: route.view === "editor" || route.view === "public" ? route.view : "dashboard",
         publicPage: "fundraisers",
+        campaignSlug: campaignSlug ?? route.campaignSlug,
         fundraiserSlug,
       };
       window.location.hash = toHash(nextRoute);

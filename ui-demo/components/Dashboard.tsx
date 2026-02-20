@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useRef, useState } from "react";
 import {
   Bold,
+  AlertTriangle,
   BadgeCheck,
   BookOpen,
   CalendarDays,
@@ -199,7 +200,30 @@ const DOMAIN_ROWS = [
 const DOMAIN_COLUMNS: DataTableColumn<(typeof DOMAIN_ROWS)[number]>[] = [
   { key: "domain", header: "Domain", accessor: (row) => row.domain, sortable: true },
   { key: "route", header: "Where to manage", accessor: (row) => row.route, sortable: true },
-  { key: "status", header: "Status", accessor: (row) => row.status, sortable: true },
+  {
+    key: "status",
+    header: "Status",
+    accessor: (row) => row.status,
+    sortable: true,
+    cell: (row) => (
+      <Badge
+        className={
+          row.status === "Ready"
+            ? "bg-emerald-100 text-emerald-700"
+            : row.status === "Coming soon"
+              ? "bg-amber-100 text-amber-700"
+              : "bg-red-100 text-red-700"
+        }
+      >
+        <span
+          className={`inline-block size-2 rounded-full ${
+            row.status === "Ready" ? "bg-emerald-500" : row.status === "Coming soon" ? "bg-amber-500" : "bg-red-500"
+          }`}
+        />
+        {row.status}
+      </Badge>
+    ),
+  },
   { key: "owner", header: "Owner", accessor: (row) => row.owner, sortable: true },
 ];
 
@@ -1064,6 +1088,7 @@ export default function Dashboard({
               <TabsList className="h-auto w-full justify-start gap-1 rounded-none bg-transparent p-0">
                 <TabsTrigger
                   value="overview"
+                  title={DASHBOARD_TAB_META.overview.label}
                   className="h-10 gap-2 rounded-lg border border-transparent px-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 data-[state=active]:border-slate-200 data-[state=active]:bg-slate-100 data-[state=active]:text-indigo-700"
                 >
                   {DASHBOARD_TAB_META.overview.icon}
@@ -1071,6 +1096,7 @@ export default function Dashboard({
                 </TabsTrigger>
                 <TabsTrigger
                   value="media"
+                  title={DASHBOARD_TAB_META.media.label}
                   className="h-10 gap-2 rounded-lg border border-transparent px-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 data-[state=active]:border-slate-200 data-[state=active]:bg-slate-100 data-[state=active]:text-indigo-700"
                 >
                   {DASHBOARD_TAB_META.media.icon}
@@ -1078,6 +1104,7 @@ export default function Dashboard({
                 </TabsTrigger>
                 <TabsTrigger
                   value="fundraising"
+                  title={DASHBOARD_TAB_META.fundraising.label}
                   className="h-10 gap-2 rounded-lg border border-transparent px-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 data-[state=active]:border-slate-200 data-[state=active]:bg-slate-100 data-[state=active]:text-indigo-700"
                 >
                   {DASHBOARD_TAB_META.fundraising.icon}
@@ -1085,13 +1112,16 @@ export default function Dashboard({
                 </TabsTrigger>
                 <TabsTrigger
                   value="events"
+                  title={DASHBOARD_TAB_META.events.label}
                   className="h-10 gap-2 rounded-lg border border-transparent px-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 data-[state=active]:border-slate-200 data-[state=active]:bg-slate-100 data-[state=active]:text-indigo-700"
                 >
                   {DASHBOARD_TAB_META.events.icon}
                   {DASHBOARD_TAB_META.events.label}
                 </TabsTrigger>
+                <div className="mx-1 h-6 w-px self-center bg-slate-200" />
                 <TabsTrigger
                   value="applications"
+                  title={DASHBOARD_TAB_META.applications.label}
                   className="h-10 gap-2 rounded-lg border border-transparent px-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 data-[state=active]:border-slate-200 data-[state=active]:bg-slate-100 data-[state=active]:text-indigo-700"
                 >
                   {DASHBOARD_TAB_META.applications.icon}
@@ -1099,6 +1129,7 @@ export default function Dashboard({
                 </TabsTrigger>
                 <TabsTrigger
                   value="operations"
+                  title={DASHBOARD_TAB_META.operations.label}
                   className="h-10 gap-2 rounded-lg border border-transparent px-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 data-[state=active]:border-slate-200 data-[state=active]:bg-slate-100 data-[state=active]:text-indigo-700"
                 >
                   {DASHBOARD_TAB_META.operations.icon}
@@ -1110,18 +1141,20 @@ export default function Dashboard({
 
           <TabsContent value="overview" className="space-y-6">
             <section className="grid gap-4 md:grid-cols-4">
-              <StatCard title="Total raised" value={`$${config.raised.toLocaleString()}`} icon={<HandCoins className="size-5" />} />
-              <StatCard title="Donors recorded" value={String(config.donations.length)} icon={<BadgeCheck className="size-5" />} />
-              <StatCard title="Events scheduled" value={String(config.events.length)} icon={<Calendar className="size-5" />} />
-              <StatCard title="Partner mentions" value={String(config.partnerMentions.length)} icon={<BookOpen className="size-5" />} />
+              <StatCard title="Total raised" value={`$${config.raised.toLocaleString()}`} icon={<HandCoins className="size-5" />} trend={{ value: 12, label: "vs last week" }} subtitle="vs last week" />
+              <StatCard title="Donors recorded" value={String(config.donations.length)} icon={<BadgeCheck className="size-5" />} trend={{ value: 8, label: "vs last week" }} subtitle="vs last week" />
+              <StatCard title="Events scheduled" value={String(config.events.length)} icon={<Calendar className="size-5" />} trend={{ value: -3, label: "vs last month" }} subtitle="vs last month" />
+              <StatCard title="Partner mentions" value={String(config.partnerMentions.length)} icon={<BookOpen className="size-5" />} trend={{ value: 24, label: "vs last quarter" }} subtitle="vs last quarter" />
             </section>
+
+            <PendingActionsCard config={config} />
 
             <Card className="glass-surface">
               <CardHeader>
                 <CardTitle className="font-display text-2xl">Giving trend this week</CardTitle>
-                <CardDescription>A quick view of how supporter activity is moving each day.</CardDescription>
+                <CardDescription>Donations vs. supporter reach — see how activity is moving each day.</CardDescription>
               </CardHeader>
-              <CardContent className="h-72">
+              <CardContent className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={ANALYTICS_DATA}>
                     <defs>
@@ -1129,10 +1162,15 @@ export default function Dashboard({
                         <stop offset="5%" stopColor="#0f766e" stopOpacity={0.25} />
                         <stop offset="95%" stopColor="#0f766e" stopOpacity={0.02} />
                       </linearGradient>
+                      <linearGradient id="reachGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#d6e4e2" vertical={false} />
                     <XAxis dataKey="day" tickLine={false} axisLine={false} />
                     <Tooltip />
+                    <Area type="monotone" dataKey="reach" stroke="#6366f1" fill="url(#reachGradient)" strokeWidth={2} strokeDasharray="5 3" />
                     <Area type="monotone" dataKey="donations" stroke="#0f766e" fill="url(#raisedGradient)" strokeWidth={3} />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -2080,17 +2118,73 @@ interface StatCardProps {
   title: string;
   value: string;
   icon: ReactNode;
+  trend?: { value: number; label: string };
+  subtitle?: string;
 }
 
-function StatCard({ title, value, icon }: StatCardProps) {
+function StatCard({ title, value, icon, trend, subtitle }: StatCardProps) {
   return (
     <Card className="glass-surface">
       <CardContent className="flex items-center justify-between p-5">
         <div>
           <p className="text-sm text-slate-500">{title}</p>
-          <p className="font-display text-3xl font-semibold text-slate-900">{value}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="font-display text-3xl font-semibold text-slate-900">{value}</p>
+            {trend ? (
+              <span className={`text-xs font-medium ${trend.value >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                {trend.value >= 0 ? "↑" : "↓"} {Math.abs(trend.value)}%
+              </span>
+            ) : null}
+          </div>
+          {subtitle ? <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p> : null}
         </div>
         <span className="inline-flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">{icon}</span>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PendingActionsCard({ config }: { config: FundraiserConfig }) {
+  const newApplications = Object.values(config.applicationForms)
+    .flatMap((form) => form.submissions)
+    .filter((submission) => submission.status === "new").length;
+  const eventsWithoutVolunteers = config.events.filter((event) => !event.volunteerIds?.length).length;
+  const pendingCertificates = config.donations.filter((donation) => !donation.certificateGenerated).length;
+
+  const actions: { label: string; icon: ReactNode }[] = [
+    ...(newApplications > 0
+      ? [{ label: `${newApplications} application submission(s) need review`, icon: <FileCheck2 className="size-4" /> }]
+      : []),
+    ...(eventsWithoutVolunteers > 0
+      ? [{ label: `${eventsWithoutVolunteers} event(s) have no volunteers assigned`, icon: <CalendarDays className="size-4" /> }]
+      : []),
+    ...(pendingCertificates > 0
+      ? [{ label: `${pendingCertificates} donation certificate(s) pending`, icon: <BadgeCheck className="size-4" /> }]
+      : []),
+  ];
+
+  if (!actions.length) {
+    return null;
+  }
+
+  return (
+    <Card className="border-amber-200 bg-amber-50/60">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="size-5 text-amber-600" />
+          <CardTitle className="font-display text-lg">Pending actions</CardTitle>
+        </div>
+        <CardDescription>Items that need your attention right now</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {actions.map((action) => (
+            <div key={action.label} className="flex items-center gap-3 rounded-lg bg-white/70 px-4 py-2.5 text-sm text-slate-700">
+              <span className="text-amber-600">{action.icon}</span>
+              {action.label}
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

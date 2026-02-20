@@ -4,17 +4,33 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
-import { PageSections } from "@/components/preview/PageSections";
+import { PageSections, PageSectionsBuilderProps } from "@/components/preview/PageSections";
 
 interface LandingPageProps {
   config: FundraiserConfig;
   onStartDonate: () => void;
   onNavigateFundraisers: () => void;
+  onOpenCampaign: (campaignSlug: string) => void;
+  sectionBuilder?: PageSectionsBuilderProps;
 }
 
-export function LandingPage({ config, onStartDonate, onNavigateFundraisers }: LandingPageProps) {
+export function LandingPage({
+  config,
+  onStartDonate,
+  onNavigateFundraisers,
+  onOpenCampaign,
+  sectionBuilder,
+}: LandingPageProps) {
   const customization = config.pageCustomizations.landing;
   const progressPercent = Math.min(100, (config.raised / config.goal) * 100);
+  const allFundraiserCards = config.campaigns.flatMap((campaign) =>
+    campaign.fundraisers.map((fundraiser) => ({
+      id: fundraiser.id,
+      name: fundraiser.title,
+      bio: fundraiser.summary,
+      image: fundraiser.heroImage,
+    })),
+  );
 
   return (
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
@@ -67,17 +83,50 @@ export function LandingPage({ config, onStartDonate, onNavigateFundraisers }: La
         </Card>
       </section>
 
-      <PageSections sections={customization.sections} />
+      <PageSections sections={customization.sections} builder={sectionBuilder} />
 
       <Card className="glass-surface">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="font-display text-2xl">Featured fundraisers</CardTitle>
+          <CardTitle className="font-display text-2xl">Our initiatives</CardTitle>
           <Button variant="ghost" className="rounded-full" onClick={onNavigateFundraisers} type="button">
-            Explore all <ArrowRight className="size-4" />
+            Browse all <ArrowRight className="size-4" />
           </Button>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          {config.beneficiaryStories.slice(0, 3).map((story) => (
+        <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {config.campaigns.map((campaign) => (
+            <Card key={campaign.id} className="border-white/90 bg-white/95 shadow-none">
+              <CardContent className="space-y-2 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-display text-lg text-slate-900">{campaign.name}</p>
+                  <span
+                    className={`rounded-full px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] ${
+                      campaign.lifecycleStatus === "completed"
+                        ? "bg-slate-200 text-slate-700"
+                        : campaign.lifecycleStatus === "archived"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    {campaign.lifecycleStatus ?? "active"}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600">{campaign.description}</p>
+                <p className="text-xs text-slate-500">
+                  Fundraisers: {campaign.fundraisers.length} | Events: {campaign.events.length}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-full"
+                  onClick={() => onOpenCampaign(campaign.slug)}
+                >
+                  Open campaign
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+
+          {allFundraiserCards.slice(0, 3).map((story) => (
             <Card key={story.id} className="border-white/90 bg-white/95 shadow-none">
               <img src={story.image} alt={story.name} className="h-40 w-full rounded-t-xl object-cover" loading="lazy" />
               <CardContent className="space-y-2 p-4">

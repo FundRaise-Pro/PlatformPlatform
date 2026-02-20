@@ -1,27 +1,94 @@
-import { ArrowRight, BadgeCheck } from "lucide-react";
+import { ArrowRight, BadgeCheck, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
-import { PageSections } from "@/components/preview/PageSections";
+import { PageSections, PageSectionsBuilderProps } from "@/components/preview/PageSections";
 
 interface FundraisersPageProps {
   config: FundraiserConfig;
+  activeCampaignSlug: string;
   activeFundraiserSlug: string;
-  onOpenFundraiser: (slug: string) => void;
+  onOpenCampaign: (campaignSlug: string) => void;
+  onOpenFundraiser: (campaignSlug: string, fundraiserSlug: string) => void;
+  sectionBuilder?: PageSectionsBuilderProps;
 }
 
-export function FundraisersPage({ config, activeFundraiserSlug, onOpenFundraiser }: FundraisersPageProps) {
+function formatCampaignStatus(status?: FundraiserConfig["campaigns"][number]["lifecycleStatus"]): string {
+  if (status === "completed") {
+    return "Completed";
+  }
+  if (status === "archived") {
+    return "Archived";
+  }
+  if (status === "planned") {
+    return "Planned";
+  }
+  return "Active";
+}
+
+export function FundraisersPage({
+  config,
+  activeCampaignSlug,
+  activeFundraiserSlug,
+  onOpenCampaign,
+  onOpenFundraiser,
+  sectionBuilder,
+}: FundraisersPageProps) {
   const customization = config.pageCustomizations.fundraisers;
-  const activeCampaign = config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ?? config.campaigns[0];
+  const activeCampaign =
+    config.campaigns.find((campaign) => campaign.slug === activeCampaignSlug) ??
+    config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ??
+    config.campaigns[0];
   const fundraisers = activeCampaign?.fundraisers ?? [];
   const selectedFundraiser = fundraisers.find((entry) => entry.slug === activeFundraiserSlug) ?? fundraisers[0];
 
   return (
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
       <PageHero customization={customization} campaignLabel="Fundraiser index" />
-      <PageSections sections={customization.sections} />
+      <PageSections sections={customization.sections} builder={sectionBuilder} />
+
+      <Card className="border-white/90 bg-white/90 shadow-soft">
+        <CardHeader>
+          <CardTitle className="font-display text-3xl">Active campaigns</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {config.campaigns.map((campaign) => (
+            <Card
+              key={campaign.id}
+              className={`border-slate-200/80 bg-white ${campaign.slug === activeCampaign?.slug ? "ring-2 ring-emerald-500" : ""}`}
+            >
+              <CardHeader className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="font-display text-2xl">{campaign.name}</CardTitle>
+                  <Badge
+                    className={
+                      campaign.lifecycleStatus === "completed"
+                        ? "bg-slate-200 text-slate-700"
+                        : campaign.lifecycleStatus === "archived"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                    }
+                  >
+                    {formatCampaignStatus(campaign.lifecycleStatus)}
+                  </Badge>
+                </div>
+                <p className="text-sm text-slate-600">{campaign.description}</p>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-slate-600">
+                <p>Fundraisers: {campaign.fundraisers.length}</p>
+                <p>Events: {campaign.events.length}</p>
+                <p>Media updates: {campaign.mediaPosts.length}</p>
+                <Button variant="outline" className="w-full rounded-full" type="button" onClick={() => onOpenCampaign(campaign.slug)}>
+                  View campaign
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </CardContent>
+      </Card>
+
       {selectedFundraiser ? (
         <Card className="border-white/90 bg-white/90 shadow-soft">
           <CardHeader>
@@ -29,8 +96,9 @@ export function FundraisersPage({ config, activeFundraiserSlug, onOpenFundraiser
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-slate-700">{selectedFundraiser.story}</p>
-            <p className="text-sm text-slate-500">
-              Public URL: {`/campaigns/${activeCampaign.slug}/fundraisers/${selectedFundraiser.slug}`}
+            <p className="inline-flex items-center gap-1.5 text-sm text-emerald-700">
+              <ExternalLink className="size-3.5" />
+              View fundraiser
             </p>
           </CardContent>
         </Card>
@@ -62,10 +130,15 @@ export function FundraisersPage({ config, activeFundraiserSlug, onOpenFundraiser
                 </div>
               </div>
               <Badge className="bg-emerald-100 text-emerald-700">
-                <BadgeCheck className="size-3.5" />
-                {`/campaigns/${activeCampaign.slug}/fundraisers/${fundraiser.slug}`}
+                <ExternalLink className="size-3.5" />
+                View fundraiser
               </Badge>
-              <Button type="button" variant="outline" className="w-full rounded-full" onClick={() => onOpenFundraiser(fundraiser.slug)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-full"
+                onClick={() => onOpenFundraiser(activeCampaign.slug, fundraiser.slug)}
+              >
                 Open fundraiser page
                 <ArrowRight className="size-4" />
               </Button>

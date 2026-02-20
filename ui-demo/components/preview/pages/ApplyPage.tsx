@@ -9,13 +9,15 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplyPathId, FundraiserConfig } from "@/types";
 import { PageHero } from "@/components/preview/PageHero";
-import { PageSections } from "@/components/preview/PageSections";
+import { PageSections, PageSectionsBuilderProps } from "@/components/preview/PageSections";
 
 interface ApplyPageProps {
   config: FundraiserConfig;
+  activeCampaignSlug: string;
   activePath: ApplyPathId;
   onPathChange: (path: ApplyPathId) => void;
   onSubmitApplication?: (categoryId: ApplyPathId, values: Record<string, string>) => void;
+  sectionBuilder?: PageSectionsBuilderProps;
 }
 
 const APPLY_PATH_ORDER: ApplyPathId[] = ["volunteer", "help", "sponsor"];
@@ -38,10 +40,20 @@ const APPLY_PATH_META: Record<ApplyPathId, { label: string; icon: ReactNode; pat
   },
 };
 
-export function ApplyPage({ config, activePath, onPathChange, onSubmitApplication }: ApplyPageProps) {
+export function ApplyPage({
+  config,
+  activeCampaignSlug,
+  activePath,
+  onPathChange,
+  onSubmitApplication,
+  sectionBuilder,
+}: ApplyPageProps) {
   const customization = config.pageCustomizations.apply;
   const category = config.applicationForms[activePath];
-  const activeCampaign = config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ?? config.campaigns[0];
+  const activeCampaign =
+    config.campaigns.find((campaign) => campaign.slug === activeCampaignSlug) ??
+    config.campaigns.find((campaign) => campaign.id === config.activeCampaignId) ??
+    config.campaigns[0];
   const [valuesByPath, setValuesByPath] = useState<Record<ApplyPathId, Record<string, string>>>({
     volunteer: {},
     help: {},
@@ -90,7 +102,7 @@ export function ApplyPage({ config, activePath, onPathChange, onSubmitApplicatio
   return (
     <div className="space-y-6 px-6 py-8 md:px-10 md:py-10">
       <PageHero customization={customization} campaignLabel="Application center" />
-      <PageSections sections={customization.sections} />
+      <PageSections sections={customization.sections} builder={sectionBuilder} />
 
       <Card className="border-white/90 bg-white/90 shadow-soft">
         <CardHeader>
