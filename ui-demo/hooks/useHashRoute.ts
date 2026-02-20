@@ -15,6 +15,7 @@ export interface AppRoute {
   applyPath: ApplyPathId;
   campaignSlug: string;
   fundraiserSlug: string;
+  eventId: string | null;
 }
 
 function parseRoute(hash: string): AppRoute {
@@ -22,6 +23,18 @@ function parseRoute(hash: string): AppRoute {
   const [viewSegment] = segments;
 
   if (viewSegment === "dashboard") {
+    if (segments[1] === "events" && segments[2]) {
+      return {
+        view: "dashboard",
+        crmTab: DEFAULT_CRM_TAB,
+        publicPage: DEFAULT_PUBLIC_PAGE,
+        applyPath: DEFAULT_APPLY_PATH,
+        campaignSlug: DEFAULT_CAMPAIGN_SLUG,
+        fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+        eventId: segments[2],
+      };
+    }
+
     if (segments[1] === "campaigns") {
       return {
         view: "dashboard",
@@ -30,6 +43,7 @@ function parseRoute(hash: string): AppRoute {
         applyPath: DEFAULT_APPLY_PATH,
         campaignSlug: segments[2] || DEFAULT_CAMPAIGN_SLUG,
         fundraiserSlug: segments[4] || DEFAULT_FUNDRAISER_SLUG,
+        eventId: null,
       };
     }
 
@@ -40,6 +54,7 @@ function parseRoute(hash: string): AppRoute {
       applyPath: DEFAULT_APPLY_PATH,
       campaignSlug: DEFAULT_CAMPAIGN_SLUG,
       fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+      eventId: null,
     };
   }
 
@@ -52,6 +67,7 @@ function parseRoute(hash: string): AppRoute {
       applyPath: DEFAULT_APPLY_PATH,
       campaignSlug: DEFAULT_CAMPAIGN_SLUG,
       fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+      eventId: null,
     };
   }
 
@@ -69,6 +85,7 @@ function parseRoute(hash: string): AppRoute {
           applyPath: DEFAULT_APPLY_PATH,
           campaignSlug,
           fundraiserSlug: segments[4] || DEFAULT_FUNDRAISER_SLUG,
+          eventId: null,
         };
       }
 
@@ -80,6 +97,7 @@ function parseRoute(hash: string): AppRoute {
           applyPath: isApplyPath(segments[4]) ? segments[4] : DEFAULT_APPLY_PATH,
           campaignSlug,
           fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+          eventId: null,
         };
       }
 
@@ -90,6 +108,7 @@ function parseRoute(hash: string): AppRoute {
         applyPath: DEFAULT_APPLY_PATH,
         campaignSlug,
         fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+        eventId: null,
       };
     }
 
@@ -101,6 +120,7 @@ function parseRoute(hash: string): AppRoute {
       applyPath: DEFAULT_APPLY_PATH,
       campaignSlug: DEFAULT_CAMPAIGN_SLUG,
       fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+      eventId: null,
     };
   }
 
@@ -111,6 +131,7 @@ function parseRoute(hash: string): AppRoute {
     applyPath: DEFAULT_APPLY_PATH,
     campaignSlug: DEFAULT_CAMPAIGN_SLUG,
     fundraiserSlug: DEFAULT_FUNDRAISER_SLUG,
+    eventId: null,
   };
 }
 
@@ -151,6 +172,9 @@ function toHash(route: AppRoute): string {
   }
 
   if (route.view === "dashboard") {
+    if (route.eventId) {
+      return `#/dashboard/events/${route.eventId}`;
+    }
     return `#/dashboard/campaigns/${route.campaignSlug}/fundraisers/${route.fundraiserSlug}`;
   }
 
@@ -243,6 +267,14 @@ export function useHashRoute() {
     [route],
   );
 
+  const setEventId = useCallback(
+    (eventId: string | null) => {
+      const nextRoute: AppRoute = { ...route, view: "dashboard", eventId };
+      window.location.hash = toHash(nextRoute);
+    },
+    [route],
+  );
+
   return useMemo(
     () => ({
       route,
@@ -252,7 +284,8 @@ export function useHashRoute() {
       setApplyPath,
       setCampaignSlug,
       setFundraiserSlug,
+      setEventId,
     }),
-    [route, setApplyPath, setCampaignSlug, setCrmTab, setFundraiserSlug, setPublicPage, setView],
+    [route, setApplyPath, setCampaignSlug, setCrmTab, setEventId, setFundraiserSlug, setPublicPage, setView],
   );
 }

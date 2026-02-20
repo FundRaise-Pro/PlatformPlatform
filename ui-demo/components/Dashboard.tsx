@@ -1,11 +1,15 @@
-import { ReactNode, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowDownRight,
+  ArrowUpRight,
   Bold,
   AlertTriangle,
   BadgeCheck,
   BookOpen,
   CalendarDays,
   Calendar,
+  ChevronDown,
+  Eye,
   Facebook,
   FileCheck2,
   Heading2,
@@ -24,6 +28,7 @@ import {
   Plus,
   SendHorizontal,
   Sparkles,
+  TrendingUp,
   Twitter,
   Workflow,
   UsersRound,
@@ -41,10 +46,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { EventCalendar } from "@/components/EventCalendar";
+import { EventDetailPage } from "@/components/EventDetailPage";
 import { IMAGE_FILE_ACCEPT } from "@/lib/constants";
 import { readImageFile } from "@/lib/fileUploads";
 import { generateBlogPost, generateEventContent } from "@/services/geminiService";
-import { ApplicationFieldType, ApplyPathId, FundraiserConfig, FundraiserEvent } from "@/types";
+import { ApplicationFieldType, ApplyPathId, FundraiserConfig, FundraiserEvent, SocialMediaMetrics, SocialMediaPost } from "@/types";
 
 interface DashboardProps {
   config: FundraiserConfig;
@@ -53,6 +59,8 @@ interface DashboardProps {
   activeFundraiserSlug?: string;
   onSelectCampaign?: (campaignSlug: string) => void;
   onSelectFundraiser?: (fundraiserSlug: string) => void;
+  eventId?: string | null;
+  onSelectEvent?: (eventId: string | null) => void;
 }
 
 type DashboardTabId = "overview" | "media" | "fundraising" | "events" | "applications" | "operations";
@@ -157,6 +165,102 @@ const MEDIA_CHANNEL_META: Record<
 
 const MEDIA_DEFAULT_CHANNELS: MediaChannelId[] = ["whatsapp", "instagram", "facebook"];
 
+const MOCK_SOCIAL_MEDIA_METRICS: SocialMediaMetrics[] = [
+  {
+    platform: "twitter",
+    followers: 1247,
+    followersGrowth: 3.2,
+    postsCount: 89,
+    engagementRate: 2.8,
+    impressions: 14200,
+    impressionsGrowth: 12.5,
+  },
+  {
+    platform: "facebook",
+    followers: 2431,
+    followersGrowth: 1.8,
+    postsCount: 56,
+    engagementRate: 3.4,
+    impressions: 28700,
+    impressionsGrowth: 8.1,
+  },
+  {
+    platform: "instagram",
+    followers: 1893,
+    followersGrowth: 5.6,
+    postsCount: 42,
+    engagementRate: 4.7,
+    impressions: 22100,
+    impressionsGrowth: 15.3,
+  },
+];
+
+const MOCK_SOCIAL_MEDIA_POSTS: SocialMediaPost[] = [
+  {
+    id: "smp-1",
+    platform: "twitter",
+    content: "500 sensors deployed across Guguletu! Every leak detected saves water for families who need it most. #WaterResilience #ThriveSA",
+    publishedAt: "2025-02-10T14:30:00Z",
+    likes: 47,
+    comments: 12,
+    shares: 23,
+    impressions: 3200,
+    url: "https://twitter.com/thriveafrica/status/example1",
+  },
+  {
+    id: "smp-2",
+    platform: "facebook",
+    content: "Join us at the Impact Stakeholder Dinner on 15 January. Meet the engineers and community leaders behind our water resilience program.",
+    publishedAt: "2025-01-08T10:00:00Z",
+    likes: 89,
+    comments: 31,
+    shares: 45,
+    impressions: 5800,
+    url: "https://facebook.com/thriveafrica/posts/example2",
+  },
+  {
+    id: "smp-3",
+    platform: "instagram",
+    content: "Before vs After: Guguletu Primary's new water infrastructure means no more classroom disruptions from burst pipes.",
+    publishedAt: "2025-01-22T16:15:00Z",
+    likes: 134,
+    comments: 18,
+    shares: 52,
+    impressions: 4300,
+    url: "https://instagram.com/p/example3",
+  },
+  {
+    id: "smp-4",
+    platform: "twitter",
+    content: "Our Q4 impact report is live. 1.2M litres saved, 147 households secured, 3 schools protected. Full transparency. Link in bio.",
+    publishedAt: "2025-02-01T09:00:00Z",
+    likes: 62,
+    comments: 8,
+    shares: 34,
+    impressions: 2900,
+  },
+  {
+    id: "smp-5",
+    platform: "facebook",
+    content: "Thank you to EcoFlow Solutions for sponsoring the Community Hackathon. 52 developers, one goal: smarter water for all.",
+    publishedAt: "2024-12-08T11:30:00Z",
+    likes: 112,
+    comments: 27,
+    shares: 38,
+    impressions: 6100,
+  },
+  {
+    id: "smp-6",
+    platform: "instagram",
+    content: "The Mthembu family finally has consistent water access after three years. This is what donor-funded infrastructure looks like.",
+    publishedAt: "2025-02-05T13:00:00Z",
+    likes: 201,
+    comments: 42,
+    shares: 67,
+    impressions: 5200,
+  },
+];
+
 function renderApplicationCategoryIcon(categoryId: ApplyPathId, className = "size-5"): ReactNode {
   if (categoryId === "volunteer") {
     return <UsersRound className={className} />;
@@ -242,8 +346,16 @@ export default function Dashboard({
   activeFundraiserSlug,
   onSelectCampaign,
   onSelectFundraiser,
+  eventId,
+  onSelectEvent,
 }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<DashboardTabId>("overview");
+
+  useEffect(() => {
+    if (eventId) {
+      setActiveTab("events");
+    }
+  }, [eventId]);
   const [isGenerating, setIsGenerating] = useState<GeneratorMode>(null);
   const [activeApplicationCategory, setActiveApplicationCategory] = useState<ApplyPathId>("volunteer");
   const [newEvent, setNewEvent] = useState<{ title: string; venue: string; date: string; volunteerId: string }>({
@@ -1188,25 +1300,246 @@ export default function Dashboard({
           </TabsContent>
 
           <TabsContent value="media" className="space-y-6">
-            <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+            {/* Section 1 — Social analytics overview */}
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Card className="glass-surface">
-                <CardHeader>
-                  <CardTitle className="font-display text-2xl">Media studio</CardTitle>
-                  <CardDescription>
-                    Write once, adapt per channel, and publish with a cleaner WYSIWYG workflow.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    <Sheet open={isMediaDetailsOpen} onOpenChange={setIsMediaDetailsOpen}>
-                      <SheetTrigger asChild>
-                        <Button variant="outline" type="button">
-                          <LayoutTemplate className="size-4" />
-                          Post details
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-full max-w-xl overflow-y-auto bg-white">
-                        <SheetHeader className="mb-4">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total followers</span>
+                    <UsersRound className="size-4 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold">
+                      {MOCK_SOCIAL_MEDIA_METRICS.reduce((sum, m) => sum + m.followers, 0).toLocaleString()}
+                    </span>
+                    <span className="flex items-center text-xs text-emerald-600">
+                      <ArrowUpRight className="size-3" />
+                      {(MOCK_SOCIAL_MEDIA_METRICS.reduce((sum, m) => sum + m.followersGrowth, 0) / MOCK_SOCIAL_MEDIA_METRICS.length).toFixed(1)}%
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-surface">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Engagement rate</span>
+                    <TrendingUp className="size-4 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold">
+                      {(MOCK_SOCIAL_MEDIA_METRICS.reduce((sum, m) => sum + m.engagementRate, 0) / MOCK_SOCIAL_MEDIA_METRICS.length).toFixed(1)}%
+                    </span>
+                    <span className="flex items-center text-xs text-emerald-600">
+                      <ArrowUpRight className="size-3" />
+                      0.4%
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-surface">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total impressions</span>
+                    <Eye className="size-4 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold">
+                      {(MOCK_SOCIAL_MEDIA_METRICS.reduce((sum, m) => sum + m.impressions, 0) / 1000).toFixed(1)}K
+                    </span>
+                    <span className="flex items-center text-xs text-emerald-600">
+                      <ArrowUpRight className="size-3" />
+                      {(MOCK_SOCIAL_MEDIA_METRICS.reduce((sum, m) => sum + m.impressionsGrowth, 0) / MOCK_SOCIAL_MEDIA_METRICS.length).toFixed(1)}%
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-surface">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Posts this period</span>
+                    <SendHorizontal className="size-4 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold">
+                      {MOCK_SOCIAL_MEDIA_METRICS.reduce((sum, m) => sum + m.postsCount, 0)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">across 3 platforms</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Section 2 — Platform breakdown cards */}
+            <div className="grid gap-4 md:grid-cols-3">
+              {MOCK_SOCIAL_MEDIA_METRICS.map((metric) => {
+                const platformMeta = MEDIA_CHANNEL_META[metric.platform];
+                const topPost = MOCK_SOCIAL_MEDIA_POSTS.filter(
+                  (p) => p.platform === metric.platform
+                ).sort((a, b) => b.likes + b.shares - (a.likes + a.shares))[0];
+                return (
+                  <Card key={metric.platform} className="glass-surface">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {platformMeta.icon}
+                          <CardTitle className="text-base">{platformMeta.label}</CardTitle>
+                        </div>
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700">
+                          Connected
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Followers</span>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{metric.followers.toLocaleString()}</span>
+                          <span className={`flex items-center text-xs ${metric.followersGrowth >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                            {metric.followersGrowth >= 0 ? (
+                              <ArrowUpRight className="size-3" />
+                            ) : (
+                              <ArrowDownRight className="size-3" />
+                            )}
+                            {Math.abs(metric.followersGrowth)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Engagement rate</span>
+                        <span className="font-medium">{metric.engagementRate}%</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Impressions</span>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{(metric.impressions / 1000).toFixed(1)}K</span>
+                          <span className="flex items-center text-xs text-emerald-600">
+                            <ArrowUpRight className="size-3" />
+                            {metric.impressionsGrowth}%
+                          </span>
+                        </div>
+                      </div>
+                      {topPost && (
+                        <div className="mt-2 rounded-md border bg-muted/30 p-3">
+                          <span className="text-xs font-medium text-muted-foreground">Top post</span>
+                          <p className="mt-1 line-clamp-2 text-xs">{topPost.content}</p>
+                          <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
+                            <span>♥ {topPost.likes}</span>
+                            <span>↗ {topPost.shares}</span>
+                            <span>💬 {topPost.comments}</span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Section 3 — Post performance table */}
+            <DataTable
+              title="Post performance"
+              description="Track engagement and reach across all published social media posts."
+              data={MOCK_SOCIAL_MEDIA_POSTS}
+              columns={[
+                {
+                  key: "platform",
+                  header: "Platform",
+                  sortable: true,
+                  accessor: (row) => row.platform,
+                  cell: (row) => {
+                    const meta = MEDIA_CHANNEL_META[row.platform];
+                    return (
+                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${meta.badgeClassName}`}>
+                        {meta.icon}
+                        {meta.label}
+                      </span>
+                    );
+                  },
+                },
+                {
+                  key: "content",
+                  header: "Content",
+                  accessor: (row) => row.content,
+                  cell: (row) => (
+                    <span className="line-clamp-1 max-w-[18.75rem]" title={row.content}>
+                      {row.content}
+                    </span>
+                  ),
+                },
+                {
+                  key: "publishedAt",
+                  header: "Published",
+                  sortable: true,
+                  accessor: (row) => row.publishedAt,
+                  cell: (row) =>
+                    new Date(row.publishedAt).toLocaleDateString("en-ZA", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }),
+                },
+                {
+                  key: "likes",
+                  header: "Likes",
+                  sortable: true,
+                  accessor: (row) => row.likes,
+                  cell: (row) => row.likes.toLocaleString(),
+                },
+                {
+                  key: "shares",
+                  header: "Shares",
+                  sortable: true,
+                  accessor: (row) => row.shares,
+                  cell: (row) => row.shares.toLocaleString(),
+                },
+                {
+                  key: "comments",
+                  header: "Comments",
+                  sortable: true,
+                  accessor: (row) => row.comments,
+                  cell: (row) => row.comments.toLocaleString(),
+                },
+                {
+                  key: "impressions",
+                  header: "Impressions",
+                  sortable: true,
+                  accessor: (row) => row.impressions,
+                  cell: (row) => row.impressions.toLocaleString(),
+                },
+              ] satisfies DataTableColumn<SocialMediaPost>[]}
+              defaultSortKey="publishedAt"
+              defaultSortDirection="desc"
+              searchPlaceholder="Search posts..."
+            />
+
+            {/* Section 4 — Blog composer (collapsed) */}
+            <Card className="glass-surface">
+              <details>
+                <summary className="flex cursor-pointer list-none items-center gap-2 p-6 [&::-webkit-details-marker]:hidden">
+                  <ChevronDown className="size-4 text-muted-foreground transition-transform [[open]>&]:rotate-180" />
+                  <div>
+                    <h3 className="text-lg font-semibold">Blog post composer</h3>
+                    <span className="text-sm text-muted-foreground">
+                      Write and distribute blog posts across your connected channels.
+                    </span>
+                  </div>
+                </summary>
+                <CardContent className="space-y-4 border-t pt-4">
+                  <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Sheet open={isMediaDetailsOpen} onOpenChange={setIsMediaDetailsOpen}>
+                          <SheetTrigger asChild>
+                            <Button variant="outline" type="button">
+                              <LayoutTemplate className="size-4" />
+                              Post details
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="right" className="w-full max-w-xl overflow-y-auto bg-white">
+                            <SheetHeader className="mb-4">
                           <SheetTitle>Post details</SheetTitle>
                           <SheetDescription>
                             Keep these fields tucked away until you need them.
@@ -1417,55 +1750,11 @@ export default function Dashboard({
                       </Card>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-surface">
-                <CardHeader>
-                  <CardTitle className="font-display text-2xl">Distribution pulse</CardTitle>
-                  <CardDescription>Quick read of live, scheduled, and draft channel activity.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid gap-3">
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
-                      <p className="text-xs uppercase tracking-[0.15em] text-emerald-700">Live posts</p>
-                      <p className="font-display text-3xl text-emerald-800">{mediaActivitySummary.live}</p>
-                    </div>
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
-                      <p className="text-xs uppercase tracking-[0.15em] text-amber-700">Scheduled posts</p>
-                      <p className="font-display text-3xl text-amber-800">{mediaActivitySummary.scheduled}</p>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-100 px-3 py-2">
-                      <p className="text-xs uppercase tracking-[0.15em] text-slate-700">Draft posts</p>
-                      <p className="font-display text-3xl text-slate-800">{mediaActivitySummary.draft}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600">
-                    WhatsApp coordination, Instagram/Facebook storytelling, and Twitter updates are managed from this one media studio.
-                  </p>
                 </CardContent>
-              </Card>
-            </div>
-
-            <DataTable
-              title="Media stories"
-              description="Search and sort every story shown on your public media page."
-              data={config.blogPosts}
-              columns={mediaColumns}
-              defaultSortKey="date"
-              defaultSortDirection="desc"
-              searchPlaceholder="Search stories..."
-            />
-
-            <DataTable
-              title="Channel activity"
-              description="Cross-channel publishing activity, including WhatsApp communications and social feed readiness."
-              data={mediaActivityRows}
-              columns={mediaActivityColumns}
-              defaultSortKey="scheduledFor"
-              defaultSortDirection="desc"
-              searchPlaceholder="Search channel activity..."
-            />
+              </details>
+            </Card>
           </TabsContent>
 
           <TabsContent value="fundraising" className="space-y-6">
@@ -1617,22 +1906,33 @@ export default function Dashboard({
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
-            <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
-              <EventCalendar
-                events={config.events}
-                title="Event calendar"
-                description="Highlighted dates are synced with builder and public preview event experiences."
+            {eventId && config.events.find((e) => e.id === eventId) ? (
+              <EventDetailPage
+                event={config.events.find((e) => e.id === eventId)!}
+                config={config}
+                onUpdate={onUpdate}
+                onBack={() => onSelectEvent?.(null)}
               />
-              <DataTable
-                title="Event schedule"
-                description="Search and sort all scheduled events."
-                data={config.events}
-                columns={eventColumns}
-                defaultSortKey="date"
-                defaultSortDirection="asc"
-                searchPlaceholder="Search events..."
-              />
-            </div>
+            ) : (
+              <>
+                <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+                  <EventCalendar
+                    events={config.events}
+                    title="Event calendar"
+                    description="Highlighted dates are synced with builder and public preview event experiences."
+                    onNavigateToEvent={onSelectEvent ? (id) => onSelectEvent(id) : undefined}
+                  />
+                  <DataTable
+                    title="Event schedule"
+                    description="Search and sort all scheduled events."
+                    data={config.events}
+                    columns={eventColumns}
+                    defaultSortKey="date"
+                    defaultSortDirection="asc"
+                    searchPlaceholder="Search events..."
+                    onRowClick={onSelectEvent ? (row) => onSelectEvent((row as FundraiserEvent).id) : undefined}
+                  />
+                </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
               <Card className="glass-surface">
@@ -1707,6 +2007,8 @@ export default function Dashboard({
                 </CardContent>
               </Card>
             </div>
+            </>
+            )}
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-6">

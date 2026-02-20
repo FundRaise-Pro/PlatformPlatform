@@ -31,6 +31,7 @@ interface DataTableProps<TData> {
   pageSizeOptions?: number[];
   searchPlaceholder?: string;
   emptyMessage?: string;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData>({
@@ -44,6 +45,7 @@ export function DataTable<TData>({
   pageSizeOptions = [5, 8, 12, 20],
   searchPlaceholder = "Search rows...",
   emptyMessage = "No records available.",
+  onRowClick,
 }: DataTableProps<TData>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<string | undefined>(defaultSortKey);
@@ -193,7 +195,11 @@ export function DataTable<TData>({
               </TableRow>
             ) : (
               pageRows.map((row, index) => (
-                <TableRow key={getRowKey(row, index)}>
+                <TableRow 
+                  key={getRowKey(row, index)}
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  className={onRowClick ? "cursor-pointer transition-colors" : undefined}
+                >
                   {columns.map((column) => (
                     <TableCell key={column.key} className={column.className}>
                       {column.cell ? column.cell(row) : normalizeValue(column.accessor(row))}

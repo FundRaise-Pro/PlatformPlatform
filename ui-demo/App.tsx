@@ -56,7 +56,7 @@ export default function App() {
     boardResolutionReference: "",
   });
   const [focusedBuilderSectionId, setFocusedBuilderSectionId] = useState<string | null>(null);
-  const { route, setApplyPath, setCampaignSlug, setCrmTab, setFundraiserSlug, setPublicPage, setView } = useHashRoute();
+  const { route, setApplyPath, setCampaignSlug, setCrmTab, setEventId, setFundraiserSlug, setPublicPage, setView } = useHashRoute();
 
   const activeCampaign = useMemo(
     () =>
@@ -835,6 +835,8 @@ export default function App() {
             activeFundraiserSlug={route.fundraiserSlug}
             onSelectCampaign={setCampaignSlug}
             onSelectFundraiser={setFundraiserSlug}
+            eventId={route.eventId}
+            onSelectEvent={setEventId}
           />
         ) : null}
 

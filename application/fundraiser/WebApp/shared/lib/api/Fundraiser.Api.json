@@ -2655,6 +2655,71 @@
         }
       }
     },
+    "/api/fundraiser/public/campaigns/{campaignSlug}/stories": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicCampaignsStories",
+        "parameters": [
+          {
+            "name": "campaignSlug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicStorySummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/stories/{slug}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicStories",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStoryDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/fundraiser/public/blog/categories": {
       "get": {
         "tags": [
@@ -2757,7 +2822,7 @@
         "tags": [
           "Public"
         ],
-        "operationId": "GetApiFundraiserPublicEvents",
+        "operationId": "GetApiFundraiserPublicEventsAll",
         "responses": {
           "200": {
             "description": "",
@@ -2768,6 +2833,37 @@
                   "items": {
                     "$ref": "#/components/schemas/PublicEventResponse"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/events/{slug}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "GetApiFundraiserPublicEvents",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicEventDetailResponse"
                 }
               }
             }
@@ -2791,6 +2887,38 @@
                   "items": {
                     "$ref": "#/components/schemas/BranchResponse"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fundraiser/public/donate": {
+      "post": {
+        "tags": [
+          "Public"
+        ],
+        "operationId": "PostApiFundraiserPublicDonate",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePublicTransactionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePublicTransactionResponse"
                 }
               }
             }
@@ -5822,6 +5950,9 @@
             "type": "string",
             "nullable": true
           },
+          "channel": {
+            "$ref": "#/components/schemas/DonationChannel"
+          },
           "completedAt": {
             "type": "string",
             "format": "date-time",
@@ -5867,6 +5998,24 @@
           "Refunded",
           "ManualReview",
           "Cancelled"
+        ]
+      },
+      "DonationChannel": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Web",
+          "QrCode",
+          "EventKiosk",
+          "Api",
+          "Manual"
+        ],
+        "enum": [
+          "Web",
+          "QrCode",
+          "EventKiosk",
+          "Api",
+          "Manual"
         ]
       },
       "TransactionResponse": {
@@ -5924,6 +6073,9 @@
                 "$ref": "#/components/schemas/PaymentMethod"
               }
             ]
+          },
+          "channel": {
+            "$ref": "#/components/schemas/DonationChannel"
           },
           "targetType": {
             "$ref": "#/components/schemas/FundraisingTargetType"
@@ -6090,6 +6242,9 @@
           "payeeEmail": {
             "type": "string",
             "nullable": true
+          },
+          "channel": {
+            "$ref": "#/components/schemas/DonationChannel"
           }
         }
       },
@@ -7232,6 +7387,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "slug": {
             "type": "string"
           },
@@ -7272,6 +7430,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "slug": {
             "type": "string"
           },
@@ -7312,6 +7473,133 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "PublicStorySummaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fundraisingStatus": {
+            "$ref": "#/components/schemas/FundraisingStatus"
+          }
+        }
+      },
+      "PublicStoryDetailResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "goalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fundraisingStatus": {
+            "$ref": "#/components/schemas/FundraisingStatus"
+          },
+          "campaignSlug": {
+            "type": "string",
+            "nullable": true
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicStoryImageResponse"
+            }
+          },
+          "updates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicStoryUpdateResponse"
+            }
+          }
+        }
+      },
+      "PublicStoryImageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "blobUrl": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "fileSizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PublicStoryUpdateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -7455,6 +7743,109 @@
           },
           "status": {
             "$ref": "#/components/schemas/EventStatus"
+          }
+        }
+      },
+      "PublicEventDetailResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "raisedAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          },
+          "campaignSlug": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreatePublicTransactionResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "transactionId": {
+            "type": "string"
+          },
+          "actionUrl": {
+            "type": "string"
+          },
+          "formFields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreatePublicTransactionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "targetType": {
+            "$ref": "#/components/schemas/FundraisingTargetType"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "payeeName": {
+            "type": "string",
+            "nullable": true
+          },
+          "payeeEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "channel": {
+            "$ref": "#/components/schemas/DonationChannel"
+          },
+          "returnUrl": {
+            "type": "string"
+          },
+          "cancelUrl": {
+            "type": "string"
           }
         }
       },

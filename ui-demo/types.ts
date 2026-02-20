@@ -81,15 +81,75 @@ export interface BeneficiaryStory {
   image: string;
 }
 
+export interface EventTimetableEntry {
+  id: string;
+  time: string;
+  label: string;
+  speaker?: string;
+}
+
+export type EventStatus = "upcoming" | "live" | "completed" | "cancelled";
+export type EventCategory = "gala" | "workshop" | "hackathon" | "webinar" | "community" | "fundraiser" | "other";
+export type EventRsvpSource = "site" | "whatsapp";
+export type EventRsvpStatus = "confirmed" | "waitlisted" | "cancelled";
+
+export interface EventRsvp {
+  id: string;
+  attendeeName: string;
+  email?: string;
+  phone?: string;
+  source: EventRsvpSource;
+  status: EventRsvpStatus;
+  timestamp: string;
+}
+
 export interface FundraiserEvent {
   id: string;
   title: string;
   date: string;
+  endDate?: string;
   venue: string;
+  address?: string;
+  mapUrl?: string;
+  description?: string;
   campaignId: string;
   fundraiserId?: string;
   volunteerIds?: string[];
   image?: string;
+  capacity?: number;
+  rsvpCount?: number;
+  timetable?: EventTimetableEntry[];
+  qrCodeUrl?: string;
+  partnerIds?: string[];
+  status?: EventStatus;
+  category?: EventCategory;
+  contactEmail?: string;
+  contactPhone?: string;
+  rsvps?: EventRsvp[];
+}
+
+export type SocialMediaPlatform = "twitter" | "facebook" | "instagram";
+
+export interface SocialMediaMetrics {
+  platform: SocialMediaPlatform;
+  followers: number;
+  followersGrowth: number;
+  postsCount: number;
+  engagementRate: number;
+  impressions: number;
+  impressionsGrowth: number;
+}
+
+export interface SocialMediaPost {
+  id: string;
+  platform: SocialMediaPlatform;
+  content: string;
+  publishedAt: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  impressions: number;
+  url?: string;
 }
 
 export interface BlogPost {

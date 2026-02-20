@@ -11,12 +11,13 @@ interface EventCalendarProps {
   title: string;
   description: string;
   className?: string;
+  onNavigateToEvent?: (eventId: string) => void;
 }
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const GRID_SIZE = 42;
 
-export function EventCalendar({ events, title, description, className }: EventCalendarProps) {
+export function EventCalendar({ events, title, description, className, onNavigateToEvent }: EventCalendarProps) {
   const [monthAnchor, setMonthAnchor] = useState<Date>(() => getInitialAnchor(events));
   const [selectedIsoDate, setSelectedIsoDate] = useState<string>(() => {
     const firstEvent = events[0]?.date?.split("T")[0];
@@ -109,7 +110,14 @@ export function EventCalendar({ events, title, description, className }: EventCa
           ) : (
             <div className="mt-2 space-y-2">
               {selectedDayEvents.map((event) => (
-                <div key={event.id} className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-3">
+                <div 
+                  key={event.id} 
+                  className={cn(
+                    "rounded-xl border border-emerald-200 bg-emerald-50/40 p-3",
+                    onNavigateToEvent && "cursor-pointer transition-colors hover:bg-emerald-100/50"
+                  )}
+                  onClick={onNavigateToEvent ? () => onNavigateToEvent(event.id) : undefined}
+                >
                   <p className="font-medium text-slate-900">{event.title}</p>
                   <p className="text-sm text-slate-600">{event.venue}</p>
                 </div>
